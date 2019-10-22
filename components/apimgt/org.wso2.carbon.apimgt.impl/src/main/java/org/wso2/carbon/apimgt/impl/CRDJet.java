@@ -15,9 +15,9 @@ import org.slf4j.LoggerFactory;
 
 import java.util.List;
 
-public class PrivateJet {
+public class CRDJet {
 
-    private static final Logger log = LoggerFactory.getLogger(PrivateJet.class);
+    private static final Logger log = LoggerFactory.getLogger(CRDJet.class);
 
     private static String API_CRD_GROUP = "wso2.com";
     private static String API_CRD_NAME = "apis." +  API_CRD_GROUP;
