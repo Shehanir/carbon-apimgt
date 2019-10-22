@@ -13,10 +13,6 @@ public class CMap {
     private static final Logger log = LoggerFactory.getLogger(CMap.class);
     private String confMapName;
 
-    public String getConfMapName() {
-        return confMapName;
-    }
-
     public void setConfMapName(String confMapName) {
         this.confMapName = confMapName;
     }

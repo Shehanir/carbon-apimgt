@@ -23,7 +23,6 @@ public class CRDJet {
     private static String API_CRD_NAME = "apis." +  API_CRD_GROUP;
 
 
-
     public CustomResourceDefinition setUpCrds(KubernetesClient client) {
 
         CustomResourceDefinitionList crds = client.customResourceDefinitions().list();
