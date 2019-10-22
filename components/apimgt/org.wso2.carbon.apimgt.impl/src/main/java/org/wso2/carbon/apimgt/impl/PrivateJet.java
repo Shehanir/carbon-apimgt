@@ -88,6 +88,4 @@ public class PrivateJet {
         APICrd created = apiCRDClient.createOrReplace(apiCrd);
         log.info("Upserted " + apiCrd);
     }
-
-
 }
