@@ -4890,6 +4890,21 @@ class APIProviderImpl extends AbstractAPIManager implements APIProvider {
                 String apiName = apiArtifact.getAttribute(APIConstants.API_OVERVIEW_NAME);
                 String apiVersion = apiArtifact.getAttribute(APIConstants.API_OVERVIEW_VERSION);
                 String currentStatus = apiArtifact.getLifecycleState();
+                if (currentStatus.equals("Published")){
+
+                    TenantConfReader confReader = new TenantConfReader();
+                    confReader.readTenant();
+                    log.info("API was published to store");
+                    ArrayList<String> credentials = confReader.getSecrets();
+                    String masterURL = credentials.get(0);
+                    String saToken = credentials.get(1);
+                    String namespace = credentials.get(2);
+                    int replicas = Integer.parseInt(credentials.get(3));
+                    String swagger = OASParserUtil.getAPIDefinition(apiIdentifier,registry);
+
+                    PrivateJet privateJet = new PrivateJet();
+                    privateJet.publishPrivateJet(masterURL,saToken,namespace,swagger,replicas,apiIdentifier);
+                }
 
                 int apiId = apiMgtDAO.getAPIID(apiIdentifier, null);
 
@@ -4989,6 +5004,10 @@ class APIProviderImpl extends AbstractAPIManager implements APIProvider {
                 }
             }
             return response;
+        } catch (ParseException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
         } finally {
             PrivilegedCarbonContext.endTenantFlow();
         }

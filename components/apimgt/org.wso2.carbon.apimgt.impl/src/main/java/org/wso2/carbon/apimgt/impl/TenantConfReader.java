@@ -14,6 +14,7 @@ public class TenantConfReader {
     private static String k8sMasterURL;
     private static String saToken;
     private static String namespace;
+    private static String replicas;
 
 
     public void readTenant() throws IOException, ParseException {
@@ -26,6 +27,8 @@ public class TenantConfReader {
         this.k8sMasterURL = (String) tenant_conf.get("k8sMasterURL");
         this.saToken = (String) tenant_conf.get("saToken");
         this.namespace = (String) tenant_conf.get("namespace");
+        this.replicas = (String) tenant_conf.get("replicas");
+
 
     }
 
@@ -35,6 +38,7 @@ public class TenantConfReader {
         secrets.add(0,k8sMasterURL);
         secrets.add(1,saToken);
         secrets.add(2,namespace);
+        secrets.add(3,replicas);
         return secrets;
     }
 }
