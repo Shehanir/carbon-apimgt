@@ -72,7 +72,7 @@ public class CRDJet {
 
         APICrd apiCrd = new APICrd();
         apiCrd.setSpec(apiCrdSpec);
-        apiCrd.setApiVersion(this.API_CRD_GROUP + "v1beta1");
+        apiCrd.setApiVersion(this.API_CRD_GROUP + "/v1beta1");
         apiCrd.setKind("API");
         ObjectMeta meta = new ObjectMeta();
         meta.setName(apiName);

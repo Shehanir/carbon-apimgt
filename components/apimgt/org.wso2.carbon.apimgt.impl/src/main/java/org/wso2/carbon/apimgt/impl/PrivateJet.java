@@ -14,13 +14,9 @@ public class PrivateJet {
 
     private static final Logger log = LoggerFactory.getLogger(PrivateJet.class);
 
-    public void publishPrivateJet(String masterURL, String saToken, String namespace, String swaggerDef, int replicas, APIIdentifier apiIdentifier) {
+    public void publishPrivateJet(String masterURL, String saToken, String namespace, String swaggerDef, int replicas, APIIdentifier apiIdentifier, Client k8sClient) {
 
-        Client k8sclient = new Client();
-        k8sclient.setMasterURL(masterURL);
-        k8sclient.setNamespace(namespace);
-        k8sclient.setSaToken(saToken);
-        KubernetesClient client = k8sclient.createClient();
+        KubernetesClient client = k8sClient.createClient();
 
         String configMapName = apiIdentifier.getApiName().toLowerCase() + ".v" + apiIdentifier.getVersion();
         CMap cMap = new CMap();
@@ -28,7 +24,7 @@ public class PrivateJet {
 
         CRDJet crdJet = new CRDJet();
         CustomResourceDefinition customResourceDefinition = crdJet.setUpCrds(client);
-        crdJet.createAPICRD(configMapName, apiIdentifier.getApiName(), namespace, replicas, client, customResourceDefinition);
+        crdJet.createAPICRD(configMapName, apiIdentifier.getApiName().toLowerCase(), namespace, replicas, client, customResourceDefinition);
 
         cMap.publishCMap(swaggerDef, namespace, client, apiIdentifier);
 

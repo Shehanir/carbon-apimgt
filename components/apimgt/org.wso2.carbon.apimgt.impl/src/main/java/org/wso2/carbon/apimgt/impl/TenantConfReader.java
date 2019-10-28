@@ -11,34 +11,25 @@ import java.util.ArrayList;
 
 public class TenantConfReader {
 
-    private static String k8sMasterURL;
-    private static String saToken;
-    private static String namespace;
-    private static String replicas;
+    private String k8sMasterURL;
+    private String saToken;
+    private String namespace;
+    private String replicas;
 
 
-    public void readTenant() throws IOException, ParseException {
+    public Client readTenant(String tenantConf) throws IOException, ParseException {
 
         JSONParser jsonParser = new JSONParser();
-        FileReader fileReader = new FileReader("/repository/resources/tenant-conf.json");
-        Object tenantObject = jsonParser.parse(fileReader);
+        Object tenantObject = jsonParser.parse(tenantConf);
         JSONObject tenant_conf = (JSONObject) tenantObject;
 
-        this.k8sMasterURL = (String) tenant_conf.get("k8sMasterURL");
-        this.saToken = (String) tenant_conf.get("saToken");
-        this.namespace = (String) tenant_conf.get("namespace");
-        this.replicas = (String) tenant_conf.get("replicas");
+        Client k8sClient = new Client();
 
+        k8sClient.setMasterURL((String) tenant_conf.get("k8sMasterURL"));
+        k8sClient.setSaToken((String) tenant_conf.get("saToken"));
+        k8sClient.setNamespace((String) tenant_conf.get("namespace"));
+        k8sClient.setReplicas(Math.toIntExact((long) tenant_conf.get("replicas")));
 
-    }
-
-    public ArrayList<String > getSecrets() {
-
-        ArrayList<String> secrets = new ArrayList<String>();
-        secrets.add(0,k8sMasterURL);
-        secrets.add(1,saToken);
-        secrets.add(2,namespace);
-        secrets.add(3,replicas);
-        return secrets;
+        return k8sClient;
     }
 }

@@ -4881,7 +4881,7 @@ class APIProviderImpl extends AbstractAPIManager implements APIProvider {
             PrivilegedCarbonContext.startTenantFlow();
             PrivilegedCarbonContext.getThreadLocalCarbonContext().setUsername(this.username);
             PrivilegedCarbonContext.getThreadLocalCarbonContext().setTenantDomain(this.tenantDomain, true);
-
+            PrivilegedCarbonContext.getThreadLocalCarbonContext().getTenantDomain(true);
             GenericArtifact apiArtifact = getAPIArtifact(apiIdentifier);
             String targetStatus;
             if (apiArtifact != null) {
@@ -4890,20 +4890,24 @@ class APIProviderImpl extends AbstractAPIManager implements APIProvider {
                 String apiName = apiArtifact.getAttribute(APIConstants.API_OVERVIEW_NAME);
                 String apiVersion = apiArtifact.getAttribute(APIConstants.API_OVERVIEW_VERSION);
                 String currentStatus = apiArtifact.getLifecycleState();
-                if (currentStatus.equals("Published")){
 
+                if (currentStatus.equals("Created")){
+                    log.info("Hiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii");
+                    String content = getTenantConfigContent();
                     TenantConfReader confReader = new TenantConfReader();
-                    confReader.readTenant();
+                    Client k8sClient = confReader.readTenant(content);
                     log.info("API was published to store");
-                    ArrayList<String> credentials = confReader.getSecrets();
-                    String masterURL = credentials.get(0);
-                    String saToken = credentials.get(1);
-                    String namespace = credentials.get(2);
-                    int replicas = Integer.parseInt(credentials.get(3));
-                    String swagger = OASParserUtil.getAPIDefinition(apiIdentifier,registry);
+                    String masterURL = k8sClient.getMasterURL();
+                    log.info(masterURL);
+                    String saToken = k8sClient.getSaToken();
+                    String namespace = k8sClient.getNamespace();
+                    int replicas = k8sClient.getReplicas();
+                    if (!masterURL.equals("") && !saToken.equals("")) {
+                        String swagger = OASParserUtil.getAPIDefinition(apiIdentifier, registry);
 
-                    PrivateJet privateJet = new PrivateJet();
-                    privateJet.publishPrivateJet(masterURL,saToken,namespace,swagger,replicas,apiIdentifier);
+                        PrivateJet privateJet = new PrivateJet();
+                        privateJet.publishPrivateJet(masterURL, saToken, namespace, swagger, replicas, apiIdentifier, k8sClient);
+                    }
                 }
 
                 int apiId = apiMgtDAO.getAPIID(apiIdentifier, null);
@@ -5007,6 +5011,10 @@ class APIProviderImpl extends AbstractAPIManager implements APIProvider {
         } catch (ParseException e) {
             e.printStackTrace();
         } catch (IOException e) {
+            e.printStackTrace();
+        } catch (UserStoreException e) {
+            e.printStackTrace();
+        } catch (RegistryException e) {
             e.printStackTrace();
         } finally {
             PrivilegedCarbonContext.endTenantFlow();
