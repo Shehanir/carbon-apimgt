@@ -4892,11 +4892,10 @@ class APIProviderImpl extends AbstractAPIManager implements APIProvider {
                 String currentStatus = apiArtifact.getLifecycleState();
 
                 if (currentStatus.equals("Created")){
-                    log.info("Hiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii");
                     String content = getTenantConfigContent();
                     TenantConfReader confReader = new TenantConfReader();
                     Client k8sClient = confReader.readTenant(content);
-                    log.info("API was published to store");
+                    log.info("Successfully Published to Store");
                     String masterURL = k8sClient.getMasterURL();
                     log.info(masterURL);
                     String saToken = k8sClient.getSaToken();
