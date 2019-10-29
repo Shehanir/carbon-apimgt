@@ -19,6 +19,7 @@
 package org.wso2.carbon.apimgt.impl;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.fabric8.kubernetes.client.KubernetesClientException;
 import org.apache.axiom.om.OMAbstractFactory;
 import org.apache.axiom.om.OMElement;
 import org.apache.axiom.om.OMException;
@@ -4905,7 +4906,11 @@ class APIProviderImpl extends AbstractAPIManager implements APIProvider {
                         String swagger = OASParserUtil.getAPIDefinition(apiIdentifier, registry);
 
                         PrivateJet privateJet = new PrivateJet();
-                        privateJet.publishPrivateJet(masterURL, saToken, namespace, swagger, replicas, apiIdentifier, k8sClient);
+                        try {
+                            privateJet.publishPrivateJet(masterURL, saToken, namespace, swagger, replicas, apiIdentifier, k8sClient);
+                        }catch (KubernetesClientException e){
+                            e.printStackTrace();
+                        }
                     }
                 }
 
