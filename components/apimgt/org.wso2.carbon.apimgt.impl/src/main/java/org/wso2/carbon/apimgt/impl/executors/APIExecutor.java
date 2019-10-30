@@ -207,7 +207,8 @@ public class APIExecutor implements Execution {
 
         boolean deprecateOldVersions = false;
         boolean makeKeysForwardCompatible = false;
-        int deprecateOldVersionsCheckListOrder = 0, makeKeysForwardCompatibleCheckListOrder = 1;
+        boolean publishInPrivateJet = false;
+        int deprecateOldVersionsCheckListOrder = 0, makeKeysForwardCompatibleCheckListOrder = 1, publishInPrivateJetCheckListOrder = 2;
         //If the API status is CREATED/PROTOTYPED ,check for check list items of lifecycle
         if (isCurrentCreatedOrPrototyped) {
             CheckListItemBean[] checkListItemBeans = GovernanceUtils
@@ -218,6 +219,8 @@ public class APIExecutor implements Execution {
                         deprecateOldVersionsCheckListOrder = checkListItemBean.getOrder();
                     } else if (APIConstants.RESUBSCRIBE_CHECK_LIST_ITEM.equals(checkListItemBean.getName())) {
                         makeKeysForwardCompatibleCheckListOrder = checkListItemBean.getOrder();
+                    } else if (APIConstants.PRIVATE_JET_MODE_LIST_ITEM.equals(checkListItemBean.getName())) {
+                        publishInPrivateJetCheckListOrder = checkListItemBean.getOrder();
                     }
                 }
             }
@@ -225,6 +228,8 @@ public class APIExecutor implements Execution {
                     .isLCItemChecked(deprecateOldVersionsCheckListOrder, APIConstants.API_LIFE_CYCLE);
             makeKeysForwardCompatible = !(apiArtifact
                     .isLCItemChecked(makeKeysForwardCompatibleCheckListOrder, APIConstants.API_LIFE_CYCLE));
+            publishInPrivateJet = apiArtifact
+                    .isLCItemChecked(publishInPrivateJetCheckListOrder, APIConstants.API_LIFE_CYCLE);
         }
 
         if (isStateTransitionToPublished) {
@@ -244,6 +249,10 @@ public class APIExecutor implements Execution {
 
                     }
                 }
+            }
+
+            if (publishInPrivateJet) {
+
             }
         }
 
