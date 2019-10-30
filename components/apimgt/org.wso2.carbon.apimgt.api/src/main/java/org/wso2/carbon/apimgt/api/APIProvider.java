@@ -1286,7 +1286,7 @@ public interface APIProvider extends APIManager {
     /**
      * This method is used to publish the api in private jet mode
      *
-     * @param apiIdentifier apiId
+     * @param apiIdentifier api identifier
      * @throws APIManagementException if failed to add the schema as a resource to registry
      * @throws IOException if getTenantConfigContent returns nothing (But Never Happens that)
      * @throws ParseException for json file reading
