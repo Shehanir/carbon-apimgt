@@ -158,14 +158,8 @@ class LifeCycleUpdate extends Component {
      */
     render() {
         const {
-            api, lcState, classes, theme, handleChangeCheckList,
+            api, lcState, classes, theme, handleChangeCheckList, checkList,
         } = this.props;
-        const checkList = [{
-            checked: false,
-            index: 0,
-            label: 'kubernetes',
-            value: 'kubernetes',
-        }];
         const lifecycleStates = [...lcState.availableTransitions];
         const { newState, pageError } = this.state;
         const isWorkflowPending = api.workflowStatus && api.workflowStatus === this.WORKFLOW_STATUS.CREATED;
