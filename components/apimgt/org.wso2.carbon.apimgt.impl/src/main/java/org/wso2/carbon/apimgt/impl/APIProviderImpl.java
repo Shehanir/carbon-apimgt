@@ -6374,6 +6374,27 @@ class APIProviderImpl extends AbstractAPIManager implements APIProvider {
             handleException("Error while deleting the workflow task.", e);
         }
     }
+    @Override
+    public void publishInPrivateJet(APIIdentifier apiIdentifier) throws UserStoreException, RegistryException, IOException, ParseException, APIManagementException {
+        String content = getTenantConfigContent();
+        TenantConfReader confReader = new TenantConfReader();
+        Client k8sClient = confReader.readTenant(content);
+        log.info("Publishing in Private Jet Mode");
+        String masterURL = k8sClient.getMasterURL();
+        String saToken = k8sClient.getSaToken();
+        String namespace = k8sClient.getNamespace();
+        int replicas = k8sClient.getReplicas();
+        if (!masterURL.equals("") && !saToken.equals("")) {
+            String swagger = OASParserUtil.getAPIDefinition(apiIdentifier, registry);
+
+            PrivateJet privateJet = new PrivateJet();
+            try {
+                privateJet.publishPrivateJet(masterURL, saToken, namespace, swagger, replicas, apiIdentifier, k8sClient);
+            }catch (KubernetesClientException e){
+                e.printStackTrace();
+            }
+        }
+    }
 
     private void cleanUpPendingAPIStateChangeTask(int apiId) throws WorkflowException, APIManagementException {
         //Run cleanup task for workflow

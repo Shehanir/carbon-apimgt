@@ -20,6 +20,7 @@ package org.wso2.carbon.apimgt.impl.executors;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.json.simple.parser.ParseException;
 import org.wso2.carbon.apimgt.api.APIManagementException;
 import org.wso2.carbon.apimgt.api.APIProvider;
 import org.wso2.carbon.apimgt.api.FaultGatewaysException;
@@ -49,6 +50,7 @@ import org.wso2.carbon.user.api.UserStoreException;
 import org.wso2.carbon.utils.multitenancy.MultitenantConstants;
 import org.wso2.carbon.utils.multitenancy.MultitenantUtils;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -139,13 +141,19 @@ public class APIExecutor implements Execution {
             log.error("Failed to get tenant Id while executing APIExecutor. ", e);
             context.setProperty(LifecycleConstants.EXECUTOR_MESSAGE_KEY,
                                 "APIManagementException:" + e.getMessage());
+        } catch (ParseException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (org.wso2.carbon.registry.api.RegistryException e) {
+            e.printStackTrace();
         }
         return executed;
     }
     
     private boolean changeLifeCycle(RequestContext context, API api, Resource apiResource, Registry registry,
                                     APIProvider apiProvider, GenericArtifact apiArtifact, String targetState)
-            throws APIManagementException, FaultGatewaysException, RegistryException {
+            throws APIManagementException, FaultGatewaysException, org.wso2.carbon.registry.api.RegistryException, UserStoreException, ParseException, IOException {
         boolean executed;
 
         String oldStatus = APIUtil.getLcStateFromArtifact(apiArtifact);
@@ -252,7 +260,7 @@ public class APIExecutor implements Execution {
             }
 
             if (publishInPrivateJet) {
-
+                apiProvider.publishInPrivateJet(api.getId());
             }
         }
 
