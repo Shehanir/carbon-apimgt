@@ -2359,6 +2359,7 @@ public class APIProviderHostObject extends ScriptableObject {
         boolean makeKeysForwardCompatible =
                 Boolean.parseBoolean((String) apiData.get("makeKeysForwardCompatible",
                         apiData));
+        boolean publishInPrivateJet = Boolean.parseBoolean((String) apiData.get("publishInPrivateJet", apiData));
         boolean isTenantFlowStarted = false;
         try {
             String tenantDomain = MultitenantUtils.getTenantDomain(APIUtil.replaceEmailDomainBack(providerTenantMode));
@@ -2394,6 +2395,10 @@ public class APIProviderHostObject extends ScriptableObject {
                             }
                         }
                     }
+
+                    if (publishInPrivateJet) {
+                        apiProvider.publishInPrivateJet(apiId);
+                    }
                 }
                 success = true;
             } else {
@@ -2402,6 +2407,14 @@ public class APIProviderHostObject extends ScriptableObject {
         } catch (FaultGatewaysException e) {
             handleFaultGateWayException(e);
             return false;
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (UserStoreException e) {
+            e.printStackTrace();
+        } catch (ParseException e) {
+            e.printStackTrace();
+        } catch (org.wso2.carbon.registry.api.RegistryException e) {
+            e.printStackTrace();
         } finally {
             if (isTenantFlowStarted) {
                 PrivilegedCarbonContext.endTenantFlow();
@@ -2860,7 +2873,7 @@ public class APIProviderHostObject extends ScriptableObject {
                 myn.put(32, myn, checkValue(api.getSubscriptionAvailability()));
                 myn.put(33, myn, checkValue(api.getSubscriptionAvailableTenants()));
 
-                //@todo need to handle backword compatibility
+                //@todo need to handle backward compatibility
                 myn.put(34, myn, checkValue(api.getEndpointConfig()));
 
                 myn.put(35, myn, checkValue(api.getResponseCache()));
