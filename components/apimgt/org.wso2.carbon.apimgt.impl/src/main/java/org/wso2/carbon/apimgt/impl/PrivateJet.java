@@ -23,7 +23,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.wso2.carbon.apimgt.api.model.APIIdentifier;
 
-
 public class PrivateJet {
 
     private static final Logger log = LoggerFactory.getLogger(PrivateJet.class);
