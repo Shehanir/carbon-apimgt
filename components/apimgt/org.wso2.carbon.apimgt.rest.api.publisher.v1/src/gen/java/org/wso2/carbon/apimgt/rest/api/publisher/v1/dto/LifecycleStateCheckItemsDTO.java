@@ -29,7 +29,7 @@ public class LifecycleStateCheckItemsDTO   {
   }
 
   
-  @ApiModelProperty(example = "Deprecate old versions after publishing the API", value = "")
+  @ApiModelProperty(example = "Deprecate old versions after publish the API", value = "")
   @JsonProperty("name")
   public String getName() {
     return name;

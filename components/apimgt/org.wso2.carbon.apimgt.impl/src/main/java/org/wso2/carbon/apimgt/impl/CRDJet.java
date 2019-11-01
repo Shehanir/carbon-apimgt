@@ -1,3 +1,20 @@
+/*
+ *  Copyright (c) WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+ *
+ *  WSO2 Inc. licenses this file to you under the Apache License,
+ *  Version 2.0 (the "License"); you may not use this file except
+ *  in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
 package org.wso2.carbon.apimgt.impl;
 
 import io.fabric8.kubernetes.api.model.ObjectMeta;
@@ -47,7 +64,7 @@ public class CRDJet {
             log.info("Found CRD: " + apiCRD.getMetadata().getSelfLink());
         } else {
             apiCRD = new CustomResourceDefinitionBuilder().withApiVersion("apiextensions.k8s.io/v1beta1").
-              withNewMetadata().withName(this.API_CRD_NAME).endMetadata().withNewSpec().withGroup(this.API_CRD_GROUP).
+                    withNewMetadata().withName(this.API_CRD_NAME).endMetadata().withNewSpec().withGroup(this.API_CRD_GROUP).
                     withVersion("v1beta1").withScope("Namespaced").withNewNames().withKind("API").withShortNames("api").
                     withPlural("apis").endNames().endSpec().build();
 

@@ -4892,27 +4892,27 @@ class APIProviderImpl extends AbstractAPIManager implements APIProvider {
                 String apiVersion = apiArtifact.getAttribute(APIConstants.API_OVERVIEW_VERSION);
                 String currentStatus = apiArtifact.getLifecycleState();
 
-                if (currentStatus.equals("Created")){
-                    String content = getTenantConfigContent();
-                    TenantConfReader confReader = new TenantConfReader();
-                    Client k8sClient = confReader.readTenant(content);
-                    log.info("Successfully Published to Store");
-                    String masterURL = k8sClient.getMasterURL();
-                    log.info(masterURL);
-                    String saToken = k8sClient.getSaToken();
-                    String namespace = k8sClient.getNamespace();
-                    int replicas = k8sClient.getReplicas();
-                    if (!masterURL.equals("") && !saToken.equals("")) {
-                        String swagger = OASParserUtil.getAPIDefinition(apiIdentifier, registry);
-
-                        PrivateJet privateJet = new PrivateJet();
-                        try {
-                            privateJet.publishPrivateJet(masterURL, saToken, namespace, swagger, replicas, apiIdentifier, k8sClient);
-                        }catch (KubernetesClientException e){
-                            e.printStackTrace();
-                        }
-                    }
-                }
+//                if (currentStatus.equals("Created")){
+//                    String content = getTenantConfigContent();
+//                    TenantConfReader confReader = new TenantConfReader();
+//                    Client k8sClient = confReader.readTenant(content);
+//                    log.info("Successfully Published to Store");
+//                    String masterURL = k8sClient.getMasterURL();
+//                    log.info(masterURL);
+//                    String saToken = k8sClient.getSaToken();
+//                    String namespace = k8sClient.getNamespace();
+//                    int replicas = k8sClient.getReplicas();
+//                    if (!masterURL.equals("") && !saToken.equals("")) {
+//                        String swagger = OASParserUtil.getAPIDefinition(apiIdentifier, registry);
+//
+//                        PrivateJet privateJet = new PrivateJet();
+//                        try {
+//                            privateJet.publishPrivateJet(masterURL, saToken, namespace, swagger, replicas, apiIdentifier, k8sClient);
+//                        }catch (KubernetesClientException e){
+//                            e.printStackTrace();
+//                        }
+//                    }
+//                }
 
                 int apiId = apiMgtDAO.getAPIID(apiIdentifier, null);
 
@@ -5012,12 +5012,6 @@ class APIProviderImpl extends AbstractAPIManager implements APIProvider {
                 }
             }
             return response;
-        } catch (ParseException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (UserStoreException e) {
-            e.printStackTrace();
         } catch (RegistryException e) {
             e.printStackTrace();
         } finally {
