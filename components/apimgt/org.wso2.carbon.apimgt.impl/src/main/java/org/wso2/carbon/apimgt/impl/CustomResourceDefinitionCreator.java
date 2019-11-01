@@ -96,10 +96,10 @@ public class CustomResourceDefinitionCreator {
         meta.setName(apiName);
         apiCrd.setMetadata(meta);
 
-        NonNamespaceOperation<APICrd, APICustomResourceDefinitionList, DoneableAPICrd, Resource<APICrd, DoneableAPICrd>> apiCRDClient =
-                client.customResources(apiCRD, APICrd.class, APICustomResourceDefinitionList.class, DoneableAPICrd.class);
+        NonNamespaceOperation<APICrd, APICustomResourceDefinitionList, DoneableAPICustomResourceDefinition, Resource<APICrd, DoneableAPICustomResourceDefinition>> apiCRDClient =
+                client.customResources(apiCRD, APICrd.class, APICustomResourceDefinitionList.class, DoneableAPICustomResourceDefinition.class);
 
-        apiCRDClient = ((MixedOperation<APICrd, APICustomResourceDefinitionList, DoneableAPICrd, Resource<APICrd, DoneableAPICrd>>)
+        apiCRDClient = ((MixedOperation<APICrd, APICustomResourceDefinitionList, DoneableAPICustomResourceDefinition, Resource<APICrd, DoneableAPICustomResourceDefinition>>)
                 apiCRDClient).inNamespace(namespace);
 
         APICrd created = apiCRDClient.createOrReplace(apiCrd);

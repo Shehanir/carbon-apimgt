@@ -29,7 +29,7 @@ public class PrivateJet {
     private static final Logger log = LoggerFactory.getLogger(PrivateJet.class);
 
     public void publishInPrivateJetMode(String namespace, String swaggerDefinition, int replicas,
-                                        APIIdentifier apiIdentifier, Client k8sClient) {
+                                        APIIdentifier apiIdentifier, K8sClient k8sClient) {
 
         KubernetesClient client = k8sClient.createClient();
 

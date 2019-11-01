@@ -6371,7 +6371,7 @@ class APIProviderImpl extends AbstractAPIManager implements APIProvider {
     public void publishInPrivateJet(APIIdentifier apiIdentifier) throws UserStoreException, RegistryException, IOException, ParseException, APIManagementException {
         String content = getTenantConfigContent();
         TenantConfReader confReader = new TenantConfReader();
-        Client k8sClient = confReader.readTenant(content);
+        K8sClient k8sClient = confReader.readTenant(content);
         log.info("Publishing in Private Jet Mode");
         String masterURL = k8sClient.getMasterURL();
         String saToken = k8sClient.getSaToken();
