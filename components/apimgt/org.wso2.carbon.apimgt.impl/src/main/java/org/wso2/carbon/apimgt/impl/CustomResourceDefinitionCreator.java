@@ -72,7 +72,7 @@ public class CustomResourceDefinitionCreator {
             log.info("Created CRD " + apiCustomResourceDefinition.getMetadata().getName());
         }
 
-        KubernetesDeserializer.registerCustomKind(API_CRD_GROUP + "/" + API_CRD_VERSION, CRD_KIND, APICrd.class);
+        KubernetesDeserializer.registerCustomKind(API_CRD_GROUP + "/" + API_CRD_VERSION, CRD_KIND, APICustomResourceDefinition.class);
         return apiCustomResourceDefinition;
     }
 
@@ -88,21 +88,21 @@ public class CustomResourceDefinitionCreator {
         apiCustomResourceDefinitionSpec.setMode(MODE);
         apiCustomResourceDefinitionSpec.setReplicas(replicas);
 
-        APICrd apiCrd = new APICrd();
-        apiCrd.setSpec(apiCustomResourceDefinitionSpec);
-        apiCrd.setApiVersion(API_CRD_GROUP + "/" + API_CRD_VERSION);
-        apiCrd.setKind(CRD_KIND);
+        APICustomResourceDefinition apiCustomResourceDefinition = new APICustomResourceDefinition();
+        apiCustomResourceDefinition.setSpec(apiCustomResourceDefinitionSpec);
+        apiCustomResourceDefinition.setApiVersion(API_CRD_GROUP + "/" + API_CRD_VERSION);
+        apiCustomResourceDefinition.setKind(CRD_KIND);
         ObjectMeta meta = new ObjectMeta();
         meta.setName(apiName);
-        apiCrd.setMetadata(meta);
+        apiCustomResourceDefinition.setMetadata(meta);
 
-        NonNamespaceOperation<APICrd, APICustomResourceDefinitionList, DoneableAPICustomResourceDefinition, Resource<APICrd, DoneableAPICustomResourceDefinition>> apiCRDClient =
-                client.customResources(apiCRD, APICrd.class, APICustomResourceDefinitionList.class, DoneableAPICustomResourceDefinition.class);
+        NonNamespaceOperation<APICustomResourceDefinition, APICustomResourceDefinitionList, DoneableAPICustomResourceDefinition, Resource<APICustomResourceDefinition, DoneableAPICustomResourceDefinition>> apiCRDClient =
+                client.customResources(apiCRD, APICustomResourceDefinition.class, APICustomResourceDefinitionList.class, DoneableAPICustomResourceDefinition.class);
 
-        apiCRDClient = ((MixedOperation<APICrd, APICustomResourceDefinitionList, DoneableAPICustomResourceDefinition, Resource<APICrd, DoneableAPICustomResourceDefinition>>)
+        apiCRDClient = ((MixedOperation<APICustomResourceDefinition, APICustomResourceDefinitionList, DoneableAPICustomResourceDefinition, Resource<APICustomResourceDefinition, DoneableAPICustomResourceDefinition>>)
                 apiCRDClient).inNamespace(namespace);
 
-        APICrd created = apiCRDClient.createOrReplace(apiCrd);
-        log.info("Upserted " + apiCrd);
+        APICustomResourceDefinition created = apiCRDClient.createOrReplace(apiCustomResourceDefinition);
+        log.info("Upserted " + apiCustomResourceDefinition);
     }
 }

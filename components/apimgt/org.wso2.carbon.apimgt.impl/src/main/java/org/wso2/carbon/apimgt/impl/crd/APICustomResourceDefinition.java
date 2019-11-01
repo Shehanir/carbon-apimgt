@@ -20,7 +20,7 @@ package org.wso2.carbon.apimgt.impl.crd;
 import io.fabric8.kubernetes.api.model.ObjectMeta;
 import io.fabric8.kubernetes.client.CustomResource;
 
-public class APICrd extends CustomResource {
+public class APICustomResourceDefinition extends CustomResource {
 
     private APICustomResourceDefinitionSpec spec;
 

@@ -19,6 +19,6 @@ package org.wso2.carbon.apimgt.impl.crd;
 
 import io.fabric8.kubernetes.client.CustomResourceList;
 
-public class APICustomResourceDefinitionList extends CustomResourceList<APICrd> {
+public class APICustomResourceDefinitionList extends CustomResourceList<APICustomResourceDefinition> {
 
 }
