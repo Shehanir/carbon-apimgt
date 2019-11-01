@@ -18,6 +18,8 @@
 
 package org.wso2.carbon.apimgt.impl;
 
+import org.dom4j.io.SAXReader;
+
 import javax.xml.namespace.QName;
 import java.io.File;
 import java.util.Arrays;
@@ -1800,5 +1802,18 @@ public final class APIConstants {
     public static final String TRUST_STORE_LOCATION = "Security.TrustStore.Location";
     public static final String UTILITY_WEB_APP_EP = "/throttle/data/v1";
     public static final String API_KEY_REVOKE_PATH = "/apikey/revoke";
+
+    //Constants for private jet mode
+
+    public static final String API_CRD_GROUP = "wso2.com";
+    public static final String API_CRD_NAME = "apis." + API_CRD_GROUP;
+    public static final String K8_CRD_VERSION =  "apiextensions.k8s.io/v1beta1";
+    public static final String API_CRD_VERSION = "v1beta1";
+    public static final String CRD_KIND = "API";
+    public static final String CRD_KIND_SHORT = "api";
+    public static final String CRD_KIND_PLURAL = "apis";
+    public static final String API_CRD_SCOPE = "Namespaced";
+    public static final String CONFIG_MAP_TYPE = "swagger";
+    public static final String MODE = "privateJet";
 
 }

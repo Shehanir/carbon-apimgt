@@ -25,29 +25,29 @@ import io.fabric8.kubernetes.client.*;
 import io.fabric8.kubernetes.client.dsl.MixedOperation;
 import io.fabric8.kubernetes.client.dsl.NonNamespaceOperation;
 import io.fabric8.kubernetes.client.dsl.Resource;
-import org.wso2.carbon.apimgt.impl.crd.*;
 import io.fabric8.kubernetes.internal.KubernetesDeserializer;
+
+import org.wso2.carbon.apimgt.impl.crd.*;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import java.util.List;
 
-public class CRDJet {
-
-    private static final Logger log = LoggerFactory.getLogger(CRDJet.class);
-
-    private static String API_CRD_GROUP = "wso2.com";
-    private static String API_CRD_NAME = "apis." +  API_CRD_GROUP;
+import static org.wso2.carbon.apimgt.impl.APIConstants.*;
 
 
-    public CustomResourceDefinition setUpCrds(KubernetesClient client) {
+public class CustomResourceDefinitionCreator {
 
-        CustomResourceDefinitionList crds = client.customResourceDefinitions().list();
-        List<CustomResourceDefinition> crdsItems = crds.getItems();
-        log.info("Found "+ crdsItems.size() + " CRD(s)");
-        CustomResourceDefinition apiCRD = null;
+    private static final Logger log = LoggerFactory.getLogger(CustomResourceDefinitionCreator.class);
 
-        for (CustomResourceDefinition crd : crdsItems) {
+    public CustomResourceDefinition setUpCustomResourceDefinitions(KubernetesClient client) {
+
+        CustomResourceDefinitionList customResourceDefinitionList = client.customResourceDefinitions().list();
+        List<CustomResourceDefinition> customResourceDefinitionItems = customResourceDefinitionList.getItems();
+        log.info("Found " + customResourceDefinitionItems.size() + " CRD(s)");
+        CustomResourceDefinition apiCustomResourceDefinition = null;
+
+        for (CustomResourceDefinition crd : customResourceDefinitionItems) {
             ObjectMeta metadata = crd.getMetadata();
 
             if (metadata != null) {
@@ -55,42 +55,42 @@ public class CRDJet {
                 log.info("    " + name + " => " + metadata.getSelfLink());
 
                 if (API_CRD_NAME.equals(name)) {
-                    apiCRD = crd;
+                    apiCustomResourceDefinition = crd;
                 }
             }
         }
 
-        if (apiCRD != null) {
-            log.info("Found CRD: " + apiCRD.getMetadata().getSelfLink());
+        if (apiCustomResourceDefinition != null) {
+            log.info("Found CRD: " + apiCustomResourceDefinition.getMetadata().getSelfLink());
         } else {
-            apiCRD = new CustomResourceDefinitionBuilder().withApiVersion("apiextensions.k8s.io/v1beta1").
-                    withNewMetadata().withName(this.API_CRD_NAME).endMetadata().withNewSpec().withGroup(this.API_CRD_GROUP).
-                    withVersion("v1beta1").withScope("Namespaced").withNewNames().withKind("API").withShortNames("api").
-                    withPlural("apis").endNames().endSpec().build();
+            apiCustomResourceDefinition = new CustomResourceDefinitionBuilder().withApiVersion(K8_CRD_VERSION).
+                    withNewMetadata().withName(API_CRD_NAME).endMetadata().withNewSpec().withGroup(API_CRD_GROUP).
+                    withVersion(API_CRD_VERSION).withScope(API_CRD_SCOPE).withNewNames().withKind(CRD_KIND).
+                    withShortNames(CRD_KIND_SHORT).withPlural(CRD_KIND_PLURAL).endNames().endSpec().build();
 
-            client.customResourceDefinitions().create(apiCRD);
-            log.info("Created CRD " + apiCRD.getMetadata().getName());
+            client.customResourceDefinitions().create(apiCustomResourceDefinition);
+            log.info("Created CRD " + apiCustomResourceDefinition.getMetadata().getName());
         }
 
-        KubernetesDeserializer.registerCustomKind(this.API_CRD_GROUP+"/v1beta1", "API", APICrd.class);
-        return apiCRD;
+        KubernetesDeserializer.registerCustomKind(API_CRD_GROUP + "/" + API_CRD_VERSION, CRD_KIND, APICrd.class);
+        return apiCustomResourceDefinition;
     }
 
-    public void createAPICRD(String configMapName, String apiName, String namespace, int replicas, KubernetesClient client, CustomResourceDefinition apiCRD) {
+    public void createAPICustomResourceDefinition(String configMapName, String apiName, String namespace, int replicas, KubernetesClient client, CustomResourceDefinition apiCRD) {
 
         Definition definition = new Definition();
-        definition.setType("swagger");
+        definition.setType(CONFIG_MAP_TYPE);
         definition.setConfigMapName(configMapName);
 
         APICrdSpec apiCrdSpec = new APICrdSpec();
         apiCrdSpec.setDefinition(definition);
-        apiCrdSpec.setMode("privateJet");
+        apiCrdSpec.setMode(MODE);
         apiCrdSpec.setReplicas(replicas);
 
         APICrd apiCrd = new APICrd();
         apiCrd.setSpec(apiCrdSpec);
-        apiCrd.setApiVersion(this.API_CRD_GROUP + "/v1beta1");
-        apiCrd.setKind("API");
+        apiCrd.setApiVersion(API_CRD_GROUP + "/" + API_CRD_VERSION);
+        apiCrd.setKind(CRD_KIND);
         ObjectMeta meta = new ObjectMeta();
         meta.setName(apiName);
         apiCrd.setMetadata(meta);

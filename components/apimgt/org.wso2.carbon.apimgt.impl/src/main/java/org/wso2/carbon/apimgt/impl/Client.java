@@ -29,38 +29,37 @@ public class Client {
     private String namespace;
     private int replicas;
 
-    public void setMasterURL(String masterURL) {
-        this.masterURL = masterURL;
-    }
-
     public String getMasterURL() {
         return masterURL;
     }
 
-    public void setSaToken(String saToken) {
-        this.saToken = saToken;
-    }
-
-    public void setNamespace(String namespace) {
-        this.namespace = namespace;
-    }
-
-    public void setReplicas(int replicas) {
-        this.replicas = replicas;
+    public void setMasterURL(String masterURL) {
+        this.masterURL = masterURL;
     }
 
     public int getReplicas() {
         return replicas;
     }
 
+    public void setReplicas(int replicas) {
+        this.replicas = replicas;
+    }
+
     public String getSaToken() {
         return saToken;
+    }
+
+    public void setSaToken(String saToken) {
+        this.saToken = saToken;
     }
 
     public String getNamespace() {
         return namespace;
     }
 
+    public void setNamespace(String namespace) {
+        this.namespace = namespace;
+    }
 
     public KubernetesClient createClient() {
         Config config = new ConfigBuilder().withMasterUrl(this.masterURL).withOauthToken(this.saToken).withNamespace(this.namespace)

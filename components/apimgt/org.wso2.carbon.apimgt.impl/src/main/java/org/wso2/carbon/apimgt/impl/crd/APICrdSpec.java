@@ -24,7 +24,7 @@ import io.fabric8.kubernetes.api.model.KubernetesResource;
 @JsonDeserialize(
         using = JsonDeserializer.None.class
 )
-public class APICrdSpec implements KubernetesResource{
+public class APICrdSpec implements KubernetesResource {
 
     private int replicas;
     private String mode;
