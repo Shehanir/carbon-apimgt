@@ -25,6 +25,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.wso2.carbon.apimgt.api.model.APIIdentifier;
 
+/**
+ * This class is responsible for deploying the swagger definition of an
+ * api as a config map in the respective kubernetes cluster.
+ */
 public class ConfigMapDeployment {
 
     private static final Logger log = LoggerFactory.getLogger(ConfigMapDeployment.class);

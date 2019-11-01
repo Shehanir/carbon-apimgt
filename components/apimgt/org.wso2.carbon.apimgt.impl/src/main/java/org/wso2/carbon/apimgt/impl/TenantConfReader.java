@@ -23,6 +23,10 @@ import org.json.simple.parser.JSONParser;
 
 import java.io.IOException;
 
+/**
+ * This class is for reading the tenant-conf.json from the registry
+ * and for getting the master-url and service-account token of the cluster.
+ */
 public class TenantConfReader {
 
     public K8sClient readTenant(String tenantConf) throws IOException, ParseException {
