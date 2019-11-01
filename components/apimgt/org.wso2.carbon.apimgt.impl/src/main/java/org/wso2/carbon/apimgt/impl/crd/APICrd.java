@@ -22,13 +22,13 @@ import io.fabric8.kubernetes.client.CustomResource;
 
 public class APICrd extends CustomResource {
 
-    private APICrdSpec spec;
+    private APICustomResourceDefinitionSpec spec;
 
-    public APICrdSpec getSpec() {
+    public APICustomResourceDefinitionSpec getSpec() {
         return spec;
     }
 
-    public void setSpec(APICrdSpec spec) {
+    public void setSpec(APICustomResourceDefinitionSpec spec) {
         this.spec = spec;
     }
 

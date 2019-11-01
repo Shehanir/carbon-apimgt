@@ -31,10 +31,10 @@ import org.wso2.carbon.apimgt.impl.crd.*;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import java.util.List;
 
 import static org.wso2.carbon.apimgt.impl.APIConstants.*;
-
 
 public class CustomResourceDefinitionCreator {
 
@@ -76,29 +76,30 @@ public class CustomResourceDefinitionCreator {
         return apiCustomResourceDefinition;
     }
 
-    public void createAPICustomResourceDefinition(String configMapName, String apiName, String namespace, int replicas, KubernetesClient client, CustomResourceDefinition apiCRD) {
+    public void createAPICustomResourceDefinition(String configMapName, String apiName, String namespace, int replicas,
+                                                  KubernetesClient client, CustomResourceDefinition apiCRD) {
 
         Definition definition = new Definition();
         definition.setType(CONFIG_MAP_TYPE);
         definition.setConfigMapName(configMapName);
 
-        APICrdSpec apiCrdSpec = new APICrdSpec();
-        apiCrdSpec.setDefinition(definition);
-        apiCrdSpec.setMode(MODE);
-        apiCrdSpec.setReplicas(replicas);
+        APICustomResourceDefinitionSpec apiCustomResourceDefinitionSpec = new APICustomResourceDefinitionSpec();
+        apiCustomResourceDefinitionSpec.setDefinition(definition);
+        apiCustomResourceDefinitionSpec.setMode(MODE);
+        apiCustomResourceDefinitionSpec.setReplicas(replicas);
 
         APICrd apiCrd = new APICrd();
-        apiCrd.setSpec(apiCrdSpec);
+        apiCrd.setSpec(apiCustomResourceDefinitionSpec);
         apiCrd.setApiVersion(API_CRD_GROUP + "/" + API_CRD_VERSION);
         apiCrd.setKind(CRD_KIND);
         ObjectMeta meta = new ObjectMeta();
         meta.setName(apiName);
         apiCrd.setMetadata(meta);
 
-        NonNamespaceOperation<APICrd, APICrdList, DoneableAPICrd, Resource<APICrd, DoneableAPICrd>> apiCRDClient =
-                client.customResources(apiCRD, APICrd.class, APICrdList.class, DoneableAPICrd.class);
+        NonNamespaceOperation<APICrd, APICustomResourceDefinitionList, DoneableAPICrd, Resource<APICrd, DoneableAPICrd>> apiCRDClient =
+                client.customResources(apiCRD, APICrd.class, APICustomResourceDefinitionList.class, DoneableAPICrd.class);
 
-        apiCRDClient = ((MixedOperation<APICrd, APICrdList, DoneableAPICrd, Resource<APICrd, DoneableAPICrd>>)
+        apiCRDClient = ((MixedOperation<APICrd, APICustomResourceDefinitionList, DoneableAPICrd, Resource<APICrd, DoneableAPICrd>>)
                 apiCRDClient).inNamespace(namespace);
 
         APICrd created = apiCRDClient.createOrReplace(apiCrd);

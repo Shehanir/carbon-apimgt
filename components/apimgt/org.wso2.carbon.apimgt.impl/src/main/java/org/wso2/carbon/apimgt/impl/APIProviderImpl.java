@@ -187,7 +187,6 @@ import javax.xml.stream.XMLStreamException;
 
 import static org.wso2.carbon.apimgt.impl.utils.APIUtil.handleException;
 import static org.wso2.carbon.apimgt.impl.utils.APIUtil.isAllowDisplayAPIsWithMultipleStatus;
-import static org.wso2.carbon.apimgt.impl.utils.APIUtil.retrieveSavedEmailList;
 
 /**
  * This class provides the core API provider functionality. It is implemented in a very
@@ -3562,7 +3561,7 @@ class APIProviderImpl extends AbstractAPIManager implements APIProvider {
                 }
 
             } else {
-                log.debug("Gateway is not existed for the current API Provider");
+                log.debug("Gateway does not exist for the current API Provider");
             }
             //Check if there are already published external APIStores.If yes,removing APIs from them.
             Set<APIStore> apiStoreSet = getPublishedExternalAPIStores(api.getId());
@@ -6383,7 +6382,7 @@ class APIProviderImpl extends AbstractAPIManager implements APIProvider {
 
             PrivateJet privateJet = new PrivateJet();
             try {
-                privateJet.publishPrivateJet(masterURL, saToken, namespace, swagger, replicas, apiIdentifier, k8sClient);
+                privateJet.publishInPrivateJetMode(namespace, swagger, replicas, apiIdentifier, k8sClient);
             }catch (KubernetesClientException e){
                 e.printStackTrace();
             }

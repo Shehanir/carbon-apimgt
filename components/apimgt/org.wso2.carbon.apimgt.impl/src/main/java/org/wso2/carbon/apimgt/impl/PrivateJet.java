@@ -28,8 +28,8 @@ public class PrivateJet {
 
     private static final Logger log = LoggerFactory.getLogger(PrivateJet.class);
 
-    public void publishPrivateJet(String masterURL, String saToken, String namespace, String swaggerDef, int replicas,
-                                  APIIdentifier apiIdentifier, Client k8sClient) {
+    public void publishInPrivateJetMode(String namespace, String swaggerDefinition, int replicas,
+                                        APIIdentifier apiIdentifier, Client k8sClient) {
 
         KubernetesClient client = k8sClient.createClient();
 
@@ -38,11 +38,15 @@ public class PrivateJet {
         configMapDeployment.setConfigMapName(configMapName);
 
         CustomResourceDefinitionCreator customResourceDefinitionCreator = new CustomResourceDefinitionCreator();
-        CustomResourceDefinition customResourceDefinition = customResourceDefinitionCreator.setUpCustomResourceDefinitions(client);
-        customResourceDefinitionCreator.createAPICustomResourceDefinition(configMapName, apiIdentifier.getApiName().toLowerCase(), namespace, replicas, client,
+        CustomResourceDefinition customResourceDefinition =
+                customResourceDefinitionCreator.setUpCustomResourceDefinitions(client);
+
+        customResourceDefinitionCreator.createAPICustomResourceDefinition(
+                configMapName, apiIdentifier.getApiName().toLowerCase(), namespace, replicas, client,
                 customResourceDefinition);
 
-        configMapDeployment.deployConfigMap(swaggerDef, namespace, client, apiIdentifier);
+        configMapDeployment.deployConfigMap(swaggerDefinition, namespace, client, apiIdentifier);
+        log.info("Successfully Published in Private-Jet Mode");
 
     }
 }
