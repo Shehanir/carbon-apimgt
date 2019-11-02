@@ -32,6 +32,25 @@ public class APICustomResourceDefinition extends CustomResource {
         this.spec = spec;
     }
 
+    /**
+     * This method is to create the following json object,
+     * {
+     * "apiVersion": ,
+     * "metadata": {
+     * "name": "${apiName}"
+     * },
+     * "spec": {
+     * "definition": {
+     * "configmapName": "${configmapName}",
+     * "type": "${type}"
+     * },
+     * "replicas": "${replicas}",
+     * "mode": "${mode}"
+     * }
+     * }
+     *
+     * @return
+     */
     @Override
     public String toString() {
         return "APICrd{" +

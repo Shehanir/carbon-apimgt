@@ -38,6 +38,14 @@ public class ConfigMapDeployment {
         this.configMapName = configMapName;
     }
 
+    /**
+     * Deploys the swagger definition of the api as a config map in  k8s cluster.
+     *
+     * @param swagger       , Swagger definition of the api as an string.
+     * @param namespace     , namespace of the cluster.
+     * @param client        , Kubernetes client for the cluster.
+     * @param apiIdentifier , APIIdentifier object for the api.
+     */
     public void deployConfigMap(String swagger, String namespace, KubernetesClient client, APIIdentifier apiIdentifier) {
 
         io.fabric8.kubernetes.client.dsl.Resource<ConfigMap, DoneableConfigMap> configMapResource = client.configMaps().

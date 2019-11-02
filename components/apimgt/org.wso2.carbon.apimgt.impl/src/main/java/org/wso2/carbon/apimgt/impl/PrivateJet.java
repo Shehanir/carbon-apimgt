@@ -23,10 +23,23 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.wso2.carbon.apimgt.api.model.APIIdentifier;
 
+/**
+ * This is responsible for publishing the api in private jet mode.
+ */
 public class PrivateJet {
 
     private static final Logger log = LoggerFactory.getLogger(PrivateJet.class);
 
+    /**
+     * This method creates the k8s client, deploy the swagger definition as a config
+     * map and deploy the custom resource definitions.
+     *
+     * @param namespace         , namespace
+     * @param swaggerDefinition , swagger definition of the api as a string
+     * @param replicas          , number of replicas
+     * @param apiIdentifier     , APIIdentifier object for the api
+     * @param k8sClient         , Kubernetes client for accessing the cluster
+     */
     public void publishInPrivateJetMode(String namespace, String swaggerDefinition, int replicas,
                                         APIIdentifier apiIdentifier, K8sClient k8sClient) {
 

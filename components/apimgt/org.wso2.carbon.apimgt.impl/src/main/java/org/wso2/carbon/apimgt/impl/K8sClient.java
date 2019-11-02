@@ -22,6 +22,9 @@ import io.fabric8.kubernetes.client.ConfigBuilder;
 import io.fabric8.kubernetes.client.DefaultKubernetesClient;
 import io.fabric8.kubernetes.client.KubernetesClient;
 
+/**
+ * This class creates the client for accessing the kubernetes cluster.
+ */
 public class K8sClient {
 
     private String masterURL;
@@ -61,6 +64,11 @@ public class K8sClient {
         this.namespace = namespace;
     }
 
+    /**
+     * Creates the kubernetes client.
+     *
+     * @return , Kubernetes client
+     */
     public KubernetesClient createClient() {
         Config config = new ConfigBuilder().withMasterUrl(this.masterURL).withOauthToken(this.saToken).withNamespace(this.namespace)
                 .build();

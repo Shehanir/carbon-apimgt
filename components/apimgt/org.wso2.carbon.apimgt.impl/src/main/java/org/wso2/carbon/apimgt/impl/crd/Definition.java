@@ -46,6 +46,15 @@ public class Definition implements KubernetesResource {
         this.type = type;
     }
 
+    /**
+     * This method is to create the following json object
+     * {
+     * "configmapName": "${configmapName}",
+     * "type": "swagger"
+     * },
+     *
+     * @return
+     */
     @Override
     public String toString() {
         return "Definition{" +

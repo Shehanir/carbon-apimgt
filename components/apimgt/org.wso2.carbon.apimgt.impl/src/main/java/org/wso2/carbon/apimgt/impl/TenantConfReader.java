@@ -35,6 +35,7 @@ public class TenantConfReader {
     /**
      * Reads the tenant-conf.json file for getting master url, service account token,
      * namespace and number of replicas.
+     *
      * @param tenantConf , Content of the tenant-conf
      * @return , K8sClient whose master url, namespace, satoken and replicas are set to that in the tenant-conf.json
      * @throws ParseException , to catch the syntax errors.

@@ -54,6 +54,19 @@ public class APICustomResourceDefinitionSpec implements KubernetesResource {
         this.mode = mode;
     }
 
+    /**
+     * This method returns the following json object.
+     * {
+     * "definition": {
+     * "configmapName": "${configmapName}",
+     * "type": "${type}"
+     * },
+     * "replicas": "${replicas}",
+     * "mode": "${mode}"
+     * }
+     *
+     * @return
+     */
     @Override
     public String toString() {
         return "APICrdSpec{" +
