@@ -36,10 +36,20 @@ import java.util.List;
 
 import static org.wso2.carbon.apimgt.impl.APIConstants.*;
 
+/**
+ * This class is for creating the custom resource definitions in the cluster.
+ */
 public class CustomResourceDefinitionCreator {
 
     private static final Logger log = LoggerFactory.getLogger(CustomResourceDefinitionCreator.class);
 
+    /**
+     * This method will create the custom resource definition in the cluster if there is no
+     * such crd already.
+     *
+     * @param client - Kubernetes client for the cluster
+     * @return the custom resource definition
+     */
     public CustomResourceDefinition setUpCustomResourceDefinitions(KubernetesClient client) {
 
         CustomResourceDefinitionList customResourceDefinitionList = client.customResourceDefinitions().list();
@@ -72,10 +82,21 @@ public class CustomResourceDefinitionCreator {
             log.info("Created CRD " + apiCustomResourceDefinition.getMetadata().getName());
         }
 
-        KubernetesDeserializer.registerCustomKind(API_CRD_GROUP + "/" + API_CRD_VERSION, CRD_KIND, APICustomResourceDefinition.class);
+        KubernetesDeserializer.registerCustomKind(API_CRD_GROUP + "/" + API_CRD_VERSION, CRD_KIND,
+                APICustomResourceDefinition.class);
         return apiCustomResourceDefinition;
     }
 
+    /**
+     * Following method creates the required custom resource in the cluster.
+     *
+     * @param configMapName , config map name
+     * @param apiName       , name of the api to be published
+     * @param namespace     , namespace of the cluster
+     * @param replicas      , number of replicas
+     * @param client        , kubernetes client of the cluster
+     * @param apiCRD        , CRD returned in the previous method
+     */
     public void createAPICustomResourceDefinition(String configMapName, String apiName, String namespace, int replicas,
                                                   KubernetesClient client, CustomResourceDefinition apiCRD) {
 
@@ -96,10 +117,15 @@ public class CustomResourceDefinitionCreator {
         meta.setName(apiName);
         apiCustomResourceDefinition.setMetadata(meta);
 
-        NonNamespaceOperation<APICustomResourceDefinition, APICustomResourceDefinitionList, DoneableAPICustomResourceDefinition, Resource<APICustomResourceDefinition, DoneableAPICustomResourceDefinition>> apiCRDClient =
-                client.customResources(apiCRD, APICustomResourceDefinition.class, APICustomResourceDefinitionList.class, DoneableAPICustomResourceDefinition.class);
+        NonNamespaceOperation<APICustomResourceDefinition, APICustomResourceDefinitionList,
+                DoneableAPICustomResourceDefinition, Resource<APICustomResourceDefinition,
+                DoneableAPICustomResourceDefinition>> apiCRDClient =
+                client.customResources(apiCRD, APICustomResourceDefinition.class,
+                        APICustomResourceDefinitionList.class, DoneableAPICustomResourceDefinition.class);
 
-        apiCRDClient = ((MixedOperation<APICustomResourceDefinition, APICustomResourceDefinitionList, DoneableAPICustomResourceDefinition, Resource<APICustomResourceDefinition, DoneableAPICustomResourceDefinition>>)
+        apiCRDClient = ((MixedOperation<APICustomResourceDefinition, APICustomResourceDefinitionList,
+                DoneableAPICustomResourceDefinition, Resource<APICustomResourceDefinition,
+                DoneableAPICustomResourceDefinition>>)
                 apiCRDClient).inNamespace(namespace);
 
         APICustomResourceDefinition created = apiCRDClient.createOrReplace(apiCustomResourceDefinition);

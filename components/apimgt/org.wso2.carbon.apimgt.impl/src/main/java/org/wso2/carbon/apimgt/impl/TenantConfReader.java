@@ -20,16 +20,26 @@ package org.wso2.carbon.apimgt.impl;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.ParseException;
 import org.json.simple.parser.JSONParser;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 
 /**
  * This class is for reading the tenant-conf.json from the registry
- * and for getting the master-url and service-account token of the cluster.
+ * and for getting the master-url and service-account token and optionally the
+ * namespace and number of replicas of the cluster.
  */
 public class TenantConfReader {
 
-    public K8sClient readTenant(String tenantConf) throws IOException, ParseException {
+    /**
+     * Reads the tenant-conf.json file for getting master url, service account token,
+     * namespace and number of replicas.
+     * @param tenantConf , Content of the tenant-conf
+     * @return , K8sClient whose master url, namespace, satoken and replicas are set to that in the tenant-conf.json
+     * @throws ParseException , to catch the syntax errors.
+     */
+    public K8sClient readTenant(String tenantConf) throws ParseException {
 
         JSONParser jsonParser = new JSONParser();
         Object tenantObject = jsonParser.parse(tenantConf);
