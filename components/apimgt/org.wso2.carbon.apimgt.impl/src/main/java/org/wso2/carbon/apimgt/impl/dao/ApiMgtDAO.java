@@ -601,7 +601,6 @@ public class ApiMgtDAO {
         PreparedStatement ps = null;
         try {
             conn = APIMgtDBUtil.getConnection();
-
             String query = SQLConstants.GET_MONETIZATION_USAGE_PUBLISH_INFO;
             ps = conn.prepareStatement(query);
             rs = ps.executeQuery();
@@ -636,7 +635,6 @@ public class ApiMgtDAO {
         try {
             conn = APIMgtDBUtil.getConnection();
             conn.setAutoCommit(false);
-
             String query = SQLConstants.ADD_MONETIZATION_USAGE_PUBLISH_INFO;
             ps = conn.prepareStatement(query);
 
@@ -676,7 +674,6 @@ public class ApiMgtDAO {
         try {
             conn = APIMgtDBUtil.getConnection();
             conn.setAutoCommit(false);
-
             String query = SQLConstants.UPDATE_MONETIZATION_USAGE_PUBLISH_INFO;
             ps = conn.prepareStatement(query);
 
@@ -8880,7 +8877,7 @@ public class ApiMgtDAO {
                         if (roles != null) {
                             roleList = Lists.newArrayList(Splitter.on(",").trimResults().split(roles));
                         } else {
-                            roleList = Collections.EMPTY_LIST;
+                            roleList = Arrays.asList("");
                         }
 
                         for (String role : roleList) {
