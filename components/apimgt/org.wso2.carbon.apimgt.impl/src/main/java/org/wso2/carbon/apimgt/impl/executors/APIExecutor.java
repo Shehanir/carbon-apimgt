@@ -27,6 +27,8 @@ import org.wso2.carbon.apimgt.api.FaultGatewaysException;
 import org.wso2.carbon.apimgt.api.model.API;
 import org.wso2.carbon.apimgt.api.model.APIProduct;
 import org.wso2.carbon.apimgt.api.model.Tier;
+import org.wso2.carbon.apimgt.impl.containermgt.ContainerBasedConstants;
+
 import org.wso2.carbon.apimgt.impl.APIConstants;
 import org.wso2.carbon.apimgt.impl.APIManagerFactory;
 import org.wso2.carbon.apimgt.impl.APIType;
@@ -227,7 +229,7 @@ public class APIExecutor implements Execution {
                         deprecateOldVersionsCheckListOrder = checkListItemBean.getOrder();
                     } else if (APIConstants.RESUBSCRIBE_CHECK_LIST_ITEM.equals(checkListItemBean.getName())) {
                         makeKeysForwardCompatibleCheckListOrder = checkListItemBean.getOrder();
-                    } else if (APIConstants.PRIVATE_JET_MODE_LIST_ITEM.equals(checkListItemBean.getName())) {
+                    } else if (ContainerBasedConstants.PRIVATE_JET_MODE_LIST_ITEM.equals(checkListItemBean.getName())) {
                         publishInPrivateJetCheckListOrder = checkListItemBean.getOrder();
                     }
                 }
