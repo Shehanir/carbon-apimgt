@@ -15,7 +15,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.wso2.carbon.apimgt.impl.containermgt;
+package org.wso2.carbon.apimgt.impl.containermgt.k8scrd;
 
 import io.fabric8.kubernetes.api.builder.Function;
 import io.fabric8.kubernetes.client.CustomResourceDoneable;

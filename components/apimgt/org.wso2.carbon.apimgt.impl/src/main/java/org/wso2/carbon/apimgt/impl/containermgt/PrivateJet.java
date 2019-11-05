@@ -15,13 +15,14 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.wso2.carbon.apimgt.impl;
+package org.wso2.carbon.apimgt.impl.containermgt;
 
 import io.fabric8.kubernetes.api.model.apiextensions.CustomResourceDefinition;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.wso2.carbon.apimgt.api.model.APIIdentifier;
+import org.wso2.carbon.apimgt.impl.ConfigMapDeployment;
 
 /**
  * This is responsible for publishing the api in private jet mode.

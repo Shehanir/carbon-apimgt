@@ -15,7 +15,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.wso2.carbon.apimgt.impl;
+package org.wso2.carbon.apimgt.impl.containermgt;
 
 import io.fabric8.kubernetes.api.model.ObjectMeta;
 import io.fabric8.kubernetes.api.model.apiextensions.CustomResourceDefinition;
@@ -29,12 +29,14 @@ import io.fabric8.kubernetes.internal.KubernetesDeserializer;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.wso2.carbon.apimgt.impl.containermgt.DoneableAPICustomResourceDefinition;
+import org.wso2.carbon.apimgt.impl.containermgt.k8scrd.DoneableAPICustomResourceDefinition;
 import org.wso2.carbon.apimgt.impl.containermgt.k8scrd.*;
 
+import org.wso2.carbon.apimgt.impl.containermgt.ContainerBasedConstants;
 import java.util.List;
 
-import static org.wso2.carbon.apimgt.impl.APIConstants.*;
+import static org.wso2.carbon.apimgt.impl.containermgt.ContainerBasedConstants.*;
+
 
 /**
  * This class is for creating the custom resource definitions in the cluster.

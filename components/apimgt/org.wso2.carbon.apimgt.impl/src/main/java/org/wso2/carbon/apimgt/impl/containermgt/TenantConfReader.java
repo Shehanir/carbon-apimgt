@@ -15,15 +15,12 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.wso2.carbon.apimgt.impl;
+package org.wso2.carbon.apimgt.impl.containermgt;
 
 import org.json.simple.JSONObject;
 import org.json.simple.parser.ParseException;
 import org.json.simple.parser.JSONParser;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.io.IOException;
+import org.wso2.carbon.apimgt.impl.containermgt.K8sClient;
 
 /**
  * This class is for reading the tenant-conf.json from the registry
