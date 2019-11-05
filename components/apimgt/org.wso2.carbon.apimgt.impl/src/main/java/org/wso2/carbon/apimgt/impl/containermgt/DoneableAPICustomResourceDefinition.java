@@ -15,10 +15,14 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.wso2.carbon.apimgt.impl.crd;
+package org.wso2.carbon.apimgt.impl.containermgt;
 
-import io.fabric8.kubernetes.client.CustomResourceList;
+import io.fabric8.kubernetes.api.builder.Function;
+import io.fabric8.kubernetes.client.CustomResourceDoneable;
+import org.wso2.carbon.apimgt.impl.containermgt.k8scrd.APICustomResourceDefinition;
 
-public class APICustomResourceDefinitionList extends CustomResourceList<APICustomResourceDefinition> {
-
+public class DoneableAPICustomResourceDefinition extends CustomResourceDoneable<APICustomResourceDefinition> {
+    public DoneableAPICustomResourceDefinition(APICustomResourceDefinition resource, Function function) {
+        super(resource, function);
+    }
 }

@@ -1,10 +1,12 @@
 {
   "EnableMonetization" : false,
   "IsUnlimitedTierPaid" : false,
-  "k8sMasterURL" : "",
-  "saToken" : "",
-  "namespace" : "default",
-  "replicas" : 1,
+  "K8sClusterInfo": {
+    "k8sMasterURL" : "",
+    "saToken" : "",
+    "namespace" : "default",
+    "replicas" : 1
+  },
   "ExtensionHandlerPosition": "bottom",
   "RESTAPIScopes": {
     "Scope": [

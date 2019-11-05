@@ -27,10 +27,10 @@ import io.fabric8.kubernetes.client.dsl.NonNamespaceOperation;
 import io.fabric8.kubernetes.client.dsl.Resource;
 import io.fabric8.kubernetes.internal.KubernetesDeserializer;
 
-import org.wso2.carbon.apimgt.impl.crd.*;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.wso2.carbon.apimgt.impl.containermgt.DoneableAPICustomResourceDefinition;
+import org.wso2.carbon.apimgt.impl.containermgt.k8scrd.*;
 
 import java.util.List;
 
@@ -45,7 +45,7 @@ public class CustomResourceDefinitionCreator {
 
     /**
      * This method will create the custom resource definition in the cluster if there is no
-     * such crd already.
+     * such containermgt already.
      *
      * @param client - Kubernetes client for the cluster
      * @return the custom resource definition

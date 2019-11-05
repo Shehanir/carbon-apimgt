@@ -15,7 +15,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.wso2.carbon.apimgt.impl.crd;
+package org.wso2.carbon.apimgt.impl.containermgt.k8scrd;
 
 import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
@@ -24,55 +24,42 @@ import io.fabric8.kubernetes.api.model.KubernetesResource;
 @JsonDeserialize(
         using = JsonDeserializer.None.class
 )
-public class APICustomResourceDefinitionSpec implements KubernetesResource {
 
-    private int replicas;
-    private String mode;
-    private Definition definition;
+public class Definition implements KubernetesResource {
 
-    public Definition getDefinition() {
-        return definition;
+    private String configMapName;
+    private String type;
+
+    public String getConfigMapName() {
+        return configMapName;
     }
 
-    public void setDefinition(Definition definition) {
-        this.definition = definition;
+    public void setConfigMapName(String configMapName) {
+        this.configMapName = configMapName;
     }
 
-    public int getReplicas() {
-        return replicas;
+    public String getType() {
+        return type;
     }
 
-    public void setReplicas(int replicas) {
-        this.replicas = replicas;
-    }
-
-    public String getMode() {
-        return mode;
-    }
-
-    public void setMode(String mode) {
-        this.mode = mode;
+    public void setType(String type) {
+        this.type = type;
     }
 
     /**
-     * This method returns the following json object.
+     * This method is to create the following json object
      * {
-     * "definition": {
      * "configmapName": "${configmapName}",
-     * "type": "${type}"
+     * "type": "swagger"
      * },
-     * "replicas": "${replicas}",
-     * "mode": "${mode}"
-     * }
      *
      * @return
      */
     @Override
     public String toString() {
-        return "APICrdSpec{" +
-                "replicas='" + replicas + "'" +
-                ", mode=" + mode +
-                ", definition=" + definition +
+        return "Definition{" +
+                "configmapName'" + configMapName + "'" +
+                ", type=" + type +
                 "}";
     }
 }
