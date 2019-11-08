@@ -27,15 +27,15 @@ import io.fabric8.kubernetes.api.model.KubernetesResource;
 
 public class Definition implements KubernetesResource {
 
-    private String configMapName;
+    private String configmapName;
     private String type;
 
-    public String getConfigMapName() {
-        return configMapName;
+    public String getConfigmapName() {
+        return configmapName;
     }
 
-    public void setConfigMapName(String configMapName) {
-        this.configMapName = configMapName;
+    public void setconfigmapName(String configmapName) {
+        this.configmapName = configmapName;
     }
 
     public String getType() {
@@ -58,7 +58,7 @@ public class Definition implements KubernetesResource {
     @Override
     public String toString() {
         return "Definition{" +
-                "configmapName'" + configMapName + "'" +
+                "configmapName=" + configmapName +
                 ", type=" + type +
                 "}";
     }

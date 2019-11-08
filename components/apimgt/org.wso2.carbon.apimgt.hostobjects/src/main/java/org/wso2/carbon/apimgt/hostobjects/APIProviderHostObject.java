@@ -2397,7 +2397,7 @@ public class APIProviderHostObject extends ScriptableObject {
                     }
 
                     if (publishInPrivateJet) {
-                        apiProvider.publishInPrivateJet(apiId);
+                        apiProvider.publishInPrivateJet(api, apiId);
                     }
                 }
                 success = true;

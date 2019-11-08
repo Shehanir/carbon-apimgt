@@ -15,6 +15,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
+
 package org.wso2.carbon.apimgt.impl.containermgt;
 
 import org.json.simple.JSONObject;
@@ -45,10 +46,10 @@ public class TenantConfReader {
 
         K8sClient k8sClient = new K8sClient();
 
-        k8sClient.setMasterURL((String) tenant_conf.get("k8sMasterURL"));
-        k8sClient.setSaToken((String) tenant_conf.get("saToken"));
-        k8sClient.setNamespace((String) tenant_conf.get("namespace"));
-        k8sClient.setReplicas(Math.toIntExact((long) tenant_conf.get("replicas")));
+        k8sClient.setMasterURL((String) ((JSONObject)tenant_conf.get("K8sClusterInfo")).get("k8sMasterURL"));
+        k8sClient.setSaToken((String) ((JSONObject) tenant_conf.get("K8sClusterInfo")).get("saToken"));
+        k8sClient.setNamespace((String) ((JSONObject) tenant_conf.get("K8sClusterInfo")).get("namespace"));
+        k8sClient.setReplicas(Math.toIntExact(((long) ((JSONObject) tenant_conf.get("K8sClusterInfo")).get("replicas"))));
 
         return k8sClient;
     }

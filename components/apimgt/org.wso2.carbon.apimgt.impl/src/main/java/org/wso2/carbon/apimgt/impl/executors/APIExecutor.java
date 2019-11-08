@@ -262,7 +262,7 @@ public class APIExecutor implements Execution {
             }
 
             if (publishInPrivateJet) {
-                apiProvider.publishInPrivateJet(api.getId());
+                apiProvider.publishInPrivateJet(api ,api.getId());
             }
         }
 

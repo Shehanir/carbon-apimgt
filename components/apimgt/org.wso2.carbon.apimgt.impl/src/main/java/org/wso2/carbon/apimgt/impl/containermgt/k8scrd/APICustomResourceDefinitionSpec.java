@@ -70,7 +70,7 @@ public class APICustomResourceDefinitionSpec implements KubernetesResource {
     @Override
     public String toString() {
         return "APICrdSpec{" +
-                "replicas='" + replicas + "'" +
+                "replicas=" + replicas  +
                 ", mode=" + mode +
                 ", definition=" + definition +
                 "}";

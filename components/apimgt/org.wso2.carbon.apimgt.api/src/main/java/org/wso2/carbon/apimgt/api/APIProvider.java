@@ -1281,7 +1281,7 @@ public interface APIProvider extends APIManager {
      */
     void deleteWorkflowTask(APIIdentifier apiIdentifier) throws APIManagementException;
 
-    void publishInPrivateJet(APIIdentifier apiIdentifier) throws RegistryException, org.wso2.carbon.user.api.UserStoreException, IOException, ParseException, APIManagementException;
+    void publishInPrivateJet(API api, APIIdentifier apiIdentifier) throws RegistryException, org.wso2.carbon.user.api.UserStoreException, IOException, ParseException, APIManagementException;
 
     /**
      * This method is used to publish the api in private jet mode

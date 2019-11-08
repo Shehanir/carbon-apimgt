@@ -91,10 +91,9 @@ import org.wso2.carbon.apimgt.impl.certificatemgt.GatewayCertificateManager;
 import org.wso2.carbon.apimgt.impl.certificatemgt.ResponseCode;
 import org.wso2.carbon.apimgt.impl.clients.RegistryCacheInvalidationClient;
 import org.wso2.carbon.apimgt.impl.clients.TierCacheInvalidationClient;
-import org.wso2.carbon.apimgt.impl.containermgt.K8sClient;
 import org.wso2.carbon.apimgt.impl.containermgt.PrivateJet;
-import org.wso2.carbon.apimgt.impl.containermgt.TenantConfReader;
 import org.wso2.carbon.apimgt.impl.dao.ApiMgtDAO;
+import org.wso2.carbon.apimgt.impl.definitions.OAS3Parser;
 import org.wso2.carbon.apimgt.impl.definitions.OASParserUtil;
 import org.wso2.carbon.apimgt.impl.definitions.GraphQLSchemaDefinition;
 import org.wso2.carbon.apimgt.impl.dto.Environment;
@@ -6371,24 +6370,19 @@ class APIProviderImpl extends AbstractAPIManager implements APIProvider {
         }
     }
     @Override
-    public void publishInPrivateJet(APIIdentifier apiIdentifier) throws UserStoreException, RegistryException, IOException, ParseException, APIManagementException {
+    public void publishInPrivateJet(API api, APIIdentifier apiIdentifier) throws UserStoreException, RegistryException, IOException, ParseException, APIManagementException {
         String content = getTenantConfigContent();
-        TenantConfReader confReader = new TenantConfReader();
-        K8sClient k8sClient = confReader.readTenant(content);
+        PrivateJet privateJet = new PrivateJet();
         log.info("Publishing in Private Jet Mode");
-        String masterURL = k8sClient.getMasterURL();
-        String saToken = k8sClient.getSaToken();
-        String namespace = k8sClient.getNamespace();
-        int replicas = k8sClient.getReplicas();
-        if (!masterURL.equals("") && !saToken.equals("")) {
-            String swagger = OASParserUtil.getAPIDefinition(apiIdentifier, registry);
 
-            PrivateJet privateJet = new PrivateJet();
-            try {
-                privateJet.publishInPrivateJetMode(namespace, swagger, replicas, apiIdentifier, k8sClient);
-            }catch (KubernetesClientException e){
-                e.printStackTrace();
-            }
+        String swagger = OASParserUtil.getAPIDefinition(apiIdentifier, registry);
+        OAS3Parser oas3Parser = new OAS3Parser();
+        String swaggerNew = oas3Parser.getOASDefinitionForPublisher(api, swagger);
+        log.info(swaggerNew);
+        try {
+            privateJet.publishInPrivateJetMode(swaggerNew, apiIdentifier, content);
+        }catch (KubernetesClientException e){
+            e.printStackTrace();
         }
     }
 
