@@ -17,6 +17,7 @@
  */
 package org.wso2.carbon.apimgt.api;
 
+import org.json.simple.parser.ParseException;
 import org.wso2.carbon.apimgt.api.model.API;
 import org.wso2.carbon.apimgt.api.model.APIProduct;
 import org.wso2.carbon.apimgt.api.model.Scope;
@@ -180,7 +181,8 @@ public abstract class APIDefinition {
      * @param oasDefinition
      * @return OAS definition
      * @throws APIManagementException throws if an error occurred
+     * @throws ParseException throws if the string is not in json format
      */
     public abstract String getOASDefinitionForPublisher(API api, String oasDefinition)
-            throws APIManagementException;
+            throws APIManagementException, ParseException;
 }

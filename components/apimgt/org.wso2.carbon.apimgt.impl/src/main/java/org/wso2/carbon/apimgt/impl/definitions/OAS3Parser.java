@@ -49,6 +49,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.json.simple.JSONObject;
+import org.json.simple.parser.ParseException;
 import org.wso2.carbon.apimgt.api.APIDefinition;
 import org.wso2.carbon.apimgt.api.APIDefinitionValidationResponse;
 import org.wso2.carbon.apimgt.api.APIManagementException;
@@ -461,9 +462,10 @@ public class OAS3Parser extends APIDefinition {
      * @param oasDefinition
      * @return OAS definition
      * @throws APIManagementException throws if an error occurred
+     * @throws ParseException throws if the string is not in json format
      */
     @Override
-    public String getOASDefinitionForPublisher(API api, String oasDefinition) throws APIManagementException {
+    public String getOASDefinitionForPublisher(API api, String oasDefinition) throws APIManagementException, ParseException {
         OpenAPI openAPI = getOpenAPI(oasDefinition);
         if (openAPI.getComponents() == null) {
             openAPI.setComponents(new Components());
