@@ -2437,7 +2437,7 @@ public class ApisApiServiceImpl implements ApisApiService {
             String updatedDefinition = parser.getOASDefinitionForPublisher(api, apiSwagger);
             return Response.ok().entity(updatedDefinition).header("Content-Disposition",
                     "attachment; filename=\"" + "swagger.json" + "\"" ).build();
-        } catch (APIManagementException e) {
+        } catch (APIManagementException | ParseException e) {
             //Auth failure occurs when cross tenant accessing APIs. Sends 404, since we don't need to expose the existence of the resource
             if (RestApiUtil.isDueToResourceNotFound(e) || RestApiUtil.isDueToAuthorizationFailure(e)) {
                 RestApiUtil.handleResourceNotFoundError(RestApiConstants.RESOURCE_API, apiId, e, log);
@@ -2495,6 +2495,8 @@ public class ApisApiServiceImpl implements ApisApiService {
         } catch (FaultGatewaysException e) {
             String errorMessage = "Error while updating API : " + apiId;
             RestApiUtil.handleInternalServerError(errorMessage, e, log);
+        } catch (ParseException e) {
+            e.printStackTrace();
         }
         return null;
     }
@@ -2508,7 +2510,7 @@ public class ApisApiServiceImpl implements ApisApiService {
      * @throws FaultGatewaysException
      */
     private String updateSwagger(String apiId, String apiDefinition)
-            throws APIManagementException, FaultGatewaysException {
+            throws APIManagementException, FaultGatewaysException, ParseException {
         APIDefinitionValidationResponse response = OASParserUtil
                 .validateAPIDefinition(apiDefinition, true);
         if (!response.isValid()) {
@@ -3132,7 +3134,7 @@ public class ApisApiServiceImpl implements ApisApiService {
             SequenceGenerator.generateSequencesFromSwagger(updatedSwagger, apiToAdd.getId());
 
             return createdApi;
-        } catch (APIManagementException | FaultGatewaysException e) {
+        } catch (APIManagementException | FaultGatewaysException | ParseException e) {
             RestApiUtil.handleInternalServerError("Error while importing WSDL to create a SOAP-to-REST API",
                     e, log);
         }
