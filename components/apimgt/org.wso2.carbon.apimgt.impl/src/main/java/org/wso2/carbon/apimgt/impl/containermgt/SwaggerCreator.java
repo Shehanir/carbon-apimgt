@@ -18,7 +18,6 @@
 
 package org.wso2.carbon.apimgt.impl.containermgt;
 
-import com.sun.org.apache.xpath.internal.operations.Bool;
 import io.swagger.v3.core.util.Json;
 import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.OpenAPI;
@@ -39,6 +38,9 @@ import org.wso2.carbon.apimgt.impl.definitions.OASParserUtil;
 
 import java.util.*;
 
+import static org.wso2.carbon.apimgt.impl.containermgt.ContainerBasedConstants.OPENAPI_SECURITY_SCHEMA_KEY_JWT;
+import static org.wso2.carbon.apimgt.impl.containermgt.ContainerBasedConstants.OPENAPI_SECURITY_SCHEMA_KEY_OAUTH2;
+
 /**
  * This class extends the OAS3Parser class in order to override its method
  * "getOASDefinitionForPublisher".
@@ -47,8 +49,6 @@ public class SwaggerCreator extends OAS3Parser {
 
     private static final Log log = LogFactory.getLog(SwaggerCreator.class);
     private static final String OPENAPI_SECURITY_SCHEMA_KEY = "default";
-    private static final String OPENAPI_SECURITY_SCHEMA_KEY_OAUTH2 = "oauth2";
-    private static final String OPENAPI_SECURITY_SCHEMA_KEY_JWT = "jwt";
     private boolean securityOauth2 = false;
     private boolean securityJWT = false;
 
