@@ -19,7 +19,6 @@
 package org.wso2.carbon.apimgt.impl.containermgt.k8scrd.security;
 
 import io.fabric8.kubernetes.client.CustomResourceList;
-import org.wso2.carbon.apimgt.impl.containermgt.k8scrd.security.SecretCustomResourceDefinition;
 
 public class SecretCustomResourceDefinitionList extends CustomResourceList<SecretCustomResourceDefinition> {
 }

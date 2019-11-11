@@ -20,7 +20,6 @@ package org.wso2.carbon.apimgt.impl.containermgt.k8scrd.security;
 
 import io.fabric8.kubernetes.api.builder.Function;
 import io.fabric8.kubernetes.client.CustomResourceDoneable;
-import org.wso2.carbon.apimgt.impl.containermgt.k8scrd.security.SecretCustomResourceDefinition;
 
 public class DoneableSecretCustomResourceDefinition extends CustomResourceDoneable<SecretCustomResourceDefinition> {
     public DoneableSecretCustomResourceDefinition(SecretCustomResourceDefinition resource, Function function) {

@@ -19,7 +19,6 @@ package org.wso2.carbon.apimgt.impl.containermgt.k8scrd;
 
 import io.fabric8.kubernetes.api.builder.Function;
 import io.fabric8.kubernetes.client.CustomResourceDoneable;
-import org.wso2.carbon.apimgt.impl.containermgt.k8scrd.APICustomResourceDefinition;
 
 public class DoneableAPICustomResourceDefinition extends CustomResourceDoneable<APICustomResourceDefinition> {
     public DoneableAPICustomResourceDefinition(APICustomResourceDefinition resource, Function function) {
