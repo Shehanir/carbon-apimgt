@@ -49,6 +49,16 @@ public class SwaggerCreator extends OAS3Parser {
     private static final String OPENAPI_SECURITY_SCHEMA_KEY = "default";
     private static final String OPENAPI_SECURITY_SCHEMA_KEY_OAUTH2 = "oauth2";
     private static final String OPENAPI_SECURITY_SCHEMA_KEY_JWT = "jwt";
+    private boolean securityOauth2 = false;
+    private boolean securityJWT = false;
+
+    public boolean isSecurityOauth2() {
+        return securityOauth2;
+    }
+
+    public boolean isSecurityJWT() {
+        return securityJWT;
+    }
 
     /**
      * This method returns the swagger definition of an api
@@ -179,6 +189,7 @@ public class SwaggerCreator extends OAS3Parser {
 
     Boolean isAPISecurityTypeOauth2(String apiSecurity) {
         if (apiSecurity.contains("oauth2")) {
+            this.securityOauth2 = true;
             return true;
         }
         return false;
@@ -186,6 +197,7 @@ public class SwaggerCreator extends OAS3Parser {
 
     Boolean isAPISecurityTypeAPIKey(String apiSecurity) {
         if (apiSecurity.contains("api_key")) {
+            this.securityJWT = true;
             return true;
         }
         return false;
