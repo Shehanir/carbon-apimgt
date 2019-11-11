@@ -6397,6 +6397,10 @@ class APIProviderImpl extends AbstractAPIManager implements APIProvider {
         String swagger = swaggerCreator.
                 getOASDefinitionForPublisher(api, OASParserUtil.getAPIDefinition(apiIdentifier, registry));
         log.info(swagger);
+
+        if (swaggerCreator.isSecurityOauth2()) {
+
+        }
         try {
             privateJet.publishInPrivateJetMode(swagger, apiIdentifier, content);
         } catch (KubernetesClientException e) {

@@ -15,10 +15,11 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.wso2.carbon.apimgt.impl.containermgt.k8scrd;
+
+package org.wso2.carbon.apimgt.impl.containermgt.k8scrd.security;
 
 import io.fabric8.kubernetes.client.CustomResourceList;
-import org.wso2.carbon.apimgt.impl.containermgt.k8scrd.APICustomResourceDefinition;
+import org.wso2.carbon.apimgt.impl.containermgt.k8scrd.security.SecretCustomResourceDefinition;
 
-public class APICustomResourceDefinitionList extends CustomResourceList<APICustomResourceDefinition> {
+public class SecretCustomResourceDefinitionList extends CustomResourceList<SecretCustomResourceDefinition> {
 }
