@@ -18,13 +18,11 @@
 
 package org.wso2.carbon.apimgt.impl.containermgt;
 
+import com.sun.org.apache.xpath.internal.operations.Bool;
 import io.swagger.v3.core.util.Json;
 import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.OpenAPI;
-import io.swagger.v3.oas.models.security.OAuthFlow;
-import io.swagger.v3.oas.models.security.OAuthFlows;
-import io.swagger.v3.oas.models.security.Scopes;
-import io.swagger.v3.oas.models.security.SecurityScheme;
+import io.swagger.v3.oas.models.security.*;
 import io.swagger.v3.parser.OpenAPIV3Parser;
 import io.swagger.v3.parser.core.models.SwaggerParseResult;
 import org.apache.commons.collections.CollectionUtils;
@@ -39,10 +37,7 @@ import org.wso2.carbon.apimgt.impl.APIConstants;
 import org.wso2.carbon.apimgt.impl.definitions.OAS3Parser;
 import org.wso2.carbon.apimgt.impl.definitions.OASParserUtil;
 
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /**
  * This class extends the OAS3Parser class in order to override its method
@@ -52,6 +47,8 @@ public class SwaggerCreator extends OAS3Parser {
 
     private static final Log log = LogFactory.getLog(SwaggerCreator.class);
     private static final String OPENAPI_SECURITY_SCHEMA_KEY = "default";
+    private static final String OPENAPI_SECURITY_SCHEMA_KEY_OAUTH2 = "oauth2";
+    private static final String OPENAPI_SECURITY_SCHEMA_KEY_JWT = "jwt";
 
     /**
      * This method returns the swagger definition of an api
@@ -133,6 +130,39 @@ public class SwaggerCreator extends OAS3Parser {
                         get(path)).get(verb)).remove("security");
             }
         }
+        String securityType = api.getApiSecurity().replace("oauth_basic_auth_api_key_mandatory", "");
+        Boolean securityTypeOauth2 = isAPISecurityTypeOauth2(securityType);
+        Boolean securityTypeAPIKey = isAPISecurityTypeAPIKey(securityType);
+
+        if (securityTypeOauth2 & securityTypeAPIKey) {
+            List<SecurityRequirement> security = new ArrayList<SecurityRequirement>();
+            SecurityRequirement securityRequirement = new SecurityRequirement();
+            securityRequirement.addList(((String) ((JSONObject) jsonObject.get("info")).get("title")).toLowerCase() +
+                    OPENAPI_SECURITY_SCHEMA_KEY_OAUTH2, new ArrayList<String>());
+            securityRequirement.addList(((String) ((JSONObject) jsonObject.get("info")).get("title")).toLowerCase() +
+                    OPENAPI_SECURITY_SCHEMA_KEY_JWT, new ArrayList<String>());
+
+            security.add(securityRequirement);
+            jsonObject.put("security", security);
+        }
+
+        else if (securityTypeOauth2){
+            List<SecurityRequirement> oauth2 = new ArrayList<SecurityRequirement>();
+            SecurityRequirement securityRequirement = new SecurityRequirement();
+            securityRequirement.addList(((String) ((JSONObject) jsonObject.get("info")).get("title")).toLowerCase() +
+                            OPENAPI_SECURITY_SCHEMA_KEY_OAUTH2, new ArrayList<String>());
+            oauth2.add(securityRequirement);
+            jsonObject.put("security", oauth2);
+        }
+
+        else if (securityTypeAPIKey){
+            List<SecurityRequirement> jwt = new ArrayList<SecurityRequirement>();
+            SecurityRequirement securityRequirement = new SecurityRequirement();
+            securityRequirement.addList(((String) ((JSONObject) jsonObject.get("info")).get("title")).toLowerCase() +
+                            OPENAPI_SECURITY_SCHEMA_KEY_JWT, new ArrayList<String>());
+            jwt.add(securityRequirement);
+            jsonObject.put("security", jwt);
+        }
         return Json.pretty(jsonObject);
     }
 
@@ -149,5 +179,19 @@ public class SwaggerCreator extends OAS3Parser {
             log.debug("Errors found when parsing OAS definition");
         }
         return parseAttemptForV3.getOpenAPI();
+    }
+
+    Boolean isAPISecurityTypeOauth2(String apiSecurity) {
+        if (apiSecurity.contains("oauth2")) {
+            return true;
+        }
+        return false;
+    }
+
+    Boolean isAPISecurityTypeAPIKey(String apiSecurity) {
+        if (apiSecurity.contains("api_key")) {
+            return true;
+        }
+        return false;
     }
 }

@@ -6389,6 +6389,8 @@ class APIProviderImpl extends AbstractAPIManager implements APIProvider {
             throws UserStoreException, RegistryException, IOException, ParseException, APIManagementException {
         String content = getTenantConfigContent();
         PrivateJet privateJet = new PrivateJet();
+        String security123 = api.getApiSecurity();
+        log.info(security123);
         log.info("Publishing in Private Jet Mode");
 
         SwaggerCreator swaggerCreator = new SwaggerCreator();
