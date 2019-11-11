@@ -144,22 +144,18 @@ public class SwaggerCreator extends OAS3Parser {
 
             security.add(securityRequirement);
             jsonObject.put("security", security);
-        }
-
-        else if (securityTypeOauth2){
+        } else if (securityTypeOauth2) {
             List<SecurityRequirement> oauth2 = new ArrayList<SecurityRequirement>();
             SecurityRequirement securityRequirement = new SecurityRequirement();
             securityRequirement.addList(((String) ((JSONObject) jsonObject.get("info")).get("title")).toLowerCase() +
-                            OPENAPI_SECURITY_SCHEMA_KEY_OAUTH2, new ArrayList<String>());
+                    OPENAPI_SECURITY_SCHEMA_KEY_OAUTH2, new ArrayList<String>());
             oauth2.add(securityRequirement);
             jsonObject.put("security", oauth2);
-        }
-
-        else if (securityTypeAPIKey){
+        } else if (securityTypeAPIKey) {
             List<SecurityRequirement> jwt = new ArrayList<SecurityRequirement>();
             SecurityRequirement securityRequirement = new SecurityRequirement();
             securityRequirement.addList(((String) ((JSONObject) jsonObject.get("info")).get("title")).toLowerCase() +
-                            OPENAPI_SECURITY_SCHEMA_KEY_JWT, new ArrayList<String>());
+                    OPENAPI_SECURITY_SCHEMA_KEY_JWT, new ArrayList<String>());
             jwt.add(securityRequirement);
             jsonObject.put("security", jwt);
         }
