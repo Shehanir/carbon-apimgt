@@ -18,11 +18,7 @@
 
 package org.wso2.carbon.apimgt.impl.containermgt.k8scrd.security;
 
-import io.fabric8.kubernetes.api.builder.Function;
-import io.fabric8.kubernetes.client.CustomResourceDoneable;
+import io.fabric8.kubernetes.client.CustomResourceList;
 
-public class DoneableOauthCustomResourceDefinition extends CustomResourceDoneable<OauthCustomResourceDefinition> {
-    public DoneableOauthCustomResourceDefinition(OauthCustomResourceDefinition resource, Function function) {
-        super(resource, function);
-    }
+public class JWTSecurityCustomResourceDefinitionList extends CustomResourceList<JWTSecurityCustomResourceDefinition> {
 }

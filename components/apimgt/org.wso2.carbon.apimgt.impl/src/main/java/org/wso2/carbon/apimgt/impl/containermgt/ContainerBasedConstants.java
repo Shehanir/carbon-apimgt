@@ -36,7 +36,10 @@ public final class ContainerBasedConstants {
     public static final String SWAGGER = "swagger";
     public static final String MODE = "privateJet";
     public static final String OAUTH_TYPE = "Oauth";
+    public static final String JWT_TYPE = "JWT";
     public static final String SECURITY_CERTIFICATE = "wso2am300-secret";
+    public static final String JWT_TOKEN_ISSUER = "https://wso2apim:32001/oauth2/token";
+    public static final String JWT_AUDIENCE = "http://org.wso2.apimgt/gateway";
     public static final String OAUTH2_END_POINT = "https://wso2apim.wso2:32001";
     public static final String OAUTH2_CREDENTIALS_NAME = "oauth-credentials";
     public static final String API_VERSION = API_CRD_GROUP + "/" + API_CRD_VERSION;
