@@ -17,10 +17,7 @@
  */
 package org.wso2.carbon.apimgt.impl.containermgt;
 
-import io.fabric8.kubernetes.api.model.ConfigMap;
-import io.fabric8.kubernetes.api.model.ConfigMapBuilder;
-import io.fabric8.kubernetes.api.model.DoneableConfigMap;
-import io.fabric8.kubernetes.api.model.ObjectMeta;
+import io.fabric8.kubernetes.api.model.*;
 import io.fabric8.kubernetes.api.model.apiextensions.CustomResourceDefinition;
 import io.fabric8.kubernetes.api.model.apiextensions.CustomResourceDefinitionBuilder;
 import io.fabric8.kubernetes.api.model.apiextensions.CustomResourceDefinitionList;
@@ -155,8 +152,15 @@ public class PrivateJet {
                 jwtSecurityCrdClient).inNamespace(client.getNamespace());
 
         JWTSecurityCustomResourceDefinitionSpec spec = new JWTSecurityCustomResourceDefinitionSpec();
+        spec.setAudience(JWT_AUDIENCE);
+        spec.setIssuer(JWT_TOKEN_ISSUER);
+        spec.setCertificate(SECURITY_CERTIFICATE);
+        spec.setType(JWT_TYPE);
         JWTSecurityCustomResourceDefinition jwtSecurityCustomResourceDefinition =
                 new JWTSecurityCustomResourceDefinition();
+        jwtSecurityCustomResourceDefinition.setKind(SECURITY_KIND);
+        jwtSecurityCustomResourceDefinition.setSpec(spec);
+        jwtSecurityCustomResourceDefinition.setApiVersion(API_VERSION);
 
         ObjectMeta jwtSecurityMeta = new ObjectMeta();
         jwtSecurityMeta.setName(apiIdentifier.getApiName().toLowerCase() + OPENAPI_SECURITY_SCHEMA_KEY_JWT);
@@ -216,8 +220,15 @@ public class PrivateJet {
                 oauthSecurityCrdClient).inNamespace(client.getNamespace());
 
         OauthCustomResourceDefinitionSpec spec = new OauthCustomResourceDefinitionSpec();
+        spec.setCertificate(SECURITY_CERTIFICATE);
+        spec.setCredentials(OAUTH2_CREDENTIALS_NAME);
+        spec.setEndpoint(OAUTH2_END_POINT);
+        spec.setType(OAUTH_TYPE);
+
         OauthCustomResourceDefinition oauthCustomResourceDef = new OauthCustomResourceDefinition();
         oauthCustomResourceDef.setSpec(spec);
+        oauthCustomResourceDef.setKind(SECURITY_KIND);
+        oauthCustomResourceDef.setApiVersion(API_VERSION);
 
         ObjectMeta oauthSecurityMeta = new ObjectMeta();
         oauthSecurityMeta.setName(apiIdentifier.getApiName().toLowerCase() + OPENAPI_SECURITY_SCHEMA_KEY_OAUTH2);
@@ -232,123 +243,20 @@ public class PrivateJet {
 
     private void applySecretCert(KubernetesClient client) {
 
-        CustomResourceDefinitionList customResourceDefinitionList = client.customResourceDefinitions().list();
-        List<CustomResourceDefinition> customResourceDefinitionItems = customResourceDefinitionList.getItems();
-        CustomResourceDefinition certSecretCustomResourceDefinition = null;
+        Secret jwtSecret = new SecretBuilder().withNewMetadata().withName(SECURITY_CERTIFICATE).endMetadata()
+                .addToData("server.pem", SERVER_PEM).build();
 
-        for (CustomResourceDefinition crd : customResourceDefinitionItems) {
-            ObjectMeta metadata = crd.getMetadata();
-
-            if (metadata != null) {
-                String name = metadata.getName();
-                log.info("    " + name + " => " + metadata.getSelfLink());
-
-                if (SECRET_CRD_NAME.equals(name)) {
-                    certSecretCustomResourceDefinition = crd;
-                }
-            }
-        }
-
-        if (certSecretCustomResourceDefinition != null) {
-            log.info("Found Secret CRD: " + certSecretCustomResourceDefinition.getMetadata().getSelfLink());
-        } else {
-            certSecretCustomResourceDefinition = new CustomResourceDefinitionBuilder().withApiVersion(K8_CRD_VERSION).
-                    withNewMetadata().withName(SECRET_CRD_NAME).endMetadata().withNewSpec().withGroup(API_CRD_GROUP).
-                    withVersion(V1).withScope(API_CRD_SCOPE).withNewNames().withKind(SECRETS_KIND).
-                    withShortNames(SECRETS_KIND_SHORT).withPlural(SECRETS_KIND_PLURAL).endNames().endSpec().build();
-
-            client.customResourceDefinitions().create(certSecretCustomResourceDefinition);
-            log.info("Created CRD " + certSecretCustomResourceDefinition.getMetadata().getName());
-        }
-
-        KubernetesDeserializer.registerCustomKind(API_CRD_GROUP + "/" + API_CRD_VERSION, SECRETS_KIND,
-                SecretCustomResourceDefinition.class);
-
-        NonNamespaceOperation<SecretCustomResourceDefinition, SecretCustomResourceDefinitionList,
-                DoneableSecretCustomResourceDefinition, Resource<SecretCustomResourceDefinition,
-                DoneableSecretCustomResourceDefinition>> secretCrdClient =
-                client.customResources(certSecretCustomResourceDefinition, SecretCustomResourceDefinition.class,
-                        SecretCustomResourceDefinitionList.class, DoneableSecretCustomResourceDefinition.class);
-
-        secretCrdClient = ((MixedOperation<SecretCustomResourceDefinition,
-                SecretCustomResourceDefinitionList,
-                DoneableSecretCustomResourceDefinition,
-                Resource<SecretCustomResourceDefinition, DoneableSecretCustomResourceDefinition>>)
-                secretCrdClient).inNamespace(client.getNamespace());
-
-        SecretCustomResourceDefinitionData data = new SecretCustomResourceDefinitionData();
-        SecretCustomResourceDefinition secretCustomResourceDefinition = new SecretCustomResourceDefinition();
-        secretCustomResourceDefinition.setData(data);
-        secretCustomResourceDefinition.setKind(SECRETS_KIND);
-
-        ObjectMeta certSecretMeta = new ObjectMeta();
-        certSecretMeta.setName(SECURITY_CERTIFICATE);
-        certSecretMeta.setNamespace(client.getNamespace());
-
-        secretCustomResourceDefinition.setMetadata(certSecretMeta);
-        secretCrdClient.createOrReplace(secretCustomResourceDefinition);
-        log.info("secret/" + secretCustomResourceDefinition.getMetadata().getName() + " created");
+        client.secrets().inNamespace(client.getNamespace()).createOrReplace(jwtSecret);
+        log.info(jwtSecret.toString());
     }
 
     private void applyOauthSecret(KubernetesClient client) {
 
-        CustomResourceDefinitionList customResourceDefinitionList = client.customResourceDefinitions().list();
-        List<CustomResourceDefinition> customResourceDefinitionItems = customResourceDefinitionList.getItems();
-        CustomResourceDefinition oauthSecretCustomResourceDefinition = null;
+        Secret oauthSecret = new SecretBuilder().withNewMetadata().withName(OAUTH2_CREDENTIALS_NAME).endMetadata()
+                .addToData("username", ADMIN64).addToData("password", ADMIN64).build();
 
-        for (CustomResourceDefinition crd : customResourceDefinitionItems) {
-            ObjectMeta metadata = crd.getMetadata();
-
-            if (metadata != null) {
-                String name = metadata.getName();
-                log.info("    " + name + " => " + metadata.getSelfLink());
-
-                if (SECRET_CRD_NAME.equals(name)) {
-                    oauthSecretCustomResourceDefinition = crd;
-                }
-            }
-        }
-
-        if (oauthSecretCustomResourceDefinition != null) {
-            log.info("Found Secret CRD: " + oauthSecretCustomResourceDefinition.getMetadata().getSelfLink());
-        } else {
-            oauthSecretCustomResourceDefinition = new CustomResourceDefinitionBuilder().withApiVersion(K8_CRD_VERSION).
-                    withNewMetadata().withName(SECRET_CRD_NAME).endMetadata().withNewSpec().withGroup(API_CRD_GROUP).
-                    withVersion(V1).withScope(API_CRD_SCOPE).withNewNames().withKind(SECRETS_KIND).
-                    withShortNames(SECRETS_KIND_SHORT).withPlural(SECRETS_KIND_PLURAL).endNames().endSpec().build();
-
-            client.customResourceDefinitions().create(oauthSecretCustomResourceDefinition);
-            log.info("Created CRD " + oauthSecretCustomResourceDefinition.getMetadata().getName());
-        }
-
-        KubernetesDeserializer.registerCustomKind(API_CRD_GROUP + "/" + API_CRD_VERSION, SECRETS_KIND,
-                OauthSecretCustomResourceDefinition.class);
-
-        NonNamespaceOperation<OauthSecretCustomResourceDefinition, OauthSecretCustomResourceDefinitionList,
-                DoneableOauthSecretCustomResourceDefinition, Resource<OauthSecretCustomResourceDefinition,
-                DoneableOauthSecretCustomResourceDefinition>> oauthSecretCrdClient =
-                client.customResources(oauthSecretCustomResourceDefinition,
-                        OauthSecretCustomResourceDefinition.class,
-                        OauthSecretCustomResourceDefinitionList.class,
-                        DoneableOauthSecretCustomResourceDefinition.class);
-
-        oauthSecretCrdClient = ((MixedOperation<OauthSecretCustomResourceDefinition,
-                OauthSecretCustomResourceDefinitionList,
-                DoneableOauthSecretCustomResourceDefinition,
-                Resource<OauthSecretCustomResourceDefinition, DoneableOauthSecretCustomResourceDefinition>>)
-                oauthSecretCrdClient).inNamespace(client.getNamespace());
-
-        OauthSecretCustomResourceDefinitionData data = new OauthSecretCustomResourceDefinitionData();
-        OauthSecretCustomResourceDefinition oauthSecretCustomResourceDef = new OauthSecretCustomResourceDefinition();
-        oauthSecretCustomResourceDef.setData(data);
-        oauthSecretCustomResourceDef.setKind(SECRETS_KIND);
-        ObjectMeta metaOauthSecret = new ObjectMeta();
-        metaOauthSecret.setName(OAUTH2_CREDENTIALS_NAME);
-        metaOauthSecret.setNamespace(client.getNamespace());
-        oauthSecretCustomResourceDef.setMetadata(metaOauthSecret);
-
-        oauthSecretCrdClient.createOrReplace(oauthSecretCustomResourceDef);
-        log.info("secret/" + oauthSecretCustomResourceDef.getMetadata().getName() + " created");
+        client.secrets().inNamespace(client.getNamespace()).createOrReplace(oauthSecret);
+        log.info("secret/"  + " created");
     }
 
     private void applyAPICustomResourceDefinition(KubernetesClient client, String configmapName,
@@ -410,7 +318,7 @@ public class PrivateJet {
 
         APICustomResourceDefinition apiCustomResourceDef = new APICustomResourceDefinition();
         apiCustomResourceDef.setSpec(apiCustomResourceDefinitionSpec);
-        apiCustomResourceDef.setApiVersion(API_CRD_GROUP + "/" + API_CRD_VERSION);
+        apiCustomResourceDef.setApiVersion(API_VERSION);
         apiCustomResourceDef.setKind(CRD_KIND);
         ObjectMeta meta = new ObjectMeta();
         meta.setName(apiIdentifier.getApiName().toLowerCase());

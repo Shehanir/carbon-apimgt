@@ -22,21 +22,56 @@ import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import io.fabric8.kubernetes.api.model.KubernetesResource;
 
-import static org.wso2.carbon.apimgt.impl.containermgt.ContainerBasedConstants.*;
-
 @JsonDeserialize(
         using = JsonDeserializer.None.class
 )
 
 public class OauthCustomResourceDefinitionSpec implements KubernetesResource {
 
+    private String type; //OAUTH_TYPE
+    private String certificate; //SECURITY_CERTIFICATE
+    private String endpoint; //OAUTH2_END_POINT
+    private String credentials; //OAUTH2_CREDENTIALS_NAME
+
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
+    }
+
+    public String getCertificate() {
+        return certificate;
+    }
+
+    public String getCredentials() {
+        return credentials;
+    }
+
+    public String getEndpoint() {
+        return endpoint;
+    }
+
+    public void setCertificate(String certificate) {
+        this.certificate = certificate;
+    }
+
+    public void setCredentials(String credentials) {
+        this.credentials = credentials;
+    }
+
+    public void setEndpoint(String endpoint) {
+        this.endpoint = endpoint;
+    }
+
     @Override
     public String toString() {
         return "OauthSpec{" +
-                "type='" + OAUTH_TYPE + '\'' +
-                ", certificate='" + SECURITY_CERTIFICATE + '\'' +
-                ", endpoint='" + OAUTH2_END_POINT + '\'' +
-                ", credentials='" + OAUTH2_CREDENTIALS_NAME + '\'' +
+                "type='" + type + '\'' +
+                ", certificate='" + certificate + '\'' +
+                ", endpoint='" + endpoint + '\'' +
+                ", credentials='" + credentials + '\'' +
                 '}';
     }
 }

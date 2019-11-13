@@ -22,21 +22,56 @@ import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import io.fabric8.kubernetes.api.model.KubernetesResource;
 
-import static org.wso2.carbon.apimgt.impl.containermgt.ContainerBasedConstants.*;
-
 @JsonDeserialize(
         using = JsonDeserializer.None.class
 )
 
 public class JWTSecurityCustomResourceDefinitionSpec implements KubernetesResource {
 
+    private String type; //JWT_TYPE
+    private String certificate; //SECURITY_CERTIFICATE
+    private String issuer; //JWT_TOKEN_ISSUER
+    private String audience; //JWT_AUDIENCE
+
+    public void setType(String type) {
+        this.type = type;
+    }
+
+    public void setAudience(String audience) {
+        this.audience = audience;
+    }
+
+    public void setIssuer(String issuer) {
+        this.issuer = issuer;
+    }
+
+    public void setCertificate(String certificate) {
+        this.certificate = certificate;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public String getAudience() {
+        return audience;
+    }
+
+    public String getIssuer() {
+        return issuer;
+    }
+
+    public String getCertificate() {
+        return certificate;
+    }
+
     @Override
     public String toString() {
         return "JWTSpec{" +
-                "type='" + JWT_TYPE + '\'' +
-                ", certificate='" + SECURITY_CERTIFICATE + '\'' +
-                ", issuer='" + JWT_TOKEN_ISSUER + '\'' +
-                ", audience='" + JWT_AUDIENCE + '\'' +
+                "type='" + type + '\'' +
+                ", certificate='" + certificate + '\'' +
+                ", issuer='" + issuer + '\'' +
+                ", audience='" + audience + '\'' +
                 '}';
     }
 }

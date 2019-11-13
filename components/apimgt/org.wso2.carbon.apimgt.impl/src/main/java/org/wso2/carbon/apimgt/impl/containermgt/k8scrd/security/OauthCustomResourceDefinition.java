@@ -21,8 +21,6 @@ package org.wso2.carbon.apimgt.impl.containermgt.k8scrd.security;
 import io.fabric8.kubernetes.api.model.ObjectMeta;
 import io.fabric8.kubernetes.client.CustomResource;
 
-import static org.wso2.carbon.apimgt.impl.containermgt.ContainerBasedConstants.*;
-
 public class OauthCustomResourceDefinition extends CustomResource {
 
     private OauthCustomResourceDefinitionSpec spec;
@@ -30,7 +28,7 @@ public class OauthCustomResourceDefinition extends CustomResource {
     @Override
     public String toString() {
         return "Oauth{" +
-                "apiVersion='" + API_VERSION + '\'' +
+                "apiVersion='" + getApiVersion() + '\'' +
                 ", metadata=" + getMetadata() +
                 ", spec=" + spec +
                 '}';
