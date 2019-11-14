@@ -38,6 +38,10 @@ public class OauthCustomResourceDefinition extends CustomResource {
         this.spec = spec;
     }
 
+    public OauthCustomResourceDefinitionSpec getSpec() {
+        return spec;
+    }
+
     @Override
     public ObjectMeta getMetadata() {
         return super.getMetadata();

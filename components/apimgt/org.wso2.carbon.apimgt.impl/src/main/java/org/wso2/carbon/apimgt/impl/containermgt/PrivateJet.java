@@ -64,16 +64,23 @@ public class PrivateJet {
         if (publishInPrivateJet) {
 
             KubernetesClient client = k8sClient.createClient();
-            if (swaggerCreator.isSecurityOauth2()) {
+            if (swaggerCreator.isSecurityOauth2() && !swaggerCreator.isSecurityJWT()) {
 
                 applyOauthSecret(client);
                 applySecretCert(client);
                 applyOauthSecurity(client, apiIdentifier);
             }
-            if (swaggerCreator.isSecurityJWT()) {
+            else if (swaggerCreator.isSecurityJWT() && !swaggerCreator.isSecurityOauth2()) {
 
                 applySecretCert(client);
                 applyJWTSecurity(client, apiIdentifier);
+            }
+
+            else if (swaggerCreator.isSecurityOauth2() && swaggerCreator.isSecurityJWT()) {
+                applySecretCert(client);
+                applyJWTSecurity(client, apiIdentifier);
+                applyOauthSecret(client);
+                applyOauthSecurity(client, apiIdentifier);
             }
 
             String configmapName = apiIdentifier.getApiName().toLowerCase() + ".v" + apiIdentifier.getVersion();
@@ -173,7 +180,7 @@ public class PrivateJet {
     }
 
     private void applyOauthSecurity(KubernetesClient client, APIIdentifier apiIdentifier) {
-
+        log.info("OAUTHOAUTHOAUTHOAUTHOAUTHOAUTHOAUTHOAUTHOAUTHOAUTHOAUTHOAUTHOAUTH");
         CustomResourceDefinitionList customResourceDefinitionList = client.customResourceDefinitions().list();
         List<CustomResourceDefinition> customResourceDefinitionItems = customResourceDefinitionList.getItems();
         CustomResourceDefinition oauthCustomResourceDefinition = null;
@@ -226,8 +233,8 @@ public class PrivateJet {
         spec.setType(OAUTH_TYPE);
 
         OauthCustomResourceDefinition oauthCustomResourceDef = new OauthCustomResourceDefinition();
-        oauthCustomResourceDef.setSpec(spec);
         oauthCustomResourceDef.setKind(SECURITY_KIND);
+        oauthCustomResourceDef.setSpec(spec);
         oauthCustomResourceDef.setApiVersion(API_VERSION);
 
         ObjectMeta oauthSecurityMeta = new ObjectMeta();
