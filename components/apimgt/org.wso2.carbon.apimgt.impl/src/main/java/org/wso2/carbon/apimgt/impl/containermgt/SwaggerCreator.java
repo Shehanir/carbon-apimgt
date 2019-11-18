@@ -144,7 +144,7 @@ public class SwaggerCreator extends OAS3Parser {
         Boolean securityTypeOauth2 = isAPISecurityTypeOauth2(securityType);
         Boolean securityTypeAPIKey = isAPISecurityTypeAPIKey(securityType);
 
-        if (securityTypeOauth2 & securityTypeAPIKey) {
+        /*if (securityTypeOauth2 & securityTypeAPIKey) {
             List<SecurityRequirement> security = new ArrayList<SecurityRequirement>();
             SecurityRequirement securityRequirement = new SecurityRequirement();
             securityRequirement.addList(((String) ((JSONObject) jsonObject.get("info")).get("title")).toLowerCase() +
@@ -154,14 +154,15 @@ public class SwaggerCreator extends OAS3Parser {
 
             security.add(securityRequirement);
             jsonObject.put("security", security);
-        } else if (securityTypeOauth2) {
+        }*/
+        if (securityTypeOauth2 && !securityTypeAPIKey) {
             List<SecurityRequirement> oauth2 = new ArrayList<SecurityRequirement>();
             SecurityRequirement securityRequirement = new SecurityRequirement();
             securityRequirement.addList(((String) ((JSONObject) jsonObject.get("info")).get("title")).toLowerCase() +
                     OPENAPI_SECURITY_SCHEMA_KEY_OAUTH2, new ArrayList<String>());
             oauth2.add(securityRequirement);
             jsonObject.put("security", oauth2);
-        } else if (securityTypeAPIKey) {
+        } else if (securityTypeAPIKey && !securityTypeOauth2) {
             List<SecurityRequirement> jwt = new ArrayList<SecurityRequirement>();
             SecurityRequirement securityRequirement = new SecurityRequirement();
             securityRequirement.addList(((String) ((JSONObject) jsonObject.get("info")).get("title")).toLowerCase() +

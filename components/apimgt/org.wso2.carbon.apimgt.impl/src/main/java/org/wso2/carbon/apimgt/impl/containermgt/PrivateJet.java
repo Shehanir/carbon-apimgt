@@ -64,21 +64,18 @@ public class PrivateJet {
         if (publishInPrivateJet) {
 
             KubernetesClient client = k8sClient.createClient();
-            if (swaggerCreator.isSecurityOauth2() && !swaggerCreator.isSecurityJWT()) {
+            /*applyOauthSecret(client);
+            applySecretCert(client);
+            applyOauthSecurity(client, apiIdentifier);
+            applyJWTSecurity(client, apiIdentifier);*/
 
-                applyOauthSecret(client);
-                applySecretCert(client);
-                applyOauthSecurity(client, apiIdentifier);
-            }
-            else if (swaggerCreator.isSecurityJWT() && !swaggerCreator.isSecurityOauth2()) {
-
+            if (swaggerCreator.isSecurityJWT() && !swaggerCreator.isSecurityOauth2()) {
                 applySecretCert(client);
                 applyJWTSecurity(client, apiIdentifier);
             }
 
-            else if (swaggerCreator.isSecurityOauth2() && swaggerCreator.isSecurityJWT()) {
+            else if (swaggerCreator.isSecurityOauth2() && !swaggerCreator.isSecurityJWT()) {
                 applySecretCert(client);
-                applyJWTSecurity(client, apiIdentifier);
                 applyOauthSecret(client);
                 applyOauthSecurity(client, apiIdentifier);
             }
