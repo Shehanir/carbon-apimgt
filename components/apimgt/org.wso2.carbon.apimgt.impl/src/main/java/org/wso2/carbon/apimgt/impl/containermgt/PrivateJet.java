@@ -50,7 +50,7 @@ public class PrivateJet {
      *
      * @param swaggerDefinition , swagger definition of the api as a string
      * @param apiIdentifier     , APIIdentifier object for the api
-     * @param swaggerCreator
+     * @param swaggerCreator    , An object from SwaggerCreator class
      */
     public void publishInPrivateJetMode(String swaggerDefinition, APIIdentifier apiIdentifier, String tenant_conf,
                                         SwaggerCreator swaggerCreator) throws ParseException {
@@ -58,28 +58,39 @@ public class PrivateJet {
         TenantConfReader newReader = new TenantConfReader();
         K8sClient k8sClient = newReader.readTenant(tenant_conf);
 
+        /**
+         * If the MasterURL and SAToken is not provided
+         * private jet mode will not be enabled
+         */
         boolean publishInPrivateJet = ((!(k8sClient.getSaToken().equals("")))
                 && (!(k8sClient.getSaToken().equals(""))));
 
         if (publishInPrivateJet) {
 
-            KubernetesClient client = k8sClient.createClient();
-            /*applyOauthSecret(client);
-            applySecretCert(client);
-            applyOauthSecurity(client, apiIdentifier);
-            applyJWTSecurity(client, apiIdentifier);*/
+            KubernetesClient client = k8sClient.createClient(); //creating the client
 
+            /**
+             * If the invoking method is JWT
+             * necessary securities and secrets will be deployed
+             */
             if (swaggerCreator.isSecurityJWT() && !swaggerCreator.isSecurityOauth2()) {
                 applySecretCert(client);
                 applyJWTSecurity(client, apiIdentifier);
             }
 
+            /**
+             * If the invoking method is OAuth2
+             * necessary securities and secrets will be deployed
+             */
             else if (swaggerCreator.isSecurityOauth2() && !swaggerCreator.isSecurityJWT()) {
                 applySecretCert(client);
                 applyOauthSecret(client);
                 applyOauthSecurity(client, apiIdentifier);
             }
 
+            /**
+             * configmapName would be "apiname.v" + "apiVersion"
+             */
             String configmapName = apiIdentifier.getApiName().toLowerCase() + ".v" + apiIdentifier.getVersion();
 
             io.fabric8.kubernetes.client.dsl.Resource<ConfigMap, DoneableConfigMap> configMapResource
@@ -89,8 +100,12 @@ public class PrivateJet {
                     withName(configmapName).withNamespace(k8sClient.getNamespace()).endMetadata().
                     withApiVersion("v1").addToData(apiIdentifier.getApiName() + ".json", swaggerDefinition).build());
 
+            /**
+             * Remove this later!
+             * Outputs the swagger of API
+             */
             log.info("Created ConfigMap at " + configMap.getMetadata().getSelfLink() + " data" + configMap.getData());
-            applyAPICustomResourceDefinition(client, configmapName, k8sClient, apiIdentifier);
+            applyAPICustomResourceDefinition(client, configmapName, k8sClient.getReplicas(), apiIdentifier);
             log.info("Successfully Published in Private-Jet Mode");
 
         } else {
@@ -106,6 +121,12 @@ public class PrivateJet {
         }
     }
 
+    /**
+     * This method deploys JWT security kind in the cluster.
+     *
+     * @param client        , Kubernetes client
+     * @param apiIdentifier , API Identifier
+     */
     private void applyJWTSecurity(KubernetesClient client, APIIdentifier apiIdentifier) {
 
         CustomResourceDefinitionList customResourceDefinitionList = client.customResourceDefinitions().list();
@@ -176,8 +197,14 @@ public class PrivateJet {
                 jwtSecurityCustomResourceDefinition.getMetadata().getName() + " created");
     }
 
+    /**
+     * This method deploys OAuth2 security kind in the cluster
+     *
+     * @param client        , Kubernetes client
+     * @param apiIdentifier , API Identifier
+     */
     private void applyOauthSecurity(KubernetesClient client, APIIdentifier apiIdentifier) {
-        log.info("OAUTHOAUTHOAUTHOAUTHOAUTHOAUTHOAUTHOAUTHOAUTHOAUTHOAUTHOAUTHOAUTH");
+
         CustomResourceDefinitionList customResourceDefinitionList = client.customResourceDefinitions().list();
         List<CustomResourceDefinition> customResourceDefinitionItems = customResourceDefinitionList.getItems();
         CustomResourceDefinition oauthCustomResourceDefinition = null;
@@ -245,6 +272,11 @@ public class PrivateJet {
 
     }
 
+    /**
+     * Deploys secret kind
+     *
+     * @param client , Kubernetes client
+     */
     private void applySecretCert(KubernetesClient client) {
 
         Secret jwtSecret = new SecretBuilder().withNewMetadata().withName(SECURITY_CERTIFICATE).endMetadata()
@@ -254,17 +286,30 @@ public class PrivateJet {
         log.info(jwtSecret.toString());
     }
 
+    /**
+     * Deploys OAuth secret kind
+     *
+     * @param client , Kubernetes client
+     */
     private void applyOauthSecret(KubernetesClient client) {
 
         Secret oauthSecret = new SecretBuilder().withNewMetadata().withName(OAUTH2_CREDENTIALS_NAME).endMetadata()
                 .addToData("username", ADMIN64).addToData("password", ADMIN64).build();
 
         client.secrets().inNamespace(client.getNamespace()).createOrReplace(oauthSecret);
-        log.info("secret/"  + " created");
+        log.info("secret/" + " created");
     }
 
+    /**
+     * Deploys the custom resource created by APICustomResourceDefinition.class
+     *
+     * @param client        , Kubernetes client
+     * @param configmapName , name of the configmap
+     * @param replicas      , number of replicas
+     * @param apiIdentifier , API Identifier
+     */
     private void applyAPICustomResourceDefinition(KubernetesClient client, String configmapName,
-                                                  K8sClient k8sClient, APIIdentifier apiIdentifier) {
+                                                  int replicas, APIIdentifier apiIdentifier) {
 
         CustomResourceDefinitionList customResourceDefinitionList = client.customResourceDefinitions().list();
         List<CustomResourceDefinition> customResourceDefinitionItems = customResourceDefinitionList.getItems();
@@ -309,7 +354,7 @@ public class PrivateJet {
                 APICustomResourceDefinitionList,
                 DoneableAPICustomResourceDefinition,
                 Resource<APICustomResourceDefinition, DoneableAPICustomResourceDefinition>>) apiCrdClient).
-                inNamespace(k8sClient.getNamespace());
+                inNamespace(client.getNamespace());
 
         Definition definition = new Definition();
         definition.setType(SWAGGER);
@@ -318,7 +363,7 @@ public class PrivateJet {
         APICustomResourceDefinitionSpec apiCustomResourceDefinitionSpec = new APICustomResourceDefinitionSpec();
         apiCustomResourceDefinitionSpec.setDefinition(definition);
         apiCustomResourceDefinitionSpec.setMode(MODE);
-        apiCustomResourceDefinitionSpec.setReplicas(k8sClient.getReplicas());
+        apiCustomResourceDefinitionSpec.setReplicas(replicas);
 
         APICustomResourceDefinition apiCustomResourceDef = new APICustomResourceDefinition();
         apiCustomResourceDef.setSpec(apiCustomResourceDefinitionSpec);
@@ -326,7 +371,7 @@ public class PrivateJet {
         apiCustomResourceDef.setKind(CRD_KIND);
         ObjectMeta meta = new ObjectMeta();
         meta.setName(apiIdentifier.getApiName().toLowerCase());
-        meta.setNamespace(k8sClient.getNamespace());
+        meta.setNamespace(client.getNamespace());
         apiCustomResourceDef.setMetadata(meta);
 
         apiCrdClient.createOrReplace(apiCustomResourceDef);

@@ -45,26 +45,35 @@ public class OauthCustomResourceDefinitionSpec implements KubernetesResource {
         return certificate;
     }
 
-    public String getCredentials() {
-        return credentials;
-    }
-
-    public String getEndpoint() {
-        return endpoint;
-    }
-
     public void setCertificate(String certificate) {
         this.certificate = certificate;
+    }
+
+    public String getCredentials() {
+        return credentials;
     }
 
     public void setCredentials(String credentials) {
         this.credentials = credentials;
     }
 
+    public String getEndpoint() {
+        return endpoint;
+    }
+
     public void setEndpoint(String endpoint) {
         this.endpoint = endpoint;
     }
 
+    /**
+     * Creates the following json object
+     * type: ${type}
+     * certificate: ${certificate}
+     * endpoint: ${endpoint}
+     * credentials: ${credentials}
+     *
+     * @return
+     */
     @Override
     public String toString() {
         return "OauthSpec{" +

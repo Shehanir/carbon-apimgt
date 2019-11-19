@@ -39,10 +39,6 @@ public final class ContainerBasedConstants {
     public static final String CRD_KIND_SHORT = "api";
     public static final String CRD_KIND_PLURAL = "apis";
 
-    public static final String SECRETS_KIND = "Secret";
-    public static final String SECRETS_KIND_PLURAL = "secrets";
-    public static final String SECRETS_KIND_SHORT = "secret";
-
     public static final String SECURITY_KIND = "Security";
     public static final String SECURITY_KIND_SHORT = "security";
     public static final String SECURITY_KIND_PLURAL = "securities";
@@ -75,7 +71,6 @@ public final class ContainerBasedConstants {
 
     public static final String OAUTH_TYPE = "Oauth";
     public static final String JWT_TYPE = "JWT";
-    public static final String OPAQUE = "Opaque";
     public static final String V1 = "v1";
     public static final String ADMIN64 = "YWRtaW4=";
 

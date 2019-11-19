@@ -19,9 +19,8 @@
 package org.wso2.carbon.apimgt.impl.containermgt;
 
 import org.json.simple.JSONObject;
-import org.json.simple.parser.ParseException;
 import org.json.simple.parser.JSONParser;
-import org.wso2.carbon.apimgt.impl.containermgt.K8sClient;
+import org.json.simple.parser.ParseException;
 
 /**
  * This class is for reading the tenant-conf.json from the registry

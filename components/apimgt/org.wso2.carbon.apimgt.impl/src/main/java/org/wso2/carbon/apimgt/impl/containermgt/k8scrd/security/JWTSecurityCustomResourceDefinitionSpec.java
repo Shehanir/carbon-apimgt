@@ -33,38 +33,47 @@ public class JWTSecurityCustomResourceDefinitionSpec implements KubernetesResour
     private String issuer; //JWT_TOKEN_ISSUER
     private String audience; //JWT_AUDIENCE
 
-    public void setType(String type) {
-        this.type = type;
-    }
-
-    public void setAudience(String audience) {
-        this.audience = audience;
-    }
-
-    public void setIssuer(String issuer) {
-        this.issuer = issuer;
-    }
-
-    public void setCertificate(String certificate) {
-        this.certificate = certificate;
-    }
-
     public String getType() {
         return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
     }
 
     public String getAudience() {
         return audience;
     }
 
+    public void setAudience(String audience) {
+        this.audience = audience;
+    }
+
     public String getIssuer() {
         return issuer;
+    }
+
+    public void setIssuer(String issuer) {
+        this.issuer = issuer;
     }
 
     public String getCertificate() {
         return certificate;
     }
 
+    public void setCertificate(String certificate) {
+        this.certificate = certificate;
+    }
+
+    /**
+     * Creates following json object
+     * type: ${type}
+     * certificate: ${certificate}
+     * issuer: ${issuer}
+     * audience: ${audience}
+     *
+     * @return
+     */
     @Override
     public String toString() {
         return "JWTSpec{" +

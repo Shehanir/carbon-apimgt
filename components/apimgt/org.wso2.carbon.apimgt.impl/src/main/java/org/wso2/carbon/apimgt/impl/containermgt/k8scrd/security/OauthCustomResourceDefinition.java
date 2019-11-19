@@ -25,6 +25,19 @@ public class OauthCustomResourceDefinition extends CustomResource {
 
     private OauthCustomResourceDefinitionSpec spec;
 
+    /**
+     * Creates the following json object
+     * apiVersion: ${apiVersion}
+     * metadata:
+     *      name: ${name}
+     * spec:
+     *      type: ${type}
+     *      certificate: ${certificate}
+     *      endpoint: ${endpoint}
+     *      credentials: ${credentials}
+     *
+     * @return
+     */
     @Override
     public String toString() {
         return "Oauth{" +

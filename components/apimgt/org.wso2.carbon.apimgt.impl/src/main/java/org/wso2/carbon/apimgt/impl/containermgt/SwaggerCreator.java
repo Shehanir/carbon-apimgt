@@ -65,7 +65,7 @@ public class SwaggerCreator extends OAS3Parser {
      * which suits for k8s_apim_operator
      *
      * @param api           API
-     * @param oasDefinition
+     * @param oasDefinition Open API definition
      * @return OAS definition
      * @throws APIManagementException throws if an error occurred
      * @throws ParseException         throws if the oasDefinition is not in json format
@@ -125,11 +125,17 @@ public class SwaggerCreator extends OAS3Parser {
         String currentDefinition = Json.pretty(openAPI);
         JSONParser jsonParser = new JSONParser();
         JSONObject jsonObject = (JSONObject) jsonParser.parse(currentDefinition);
-        //Removing the "security" key from the JSONObject
+
+        /**
+         * Removing the "security" key from the JSONObject
+         */
         jsonObject.remove("security");
         Set<String> paths = ((JSONObject) jsonObject.get("paths")).keySet();
         Iterator iterator = paths.iterator();
-        //Removing the "security" attribute from each RESTAPI verb of each path in the swagger
+
+        /**
+         * Removing the "security" attribute from each RESTAPI verb of each path in the swagger
+         */
         while (iterator.hasNext()) {
             String path = (String) iterator.next();
             Set verbs = ((JSONObject) ((JSONObject) jsonObject.get("paths")).get(path)).keySet();
@@ -144,17 +150,6 @@ public class SwaggerCreator extends OAS3Parser {
         Boolean securityTypeOauth2 = isAPISecurityTypeOauth2(securityType);
         Boolean securityTypeAPIKey = isAPISecurityTypeAPIKey(securityType);
 
-        /*if (securityTypeOauth2 & securityTypeAPIKey) {
-            List<SecurityRequirement> security = new ArrayList<SecurityRequirement>();
-            SecurityRequirement securityRequirement = new SecurityRequirement();
-            securityRequirement.addList(((String) ((JSONObject) jsonObject.get("info")).get("title")).toLowerCase() +
-                    OPENAPI_SECURITY_SCHEMA_KEY_OAUTH2, new ArrayList<String>());
-            securityRequirement.addList(((String) ((JSONObject) jsonObject.get("info")).get("title")).toLowerCase() +
-                    OPENAPI_SECURITY_SCHEMA_KEY_JWT, new ArrayList<String>());
-
-            security.add(securityRequirement);
-            jsonObject.put("security", security);
-        }*/
         if (securityTypeOauth2 && !securityTypeAPIKey) {
             List<SecurityRequirement> oauth2 = new ArrayList<SecurityRequirement>();
             SecurityRequirement securityRequirement = new SecurityRequirement();

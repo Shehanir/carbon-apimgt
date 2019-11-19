@@ -25,6 +25,19 @@ public class JWTSecurityCustomResourceDefinition extends CustomResource {
 
     private JWTSecurityCustomResourceDefinitionSpec spec;
 
+    /**
+     * Creates following json object.
+     * apiVersion: ${apiVersion}
+     * metadata:
+     *      name: ${name}
+     * spec:
+     *      type: ${type}
+     *      certificate: ${certificate}
+     *      issuer: ${issuer}
+     *      audience: ${audience}
+     *
+     * @return
+     */
     @Override
     public String toString() {
         return "JWT{" +
@@ -34,12 +47,12 @@ public class JWTSecurityCustomResourceDefinition extends CustomResource {
                 '}';
     }
 
-    public void setSpec(JWTSecurityCustomResourceDefinitionSpec spec) {
-        this.spec = spec;
-    }
-
     public JWTSecurityCustomResourceDefinitionSpec getSpec() {
         return spec;
+    }
+
+    public void setSpec(JWTSecurityCustomResourceDefinitionSpec spec) {
+        this.spec = spec;
     }
 
     @Override

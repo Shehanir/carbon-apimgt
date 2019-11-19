@@ -4,7 +4,7 @@
   "K8sClusterInfo": {
     "k8sMasterURL" : "",
     "saToken" : "",
-    "namespace" : "default",
+    "namespace" : "wso2",
     "replicas" : 1
   },
   "ExtensionHandlerPosition": "bottom",
