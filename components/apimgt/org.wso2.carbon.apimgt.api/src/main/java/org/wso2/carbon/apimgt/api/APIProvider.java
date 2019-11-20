@@ -17,7 +17,10 @@
  */
 package org.wso2.carbon.apimgt.api;
 
+
 import org.json.simple.parser.ParseException;
+
+import org.json.simple.JSONObject;
 import org.wso2.carbon.apimgt.api.dto.CertificateInformationDTO;
 import org.wso2.carbon.apimgt.api.dto.CertificateMetadataDTO;
 import org.wso2.carbon.apimgt.api.dto.ClientCertificateDTO;
@@ -1307,6 +1310,15 @@ public interface APIProvider extends APIManager {
     void deleteWorkflowTask(APIIdentifier apiIdentifier) throws APIManagementException;
 
     /**
+     * This method returns the security audit properties
+     *
+     * @param userId user id
+     * @return JSONObject object with security audit properties
+     * @throws APIManagementException
+     */
+    JSONObject getSecurityAuditAttributesFromConfig(String userId) throws APIManagementException;
+
+    /**
      * This method is used to publish the api in private jet mode
      *
      * @param api           API Object
@@ -1316,5 +1328,6 @@ public interface APIProvider extends APIManager {
      * @throws ParseException         for json file reading
      */
     void publishInPrivateJet(API api, APIIdentifier apiIdentifier) throws RegistryException, org.wso2.carbon.user.api.UserStoreException, IOException, ParseException, APIManagementException;
+
 
 }
