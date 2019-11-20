@@ -127,6 +127,74 @@ public class PrivateJet {
             }
         }
     }
+    
+    private void applyBasicAuthSecurity(KubernetesClient client, APIIdentifier apiIdentifier) {
+
+        CustomResourceDefinitionList customResourceDefinitionList = client.customResourceDefinitions().list();
+        List<CustomResourceDefinition> customResourceDefinitionItems = customResourceDefinitionList.getItems();
+        CustomResourceDefinition basicAuthCustomResourceDefinition = null;
+
+        for (CustomResourceDefinition crd : customResourceDefinitionItems) {
+            ObjectMeta metadata = crd.getMetadata();
+
+            if (metadata != null) {
+                String name = metadata.getName();
+                log.info("    " + name + " => " + metadata.getSelfLink());
+
+                if (SECURITY_CRD_NAME.equals(name)) {
+                    basicAuthCustomResourceDefinition = crd;
+                }
+            }
+        }
+
+        if (basicAuthCustomResourceDefinition != null) {
+            log.info("Found Security CRD: " + basicAuthCustomResourceDefinition.getMetadata().getSelfLink());
+        } else {
+            basicAuthCustomResourceDefinition = new CustomResourceDefinitionBuilder().withApiVersion(K8_CRD_VERSION).
+                    withNewMetadata().withName(SECURITY_CRD_NAME).endMetadata().withNewSpec().withGroup(API_CRD_GROUP).
+                    withVersion(API_CRD_VERSION).withScope(API_CRD_SCOPE).withNewNames().withKind(SECURITY_KIND).
+                    withShortNames(SECURITY_KIND_SHORT).withPlural(SECURITY_KIND_PLURAL).
+                    withListKind(SECURITY_KIND_LIST).endNames().endSpec().build();
+
+            client.customResourceDefinitions().create(basicAuthCustomResourceDefinition);
+            log.info("Created CRD " + basicAuthCustomResourceDefinition.getMetadata().getName());
+        }
+
+        KubernetesDeserializer.registerCustomKind(API_VERSION, SECURITY_KIND,
+                BasicAuthCustomResourceDefinition.class);
+
+        NonNamespaceOperation<BasicAuthCustomResourceDefinition, BasicAuthCustomResourceDefinitionList,
+                DoneableBasicAuthCustomResourceDefinition, Resource<BasicAuthCustomResourceDefinition,
+                DoneableBasicAuthCustomResourceDefinition>> basicAuthSecurityCrdClient =
+                client.customResources(basicAuthCustomResourceDefinition,
+                        BasicAuthCustomResourceDefinition.class,
+                        BasicAuthCustomResourceDefinitionList.class,
+                        DoneableBasicAuthCustomResourceDefinition.class);
+
+        basicAuthSecurityCrdClient = ((MixedOperation<BasicAuthCustomResourceDefinition,
+                BasicAuthCustomResourceDefinitionList,
+                DoneableBasicAuthCustomResourceDefinition,
+                Resource<BasicAuthCustomResourceDefinition, DoneableBasicAuthCustomResourceDefinition>>)
+                basicAuthSecurityCrdClient).inNamespace(client.getNamespace());
+
+        BasicAuthCustomResourceDefinitionSpec spec = new BasicAuthCustomResourceDefinitionSpec();
+        spec.setType(BASIC_TYPE);
+        spec.setCredentials(BASIC_CREDENTIALS_NAME);
+        BasicAuthCustomResourceDefinition basicAuthSecurityCustomResourceDefinition =
+                new BasicAuthCustomResourceDefinition();
+        basicAuthSecurityCustomResourceDefinition.setKind(SECURITY_KIND);
+        basicAuthSecurityCustomResourceDefinition.setSpec(spec);
+        basicAuthSecurityCustomResourceDefinition.setApiVersion(API_VERSION);
+
+        ObjectMeta basicAuthSecurityMeta = new ObjectMeta();
+        basicAuthSecurityMeta.setName(apiIdentifier.getApiName().toLowerCase() + OPENAPI_SECURITY_SCHEMA_KEY_BASIC);
+        basicAuthSecurityMeta.setNamespace(client.getNamespace());
+
+        basicAuthSecurityCustomResourceDefinition.setMetadata(basicAuthSecurityMeta);
+        basicAuthSecurityCrdClient.createOrReplace(basicAuthSecurityCustomResourceDefinition);
+        log.info(SECURITY_KIND_SHORT + "." + API_CRD_GROUP + "/" +
+                basicAuthSecurityCustomResourceDefinition.getMetadata().getName() + " created");
+    }
 
     /**
      * This method deploys JWT security kind in the cluster.
@@ -308,6 +376,7 @@ public class PrivateJet {
     }
 
     /**
+     * Deploys Basic Auth secret kind
      *
      * @param client
      */

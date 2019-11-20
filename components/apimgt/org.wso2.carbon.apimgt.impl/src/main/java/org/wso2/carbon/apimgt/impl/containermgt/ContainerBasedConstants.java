@@ -72,9 +72,11 @@ public final class ContainerBasedConstants {
 
     public static final String OAUTH_TYPE = "Oauth";
     public static final String JWT_TYPE = "JWT";
+    public static final String BASIC_TYPE = "basic";
     public static final String V1 = "v1";
     public static final String ADMIN64 = "YWRtaW4=";
 
     public static final String OPENAPI_SECURITY_SCHEMA_KEY_OAUTH2 = "oauth2";
     public static final String OPENAPI_SECURITY_SCHEMA_KEY_JWT = "jwt";
+    public static final String OPENAPI_SECURITY_SCHEMA_KEY_BASIC = "basic";
 }
