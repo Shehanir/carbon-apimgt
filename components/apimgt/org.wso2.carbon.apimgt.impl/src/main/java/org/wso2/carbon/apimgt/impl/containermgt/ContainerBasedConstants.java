@@ -53,6 +53,7 @@ public final class ContainerBasedConstants {
     public static final String OAUTH2_END_POINT = "https://wso2apim.wso2:32001";
 
     public static final String OAUTH2_CREDENTIALS_NAME = "oauth-credentials";
+    public static final String BASIC_CREDENTIALS_NAME = "secret-basic";
 
     public static final String SECURITY_CERTIFICATE = "wso2am300-secret";
     public static final String SERVER_PEM = "MIIDfTCCAmWgAwIBAgIEbfVjBzANBgkqhkiG9w0BAQsFADBkMQswCQYDVQQGEwJVUz" +

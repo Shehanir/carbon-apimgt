@@ -26,6 +26,8 @@ import io.fabric8.kubernetes.client.dsl.MixedOperation;
 import io.fabric8.kubernetes.client.dsl.NonNamespaceOperation;
 import io.fabric8.kubernetes.client.dsl.Resource;
 import io.fabric8.kubernetes.internal.KubernetesDeserializer;
+import io.swagger.v3.core.util.Json;
+import org.json.simple.JSONObject;
 import org.json.simple.parser.ParseException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -107,6 +109,11 @@ public class PrivateJet {
             log.info("Created ConfigMap at " + configMap.getMetadata().getSelfLink() + " data" + configMap.getData());
             applyAPICustomResourceDefinition(client, configmapName, k8sClient.getReplicas(), apiIdentifier);
             log.info("Successfully Published in Private-Jet Mode");
+
+            PodWatcher podWatcher = new PodWatcher();
+            podWatcher.setPodList(client.pods().list());
+            JSONObject pod = podWatcher.getPodStatus();
+            log.info(Json.pretty(pod));
 
         } else {
 
@@ -297,7 +304,20 @@ public class PrivateJet {
                 .addToData("username", ADMIN64).addToData("password", ADMIN64).build();
 
         client.secrets().inNamespace(client.getNamespace()).createOrReplace(oauthSecret);
-        log.info("secret/" + " created");
+        log.info("secret/" + oauthSecret.getMetadata().getName() + " created");
+    }
+
+    /**
+     *
+     * @param client
+     */
+    private void applyBasicSecret(KubernetesClient client) {
+
+        Secret basicSecret = new SecretBuilder().withNewMetadata().withName(BASIC_CREDENTIALS_NAME).endMetadata()
+                .addToData("username", ADMIN64).addToData("password", ADMIN64).build();
+
+        client.secrets().inNamespace(client.getNamespace()).createOrReplace(basicSecret);
+        log.info("secret/" + basicSecret.getMetadata().getName() + " created");
     }
 
     /**
