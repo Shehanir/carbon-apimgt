@@ -35,11 +35,11 @@ import org.wso2.carbon.apimgt.api.model.API;
 import org.wso2.carbon.apimgt.impl.APIConstants;
 import org.wso2.carbon.apimgt.impl.definitions.OAS3Parser;
 import org.wso2.carbon.apimgt.impl.definitions.OASParserUtil;
+import org.wso2.carbon.registry.core.exceptions.RegistryException;
 
 import java.util.*;
 
 import static org.wso2.carbon.apimgt.impl.containermgt.ContainerBasedConstants.OPENAPI_SECURITY_SCHEMA_KEY_BASIC;
-import static org.wso2.carbon.apimgt.impl.containermgt.ContainerBasedConstants.OPENAPI_SECURITY_SCHEMA_KEY_OAUTH2;
 
 /**
  * This class extends the OAS3Parser class in order to override its method
@@ -70,9 +70,9 @@ public class SwaggerCreator extends OAS3Parser {
      * @throws APIManagementException throws if an error occurred
      * @throws ParseException         throws if the oasDefinition is not in json format
      */
-    @Override
-    public String getOASDefinitionForPublisher(API api, String oasDefinition)
-            throws APIManagementException, ParseException {
+
+    public String getOASDefinitionForPublisher(API api, String oasDefinition, Boolean isBasicAuth)
+            throws APIManagementException, ParseException, RegistryException {
         OpenAPI openAPI = getOpenAPI(oasDefinition);
         if (openAPI.getComponents() == null) {
             openAPI.setComponents(new Components());
@@ -130,6 +130,7 @@ public class SwaggerCreator extends OAS3Parser {
          * Removing the "security" key from the JSONObject
          */
         jsonObject.remove("security");
+        ((JSONObject) jsonObject.get("components")).remove("securitySchemes");
         Set<String> paths = ((JSONObject) jsonObject.get("paths")).keySet();
         Iterator iterator = paths.iterator();
 
@@ -146,43 +147,20 @@ public class SwaggerCreator extends OAS3Parser {
                         get(path)).get(verb)).remove("security");
             }
         }
+
+        if (isBasicAuth) {
+            List<SecurityRequirement> basicOauth = new ArrayList<SecurityRequirement>();
+            SecurityRequirement securityRequirement = new SecurityRequirement();
+            securityRequirement.addList(((String) ((JSONObject) jsonObject.get("info")).get("title")).toLowerCase() +
+                    OPENAPI_SECURITY_SCHEMA_KEY_BASIC, new ArrayList<String>());
+            basicOauth.add(securityRequirement);
+            jsonObject.put("security", basicOauth);
+        }
+
         String securityType = api.getApiSecurity().replace("oauth_basic_auth_api_key_mandatory", "");
         Boolean securityTypeOauth2 = isAPISecurityTypeOauth2(securityType);
         Boolean securityTypeAPIKey = isAPISecurityTypeAPIKey(securityType);
 
-        if (api.isEndpointSecured()) {
-            if (api.isEndpointAuthDigest()) {
-                List<SecurityRequirement> oauth2 = new ArrayList<SecurityRequirement>();
-                SecurityRequirement securityRequirement = new SecurityRequirement();
-                securityRequirement.addList(((String) ((JSONObject) jsonObject.get("info")).get("title")).toLowerCase() +
-                        OPENAPI_SECURITY_SCHEMA_KEY_OAUTH2, new ArrayList<String>());
-                oauth2.add(securityRequirement);
-                jsonObject.put("security", oauth2);
-            }
-            else {
-                List<SecurityRequirement> basic = new ArrayList<SecurityRequirement>();
-                SecurityRequirement securityRequirement = new SecurityRequirement();
-                securityRequirement.addList(((String) ((JSONObject) jsonObject.get("info")).get("title")).toLowerCase() +
-                        OPENAPI_SECURITY_SCHEMA_KEY_BASIC, new ArrayList<String>());
-                basic.add(securityRequirement);
-                jsonObject.put("security", basic);
-            }
-        }
-        /*if (securityTypeOauth2 && !securityTypeAPIKey) {
-            List<SecurityRequirement> oauth2 = new ArrayList<SecurityRequirement>();
-            SecurityRequirement securityRequirement = new SecurityRequirement();
-            securityRequirement.addList(((String) ((JSONObject) jsonObject.get("info")).get("title")).toLowerCase() +
-                    OPENAPI_SECURITY_SCHEMA_KEY_OAUTH2, new ArrayList<String>());
-            oauth2.add(securityRequirement);
-            jsonObject.put("security", oauth2);
-        } else if (securityTypeAPIKey && !securityTypeOauth2) {
-            List<SecurityRequirement> jwt = new ArrayList<SecurityRequirement>();
-            SecurityRequirement securityRequirement = new SecurityRequirement();
-            securityRequirement.addList(((String) ((JSONObject) jsonObject.get("info")).get("title")).toLowerCase() +
-                    OPENAPI_SECURITY_SCHEMA_KEY_JWT, new ArrayList<String>());
-            jwt.add(securityRequirement);
-            jsonObject.put("security", jwt);
-        }*/
         return Json.pretty(jsonObject);
     }
 

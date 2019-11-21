@@ -19,7 +19,6 @@
 package org.wso2.carbon.apimgt.impl;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.fabric8.kubernetes.client.KubernetesClientException;
 import org.apache.axiom.om.OMAbstractFactory;
 import org.apache.axiom.om.OMElement;
 import org.apache.axiom.om.OMException;
@@ -6339,31 +6338,28 @@ class APIProviderImpl extends AbstractAPIManager implements APIProvider {
             throws UserStoreException, RegistryException, IOException, ParseException, APIManagementException {
         String content = getTenantConfigContent();
         PrivateJet privateJet = new PrivateJet();
-        registry.beginTransaction();
         String apiArtifactId = registry.get(APIUtil.getAPIPath(api.getId())).getUUID();
         GenericArtifactManager artifactManager = APIUtil.getArtifactManager(registry, APIConstants.API_KEY);
         GenericArtifact artifact = artifactManager.getGenericArtifact(apiArtifactId);
         boolean isSecured = Boolean.parseBoolean(artifact.getAttribute(APIConstants.API_OVERVIEW_ENDPOINT_SECURED));
         boolean isDigestSecured = Boolean.parseBoolean(artifact.getAttribute(APIConstants.API_OVERVIEW_ENDPOINT_AUTH_DIGEST));
-        String userName = artifact.getAttribute(APIConstants.API_OVERVIEW_ENDPOINT_USERNAME);
-        String password = artifact.getAttribute(APIConstants.API_OVERVIEW_ENDPOINT_PASSWORD);
-        if (userName!= null && password!=null){
-            //Apply BASIC_AUTH
-        }
-        log.info("Username: " + userName + ", password: " + password);
+
         log.info("Publishing in Private Jet Mode");
+        if (isSecured || isDigestSecured) {
 
-        SwaggerCreator swaggerCreator = new SwaggerCreator();
-        String swagger = swaggerCreator.
-                getOASDefinitionForPublisher(api, OASParserUtil.getAPIDefinition(apiIdentifier, registry));
+            String userName = artifact.getAttribute(APIConstants.API_OVERVIEW_ENDPOINT_USERNAME);
+            String password = artifact.getAttribute(APIConstants.API_OVERVIEW_ENDPOINT_PASSWORD);
 
-        try {
-            privateJet.publishInPrivateJetMode(api, apiIdentifier, swaggerCreator, swagger, content);
-            log.info(api.isEndpointSecured());
-            log.info(api.isEndpointAuthDigest());
-        } catch (KubernetesClientException e) {
-            e.printStackTrace();
+            if (userName!= null && password!=null){
+
+                SwaggerCreator swaggerCreator = new SwaggerCreator();
+                String swagger = swaggerCreator.
+                        getOASDefinitionForPublisher(api, OASParserUtil.getAPIDefinition(apiIdentifier, registry), true);
+
+                privateJet.publishInPrivateJetMode(apiIdentifier, swagger, content, userName, password);
+            }
         }
+
 
     }
 

@@ -75,32 +75,66 @@ public class PrivateJet {
 
             KubernetesClient client = k8sClient.createClient(); //creating the client
 
-            if (api.isEndpointSecured()) {
-                if (api.isEndpointAuthDigest()) {
-                     String username = Base64.getEncoder().encodeToString(api.getEndpointUTUsername().getBytes());
-                     String password = Base64.getEncoder().encodeToString(api.getEndpointUTPassword().getBytes());
-                     applyOauthSecret(client, username, password);
-                     applySecretCert(client);
-                     applyOauthSecurity(client, apiIdentifier);
-
-                } else {
-                    String username = Base64.getEncoder().encodeToString(api.getEndpointUTUsername().getBytes());
-                    String password = Base64.getEncoder().encodeToString(api.getEndpointUTPassword().getBytes());
-                    applyBasicSecret(client, username, password);
-                    applyBasicAuthSecurity(client, apiIdentifier);
-
-                }
-            }
 
             /**
-             * If the invoking method is JWT
-             * necessary securities and secrets will be deployed
+             * configmapName would be "apiname.v" + "apiVersion"
              */
-            /*if (swaggerCreator.isSecurityJWT() && !swaggerCreator.isSecurityOauth2()) {
-                applySecretCert(client);
-                applyJWTSecurity(client, apiIdentifier);
-            }*/
+            String configmapName = apiIdentifier.getApiName().toLowerCase() + ".v" + apiIdentifier.getVersion();
 
+            io.fabric8.kubernetes.client.dsl.Resource<ConfigMap, DoneableConfigMap> configMapResource
+                    = client.configMaps().inNamespace(k8sClient.getNamespace()).withName(configmapName);
+
+            ConfigMap configMap = configMapResource.createOrReplace(new ConfigMapBuilder().withNewMetadata().
+                    withName(configmapName).withNamespace(k8sClient.getNamespace()).endMetadata().
+                    withApiVersion("v1").addToData(apiIdentifier.getApiName() + ".json", swaggerDefinition).build());
+
+            /**
+             * Remove this later!
+             * Outputs the swagger of API
+             */
+            log.info("Created ConfigMap at " + configMap.getMetadata().getSelfLink() + " data" + configMap.getData());
+            applyAPICustomResourceDefinition(client, configmapName, k8sClient.getReplicas(), apiIdentifier);
+            log.info("Successfully Published in Private-Jet Mode");
+
+            PodWatcher podWatcher = new PodWatcher();
+            podWatcher.setPodList(client.pods().list());
+            JSONObject pod = podWatcher.getPodStatus();
+            log.info(Json.pretty(pod));
+
+        } else {
+
+            log.error("Can not Publish In Private Jet Mode");
+            if (k8sClient.getMasterURL().equals("")) {
+                log.info("Master URL for the Kubernetes Cluster Has Not been Provided");
+            }
+
+            if (k8sClient.getSaToken().equals("")) {
+                log.info("Service Account Token for the Kubernetes Cluster Has Not been Provided");
+            }
+        }
+
+    }
+
+    //For basicAuth
+    public void publishInPrivateJetMode(APIIdentifier apiIdentifier, String swaggerDefinition,
+                                        String tenant_conf, String username, String password) throws ParseException {
+
+        TenantConfReader newReader = new TenantConfReader();
+        K8sClient k8sClient = newReader.readTenant(tenant_conf);
+
+
+        /**
+         * If the MasterURL and SAToken is not provided
+         * private jet mode will not be enabled
+         */
+        boolean publishInPrivateJet = ((!(k8sClient.getSaToken().equals("")))
+                && (!(k8sClient.getSaToken().equals(""))));
+
+        if (publishInPrivateJet) {
+
+            KubernetesClient client = k8sClient.createClient(); //creating the client
+            applyBasicSecret(client, username, password);
+            applyBasicAuthSecurity(client, apiIdentifier);
 
             /**
              * configmapName would be "apiname.v" + "apiVersion"
@@ -396,7 +430,8 @@ public class PrivateJet {
     private void applyBasicSecret(KubernetesClient client, String username, String password) {
 
         Secret basicSecret = new SecretBuilder().withNewMetadata().withName(BASIC_CREDENTIALS_NAME).endMetadata()
-                .addToData("username", username).addToData("password", password).build();
+                .addToData("username", Base64.getEncoder().encodeToString(username.getBytes()))
+                .addToData("password", Base64.getEncoder().encodeToString(password.getBytes())).build();
 
         client.secrets().inNamespace(client.getNamespace()).createOrReplace(basicSecret);
         log.info("secret/" + basicSecret.getMetadata().getName() + " created");
