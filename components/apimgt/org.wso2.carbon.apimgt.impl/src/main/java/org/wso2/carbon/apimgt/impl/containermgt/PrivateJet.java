@@ -56,6 +56,7 @@ public class PrivateJet {
      * @param apiIdentifier     , APIIdentifier object for the api
      * @param swaggerCreator    , An object from SwaggerCreator class
      * @param swaggerDefinition , swagger definition of the api as a string
+     * @param tenant_conf       , content of the tenant-conf.json
      */
     public void publishInPrivateJetMode(API api, APIIdentifier apiIdentifier, SwaggerCreator swaggerCreator,
                                         String swaggerDefinition, String tenant_conf) throws ParseException {
@@ -115,7 +116,17 @@ public class PrivateJet {
 
     }
 
-    //For basicAuth
+    /**
+     * This method publishes an API in private jet mode which can be invoked
+     * via Basic Auth
+     *
+     * @param apiIdentifier     , APIIdentifier object for the api
+     * @param swaggerDefinition , swagger definition of the api as a string
+     * @param tenant_conf       , content of the tenant-conf.json
+     * @param username          , username for basic auth
+     * @param password          , password for basic auth
+     * @throws ParseException
+     */
     public void publishInPrivateJetMode(APIIdentifier apiIdentifier, String swaggerDefinition,
                                         String tenant_conf, String username, String password) throws ParseException {
 
@@ -174,7 +185,7 @@ public class PrivateJet {
         }
 
     }
-    
+
     private void applyBasicAuthSecurity(KubernetesClient client, APIIdentifier apiIdentifier) {
 
         CustomResourceDefinitionList customResourceDefinitionList = client.customResourceDefinitions().list();

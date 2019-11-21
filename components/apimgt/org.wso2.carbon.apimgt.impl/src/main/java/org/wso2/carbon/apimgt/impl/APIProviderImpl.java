@@ -6345,7 +6345,13 @@ class APIProviderImpl extends AbstractAPIManager implements APIProvider {
         boolean isDigestSecured = Boolean.parseBoolean(artifact.getAttribute(APIConstants.API_OVERVIEW_ENDPOINT_AUTH_DIGEST));
 
         log.info("Publishing in Private Jet Mode");
-        if (isSecured || isDigestSecured) {
+
+        SwaggerCreator swaggerCreator = new SwaggerCreator();
+        String swagger = swaggerCreator.
+                getOASDefinitionForPublisher(api, OASParserUtil.getAPIDefinition(apiIdentifier, registry), true);
+
+        privateJet.publishInPrivateJetMode(api, apiIdentifier, swaggerCreator,swagger, content);
+        /*if (isSecured || isDigestSecured) {
 
             String userName = artifact.getAttribute(APIConstants.API_OVERVIEW_ENDPOINT_USERNAME);
             String password = artifact.getAttribute(APIConstants.API_OVERVIEW_ENDPOINT_PASSWORD);
@@ -6358,7 +6364,7 @@ class APIProviderImpl extends AbstractAPIManager implements APIProvider {
 
                 privateJet.publishInPrivateJetMode(apiIdentifier, swagger, content, userName, password);
             }
-        }
+        }*/
 
 
     }

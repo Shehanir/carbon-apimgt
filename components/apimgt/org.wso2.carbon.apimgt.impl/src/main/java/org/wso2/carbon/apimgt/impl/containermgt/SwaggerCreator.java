@@ -130,7 +130,7 @@ public class SwaggerCreator extends OAS3Parser {
          * Removing the "security" key from the JSONObject
          */
         jsonObject.remove("security");
-        ((JSONObject) jsonObject.get("components")).remove("securitySchemes");
+        ((JSONObject) ((JSONObject) jsonObject.get("components")).get("securitySchemes")).remove("default");
         Set<String> paths = ((JSONObject) jsonObject.get("paths")).keySet();
         Iterator iterator = paths.iterator();
 
@@ -157,9 +157,11 @@ public class SwaggerCreator extends OAS3Parser {
             jsonObject.put("security", basicOauth);
         }
 
+        log.info("************************************************" + api.getApiSecurity());
         String securityType = api.getApiSecurity().replace("oauth_basic_auth_api_key_mandatory", "");
         Boolean securityTypeOauth2 = isAPISecurityTypeOauth2(securityType);
         Boolean securityTypeAPIKey = isAPISecurityTypeAPIKey(securityType);
+
 
         return Json.pretty(jsonObject);
     }

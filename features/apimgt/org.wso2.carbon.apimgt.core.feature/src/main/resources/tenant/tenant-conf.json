@@ -4,8 +4,10 @@
   "K8sClusterInfo": {
     "k8sMasterURL" : "",
     "saToken" : "",
-    "namespace" : "wso2",
-    "replicas" : 1
+    "namespace" : "default",
+    "replicas" : 1,
+    "basicSecuritySecretName" : "",
+    "oauthSecuritySecretName" : ""
   },
   "ExtensionHandlerPosition": "bottom",
   "RESTAPIScopes": {
