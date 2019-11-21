@@ -31,10 +31,12 @@ import org.json.simple.JSONObject;
 import org.json.simple.parser.ParseException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.wso2.carbon.apimgt.api.model.API;
 import org.wso2.carbon.apimgt.api.model.APIIdentifier;
 import org.wso2.carbon.apimgt.impl.containermgt.k8scrd.*;
 import org.wso2.carbon.apimgt.impl.containermgt.k8scrd.security.*;
 
+import java.util.Base64;
 import java.util.List;
 
 import static org.wso2.carbon.apimgt.impl.containermgt.ContainerBasedConstants.*;
@@ -50,15 +52,17 @@ public class PrivateJet {
      * This method creates the k8s client, deploy the swagger definition as a config
      * map and deploy the custom resource definitions.
      *
-     * @param swaggerDefinition , swagger definition of the api as a string
+     * @param api
      * @param apiIdentifier     , APIIdentifier object for the api
      * @param swaggerCreator    , An object from SwaggerCreator class
+     * @param swaggerDefinition , swagger definition of the api as a string
      */
-    public void publishInPrivateJetMode(String swaggerDefinition, APIIdentifier apiIdentifier, String tenant_conf,
-                                        SwaggerCreator swaggerCreator) throws ParseException {
+    public void publishInPrivateJetMode(API api, APIIdentifier apiIdentifier, SwaggerCreator swaggerCreator,
+                                        String swaggerDefinition, String tenant_conf) throws ParseException {
 
         TenantConfReader newReader = new TenantConfReader();
         K8sClient k8sClient = newReader.readTenant(tenant_conf);
+
 
         /**
          * If the MasterURL and SAToken is not provided
@@ -71,24 +75,32 @@ public class PrivateJet {
 
             KubernetesClient client = k8sClient.createClient(); //creating the client
 
+            if (api.isEndpointSecured()) {
+                if (api.isEndpointAuthDigest()) {
+                     String username = Base64.getEncoder().encodeToString(api.getEndpointUTUsername().getBytes());
+                     String password = Base64.getEncoder().encodeToString(api.getEndpointUTPassword().getBytes());
+                     applyOauthSecret(client, username, password);
+                     applySecretCert(client);
+                     applyOauthSecurity(client, apiIdentifier);
+
+                } else {
+                    String username = Base64.getEncoder().encodeToString(api.getEndpointUTUsername().getBytes());
+                    String password = Base64.getEncoder().encodeToString(api.getEndpointUTPassword().getBytes());
+                    applyBasicSecret(client, username, password);
+                    applyBasicAuthSecurity(client, apiIdentifier);
+
+                }
+            }
+
             /**
              * If the invoking method is JWT
              * necessary securities and secrets will be deployed
              */
-            if (swaggerCreator.isSecurityJWT() && !swaggerCreator.isSecurityOauth2()) {
+            /*if (swaggerCreator.isSecurityJWT() && !swaggerCreator.isSecurityOauth2()) {
                 applySecretCert(client);
                 applyJWTSecurity(client, apiIdentifier);
-            }
+            }*/
 
-            /**
-             * If the invoking method is OAuth2
-             * necessary securities and secrets will be deployed
-             */
-            else if (swaggerCreator.isSecurityOauth2() && !swaggerCreator.isSecurityJWT()) {
-                applySecretCert(client);
-                applyOauthSecret(client);
-                applyOauthSecurity(client, apiIdentifier);
-            }
 
             /**
              * configmapName would be "apiname.v" + "apiVersion"
@@ -126,6 +138,7 @@ public class PrivateJet {
                 log.info("Service Account Token for the Kubernetes Cluster Has Not been Provided");
             }
         }
+
     }
     
     private void applyBasicAuthSecurity(KubernetesClient client, APIIdentifier apiIdentifier) {
@@ -366,10 +379,10 @@ public class PrivateJet {
      *
      * @param client , Kubernetes client
      */
-    private void applyOauthSecret(KubernetesClient client) {
+    private void applyOauthSecret(KubernetesClient client, String username, String password) {
 
         Secret oauthSecret = new SecretBuilder().withNewMetadata().withName(OAUTH2_CREDENTIALS_NAME).endMetadata()
-                .addToData("username", ADMIN64).addToData("password", ADMIN64).build();
+                .addToData("username", username).addToData("password", password).build();
 
         client.secrets().inNamespace(client.getNamespace()).createOrReplace(oauthSecret);
         log.info("secret/" + oauthSecret.getMetadata().getName() + " created");
@@ -380,10 +393,10 @@ public class PrivateJet {
      *
      * @param client
      */
-    private void applyBasicSecret(KubernetesClient client) {
+    private void applyBasicSecret(KubernetesClient client, String username, String password) {
 
         Secret basicSecret = new SecretBuilder().withNewMetadata().withName(BASIC_CREDENTIALS_NAME).endMetadata()
-                .addToData("username", ADMIN64).addToData("password", ADMIN64).build();
+                .addToData("username", username).addToData("password", password).build();
 
         client.secrets().inNamespace(client.getNamespace()).createOrReplace(basicSecret);
         log.info("secret/" + basicSecret.getMetadata().getName() + " created");

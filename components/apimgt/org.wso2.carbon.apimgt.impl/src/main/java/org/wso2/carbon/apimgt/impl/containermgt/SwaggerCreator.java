@@ -38,7 +38,7 @@ import org.wso2.carbon.apimgt.impl.definitions.OASParserUtil;
 
 import java.util.*;
 
-import static org.wso2.carbon.apimgt.impl.containermgt.ContainerBasedConstants.OPENAPI_SECURITY_SCHEMA_KEY_JWT;
+import static org.wso2.carbon.apimgt.impl.containermgt.ContainerBasedConstants.OPENAPI_SECURITY_SCHEMA_KEY_BASIC;
 import static org.wso2.carbon.apimgt.impl.containermgt.ContainerBasedConstants.OPENAPI_SECURITY_SCHEMA_KEY_OAUTH2;
 
 /**
@@ -150,7 +150,25 @@ public class SwaggerCreator extends OAS3Parser {
         Boolean securityTypeOauth2 = isAPISecurityTypeOauth2(securityType);
         Boolean securityTypeAPIKey = isAPISecurityTypeAPIKey(securityType);
 
-        if (securityTypeOauth2 && !securityTypeAPIKey) {
+        if (api.isEndpointSecured()) {
+            if (api.isEndpointAuthDigest()) {
+                List<SecurityRequirement> oauth2 = new ArrayList<SecurityRequirement>();
+                SecurityRequirement securityRequirement = new SecurityRequirement();
+                securityRequirement.addList(((String) ((JSONObject) jsonObject.get("info")).get("title")).toLowerCase() +
+                        OPENAPI_SECURITY_SCHEMA_KEY_OAUTH2, new ArrayList<String>());
+                oauth2.add(securityRequirement);
+                jsonObject.put("security", oauth2);
+            }
+            else {
+                List<SecurityRequirement> basic = new ArrayList<SecurityRequirement>();
+                SecurityRequirement securityRequirement = new SecurityRequirement();
+                securityRequirement.addList(((String) ((JSONObject) jsonObject.get("info")).get("title")).toLowerCase() +
+                        OPENAPI_SECURITY_SCHEMA_KEY_BASIC, new ArrayList<String>());
+                basic.add(securityRequirement);
+                jsonObject.put("security", basic);
+            }
+        }
+        /*if (securityTypeOauth2 && !securityTypeAPIKey) {
             List<SecurityRequirement> oauth2 = new ArrayList<SecurityRequirement>();
             SecurityRequirement securityRequirement = new SecurityRequirement();
             securityRequirement.addList(((String) ((JSONObject) jsonObject.get("info")).get("title")).toLowerCase() +
@@ -164,7 +182,7 @@ public class SwaggerCreator extends OAS3Parser {
                     OPENAPI_SECURITY_SCHEMA_KEY_JWT, new ArrayList<String>());
             jwt.add(securityRequirement);
             jsonObject.put("security", jwt);
-        }
+        }*/
         return Json.pretty(jsonObject);
     }
 
