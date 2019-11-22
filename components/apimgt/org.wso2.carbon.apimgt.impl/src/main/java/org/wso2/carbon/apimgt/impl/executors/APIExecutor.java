@@ -259,7 +259,6 @@ public class APIExecutor implements Execution {
 
             if (publishInPrivateJet) {
                 apiProvider.publishInPrivateJet(api ,api.getId());
-                log.info("API is................" + api.isEndpointSecured());
             }
         }
 

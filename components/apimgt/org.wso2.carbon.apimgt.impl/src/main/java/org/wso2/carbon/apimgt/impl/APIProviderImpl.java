@@ -6336,37 +6336,16 @@ class APIProviderImpl extends AbstractAPIManager implements APIProvider {
     @Override
     public void publishInPrivateJet(API api, APIIdentifier apiIdentifier)
             throws UserStoreException, RegistryException, IOException, ParseException, APIManagementException {
+
         String content = getTenantConfigContent();
         PrivateJet privateJet = new PrivateJet();
-        String apiArtifactId = registry.get(APIUtil.getAPIPath(api.getId())).getUUID();
-        GenericArtifactManager artifactManager = APIUtil.getArtifactManager(registry, APIConstants.API_KEY);
-        GenericArtifact artifact = artifactManager.getGenericArtifact(apiArtifactId);
-        boolean isSecured = Boolean.parseBoolean(artifact.getAttribute(APIConstants.API_OVERVIEW_ENDPOINT_SECURED));
-        boolean isDigestSecured = Boolean.parseBoolean(artifact.getAttribute(APIConstants.API_OVERVIEW_ENDPOINT_AUTH_DIGEST));
-
         log.info("Publishing in Private Jet Mode");
 
         SwaggerCreator swaggerCreator = new SwaggerCreator();
         String swagger = swaggerCreator.
-                getOASDefinitionForPublisher(api, OASParserUtil.getAPIDefinition(apiIdentifier, registry), true);
+                getOASDefinitionForPublisher(api, OASParserUtil.getAPIDefinition(apiIdentifier, registry));
 
-        privateJet.publishInPrivateJetMode(api, apiIdentifier, swaggerCreator,swagger, content);
-        /*if (isSecured || isDigestSecured) {
-
-            String userName = artifact.getAttribute(APIConstants.API_OVERVIEW_ENDPOINT_USERNAME);
-            String password = artifact.getAttribute(APIConstants.API_OVERVIEW_ENDPOINT_PASSWORD);
-
-            if (userName!= null && password!=null){
-
-                SwaggerCreator swaggerCreator = new SwaggerCreator();
-                String swagger = swaggerCreator.
-                        getOASDefinitionForPublisher(api, OASParserUtil.getAPIDefinition(apiIdentifier, registry), true);
-
-                privateJet.publishInPrivateJetMode(apiIdentifier, swagger, content, userName, password);
-            }
-        }*/
-
-
+        privateJet.publishInPrivateJetMode(apiIdentifier, swagger, swaggerCreator, content);
     }
 
     private void cleanUpPendingAPIStateChangeTask(int apiId) throws WorkflowException, APIManagementException {

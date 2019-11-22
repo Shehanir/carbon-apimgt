@@ -35,11 +35,11 @@ import org.wso2.carbon.apimgt.api.model.API;
 import org.wso2.carbon.apimgt.impl.APIConstants;
 import org.wso2.carbon.apimgt.impl.definitions.OAS3Parser;
 import org.wso2.carbon.apimgt.impl.definitions.OASParserUtil;
-import org.wso2.carbon.registry.core.exceptions.RegistryException;
 
 import java.util.*;
 
 import static org.wso2.carbon.apimgt.impl.containermgt.ContainerBasedConstants.OPENAPI_SECURITY_SCHEMA_KEY_BASIC;
+import static org.wso2.carbon.apimgt.impl.containermgt.ContainerBasedConstants.OPENAPI_SECURITY_SCHEMA_KEY_OAUTH2;
 
 /**
  * This class extends the OAS3Parser class in order to override its method
@@ -50,14 +50,14 @@ public class SwaggerCreator extends OAS3Parser {
     private static final Log log = LogFactory.getLog(SwaggerCreator.class);
     private static final String OPENAPI_SECURITY_SCHEMA_KEY = "default";
     private boolean securityOauth2 = false;
-    private boolean securityJWT = false;
+    private boolean securityBasicAuth = false;
 
     public boolean isSecurityOauth2() {
         return securityOauth2;
     }
 
-    public boolean isSecurityJWT() {
-        return securityJWT;
+    public boolean isSecurityBasicAuth() {
+        return securityBasicAuth;
     }
 
     /**
@@ -71,8 +71,9 @@ public class SwaggerCreator extends OAS3Parser {
      * @throws ParseException         throws if the oasDefinition is not in json format
      */
 
-    public String getOASDefinitionForPublisher(API api, String oasDefinition, Boolean isBasicAuth)
-            throws APIManagementException, ParseException, RegistryException {
+    @Override
+    public String getOASDefinitionForPublisher(API api, String oasDefinition)
+            throws APIManagementException, ParseException {
         OpenAPI openAPI = getOpenAPI(oasDefinition);
         if (openAPI.getComponents() == null) {
             openAPI.setComponents(new Components());
@@ -148,7 +149,11 @@ public class SwaggerCreator extends OAS3Parser {
             }
         }
 
-        if (isBasicAuth) {
+        String securityType = api.getApiSecurity().replace("oauth_basic_auth_api_key_mandatory", "");
+        Boolean securityTypeOauth2 = isAPISecurityTypeOauth2(securityType);
+        Boolean securityTypeBasicAuth = isAPISecurityBasicAuth(securityType);
+
+        if (securityTypeBasicAuth && !securityTypeOauth2) {
             List<SecurityRequirement> basicOauth = new ArrayList<SecurityRequirement>();
             SecurityRequirement securityRequirement = new SecurityRequirement();
             securityRequirement.addList(((String) ((JSONObject) jsonObject.get("info")).get("title")).toLowerCase() +
@@ -157,11 +162,26 @@ public class SwaggerCreator extends OAS3Parser {
             jsonObject.put("security", basicOauth);
         }
 
-        log.info("************************************************" + api.getApiSecurity());
-        String securityType = api.getApiSecurity().replace("oauth_basic_auth_api_key_mandatory", "");
-        Boolean securityTypeOauth2 = isAPISecurityTypeOauth2(securityType);
-        Boolean securityTypeAPIKey = isAPISecurityTypeAPIKey(securityType);
+        else if (securityTypeOauth2 && !securityTypeBasicAuth) {
+            List<SecurityRequirement> oauth2 = new ArrayList<SecurityRequirement>();
+            SecurityRequirement securityRequirement = new SecurityRequirement();
+            securityRequirement.addList(((String) ((JSONObject) jsonObject.get("info")).get("title")).toLowerCase() +
+                    OPENAPI_SECURITY_SCHEMA_KEY_OAUTH2, new ArrayList<String>());
+            oauth2.add(securityRequirement);
+            jsonObject.put("security", oauth2);
+        }
 
+        else if (securityTypeBasicAuth && securityTypeOauth2) {
+            List<SecurityRequirement> oauth2BasicAuth = new ArrayList<SecurityRequirement>();
+            SecurityRequirement securityRequirement = new SecurityRequirement();
+            securityRequirement.addList(((String) ((JSONObject) jsonObject.get("info")).get("title")).toLowerCase() +
+                    OPENAPI_SECURITY_SCHEMA_KEY_OAUTH2, new ArrayList<String>());
+            securityRequirement.addList(((String) ((JSONObject) jsonObject.get("info")).get("title")).toLowerCase() +
+                    OPENAPI_SECURITY_SCHEMA_KEY_BASIC, new ArrayList<String>());
+
+            oauth2BasicAuth.add(securityRequirement);
+            jsonObject.put("security", oauth2BasicAuth);
+        }
 
         return Json.pretty(jsonObject);
     }
@@ -172,7 +192,7 @@ public class SwaggerCreator extends OAS3Parser {
      * @param oasDefinition OAS definition
      * @return OpenAPI
      */
-    OpenAPI getOpenAPI(String oasDefinition) {
+    private OpenAPI getOpenAPI(String oasDefinition) {
         OpenAPIV3Parser openAPIV3Parser = new OpenAPIV3Parser();
         SwaggerParseResult parseAttemptForV3 = openAPIV3Parser.readContents(oasDefinition, null, null);
         if (CollectionUtils.isNotEmpty(parseAttemptForV3.getMessages())) {
@@ -181,7 +201,7 @@ public class SwaggerCreator extends OAS3Parser {
         return parseAttemptForV3.getOpenAPI();
     }
 
-    Boolean isAPISecurityTypeOauth2(String apiSecurity) {
+    private Boolean isAPISecurityTypeOauth2(String apiSecurity) {
         if (apiSecurity.contains("oauth2")) {
             this.securityOauth2 = true;
             return true;
@@ -189,11 +209,12 @@ public class SwaggerCreator extends OAS3Parser {
         return false;
     }
 
-    Boolean isAPISecurityTypeAPIKey(String apiSecurity) {
-        if (apiSecurity.contains("api_key")) {
-            this.securityJWT = true;
+    private Boolean isAPISecurityBasicAuth(String apiSecurity) {
+        if (apiSecurity.contains("basic_auth")) {
+            this.securityBasicAuth = true;
             return true;
         }
         return false;
     }
+
 }

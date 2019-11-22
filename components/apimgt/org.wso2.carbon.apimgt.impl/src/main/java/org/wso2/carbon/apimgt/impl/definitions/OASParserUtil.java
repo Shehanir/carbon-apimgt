@@ -932,13 +932,8 @@ public class OASParserUtil {
             if (!StringUtils.isEmpty(api.getEndpointUTUsername())) {
                 securityConfigObj.put(APIConstants.ENDPOINT_SECURITY_USERNAME, api.getEndpointUTUsername());
             }
-            /*if (!StringUtils.isEmpty(api.getEndpointUTPassword())) {
-                securityConfigObj.put(APIConstants.ENDPOINT_PASSWORD_ELEMENT, api.getEndpointUTPassword());
-
-            }*/
             endpointResult.set(APIConstants.ENDPOINT_SECURITY_CONFIG, securityConfigObj);
         }
-        log.info(api.isEndpointSecured() + "...............*******************>>>>>>>>>>>>>>>>>");
     }
 
     /**

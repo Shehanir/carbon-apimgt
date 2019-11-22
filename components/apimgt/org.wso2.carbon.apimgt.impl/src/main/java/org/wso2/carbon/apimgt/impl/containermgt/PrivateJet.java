@@ -31,12 +31,10 @@ import org.json.simple.JSONObject;
 import org.json.simple.parser.ParseException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.wso2.carbon.apimgt.api.model.API;
 import org.wso2.carbon.apimgt.api.model.APIIdentifier;
 import org.wso2.carbon.apimgt.impl.containermgt.k8scrd.*;
 import org.wso2.carbon.apimgt.impl.containermgt.k8scrd.security.*;
 
-import java.util.Base64;
 import java.util.List;
 
 import static org.wso2.carbon.apimgt.impl.containermgt.ContainerBasedConstants.*;
@@ -49,90 +47,19 @@ public class PrivateJet {
     private static final Logger log = LoggerFactory.getLogger(PrivateJet.class);
 
     /**
-     * This method creates the k8s client, deploy the swagger definition as a config
-     * map and deploy the custom resource definitions.
+     * publishes an API in private jet mode
      *
-     * @param api
-     * @param apiIdentifier     , APIIdentifier object for the api
-     * @param swaggerCreator    , An object from SwaggerCreator class
-     * @param swaggerDefinition , swagger definition of the api as a string
+     * @param apiIdentifier     , API Identifier
+     * @param swaggerDefinition , swagger of the API
+     * @param swaggerCreator    , SwaggerCreator object for getting security info
      * @param tenant_conf       , content of the tenant-conf.json
-     */
-    public void publishInPrivateJetMode(API api, APIIdentifier apiIdentifier, SwaggerCreator swaggerCreator,
-                                        String swaggerDefinition, String tenant_conf) throws ParseException {
-
-        TenantConfReader newReader = new TenantConfReader();
-        K8sClient k8sClient = newReader.readTenant(tenant_conf);
-
-
-        /**
-         * If the MasterURL and SAToken is not provided
-         * private jet mode will not be enabled
-         */
-        boolean publishInPrivateJet = ((!(k8sClient.getSaToken().equals("")))
-                && (!(k8sClient.getSaToken().equals(""))));
-
-        if (publishInPrivateJet) {
-
-            KubernetesClient client = k8sClient.createClient(); //creating the client
-
-
-            /**
-             * configmapName would be "apiname.v" + "apiVersion"
-             */
-            String configmapName = apiIdentifier.getApiName().toLowerCase() + ".v" + apiIdentifier.getVersion();
-
-            io.fabric8.kubernetes.client.dsl.Resource<ConfigMap, DoneableConfigMap> configMapResource
-                    = client.configMaps().inNamespace(k8sClient.getNamespace()).withName(configmapName);
-
-            ConfigMap configMap = configMapResource.createOrReplace(new ConfigMapBuilder().withNewMetadata().
-                    withName(configmapName).withNamespace(k8sClient.getNamespace()).endMetadata().
-                    withApiVersion("v1").addToData(apiIdentifier.getApiName() + ".json", swaggerDefinition).build());
-
-            /**
-             * Remove this later!
-             * Outputs the swagger of API
-             */
-            log.info("Created ConfigMap at " + configMap.getMetadata().getSelfLink() + " data" + configMap.getData());
-            applyAPICustomResourceDefinition(client, configmapName, k8sClient.getReplicas(), apiIdentifier);
-            log.info("Successfully Published in Private-Jet Mode");
-
-            PodWatcher podWatcher = new PodWatcher();
-            podWatcher.setPodList(client.pods().list());
-            JSONObject pod = podWatcher.getPodStatus();
-            log.info(Json.pretty(pod));
-
-        } else {
-
-            log.error("Can not Publish In Private Jet Mode");
-            if (k8sClient.getMasterURL().equals("")) {
-                log.info("Master URL for the Kubernetes Cluster Has Not been Provided");
-            }
-
-            if (k8sClient.getSaToken().equals("")) {
-                log.info("Service Account Token for the Kubernetes Cluster Has Not been Provided");
-            }
-        }
-
-    }
-
-    /**
-     * This method publishes an API in private jet mode which can be invoked
-     * via Basic Auth
-     *
-     * @param apiIdentifier     , APIIdentifier object for the api
-     * @param swaggerDefinition , swagger definition of the api as a string
-     * @param tenant_conf       , content of the tenant-conf.json
-     * @param username          , username for basic auth
-     * @param password          , password for basic auth
-     * @throws ParseException
+     * @throws ParseException , applies for readTenant method
      */
     public void publishInPrivateJetMode(APIIdentifier apiIdentifier, String swaggerDefinition,
-                                        String tenant_conf, String username, String password) throws ParseException {
+                                        SwaggerCreator swaggerCreator, String tenant_conf) throws ParseException {
 
         TenantConfReader newReader = new TenantConfReader();
         K8sClient k8sClient = newReader.readTenant(tenant_conf);
-
 
         /**
          * If the MasterURL and SAToken is not provided
@@ -144,8 +71,19 @@ public class PrivateJet {
         if (publishInPrivateJet) {
 
             KubernetesClient client = k8sClient.createClient(); //creating the client
-            applyBasicSecret(client, username, password);
-            applyBasicAuthSecurity(client, apiIdentifier);
+
+            if (swaggerCreator.isSecurityBasicAuth()) {
+                String basicAuthSecretName = k8sClient.getBasicSecuritySecretName();
+                applyBasicAuthSecurity(client, apiIdentifier, basicAuthSecretName);
+            }
+            /**
+             * How to provide the certificate??
+             */
+            if (swaggerCreator.isSecurityOauth2()) {
+                String oauth2SecretName = k8sClient.getOauthSecuritySecretName();
+                applySecretCert(client);
+                applyOauthSecurity(client, apiIdentifier, oauth2SecretName);
+            }
 
             /**
              * configmapName would be "apiname.v" + "apiVersion"
@@ -184,9 +122,10 @@ public class PrivateJet {
             }
         }
 
+
     }
 
-    private void applyBasicAuthSecurity(KubernetesClient client, APIIdentifier apiIdentifier) {
+    private void applyBasicAuthSecurity(KubernetesClient client, APIIdentifier apiIdentifier, String secretName) {
 
         CustomResourceDefinitionList customResourceDefinitionList = client.customResourceDefinitions().list();
         List<CustomResourceDefinition> customResourceDefinitionItems = customResourceDefinitionList.getItems();
@@ -237,7 +176,7 @@ public class PrivateJet {
 
         BasicAuthCustomResourceDefinitionSpec spec = new BasicAuthCustomResourceDefinitionSpec();
         spec.setType(BASIC_TYPE);
-        spec.setCredentials(BASIC_CREDENTIALS_NAME);
+        spec.setCredentials(secretName);
         BasicAuthCustomResourceDefinition basicAuthSecurityCustomResourceDefinition =
                 new BasicAuthCustomResourceDefinition();
         basicAuthSecurityCustomResourceDefinition.setKind(SECURITY_KIND);
@@ -336,7 +275,7 @@ public class PrivateJet {
      * @param client        , Kubernetes client
      * @param apiIdentifier , API Identifier
      */
-    private void applyOauthSecurity(KubernetesClient client, APIIdentifier apiIdentifier) {
+    private void applyOauthSecurity(KubernetesClient client, APIIdentifier apiIdentifier, String oauthSecretName) {
 
         CustomResourceDefinitionList customResourceDefinitionList = client.customResourceDefinitions().list();
         List<CustomResourceDefinition> customResourceDefinitionItems = customResourceDefinitionList.getItems();
@@ -385,7 +324,7 @@ public class PrivateJet {
 
         OauthCustomResourceDefinitionSpec spec = new OauthCustomResourceDefinitionSpec();
         spec.setCertificate(SECURITY_CERTIFICATE);
-        spec.setCredentials(OAUTH2_CREDENTIALS_NAME);
+        spec.setCredentials(oauthSecretName);
         spec.setEndpoint(OAUTH2_END_POINT);
         spec.setType(OAUTH_TYPE);
 
@@ -431,21 +370,6 @@ public class PrivateJet {
 
         client.secrets().inNamespace(client.getNamespace()).createOrReplace(oauthSecret);
         log.info("secret/" + oauthSecret.getMetadata().getName() + " created");
-    }
-
-    /**
-     * Deploys Basic Auth secret kind
-     *
-     * @param client
-     */
-    private void applyBasicSecret(KubernetesClient client, String username, String password) {
-
-        Secret basicSecret = new SecretBuilder().withNewMetadata().withName(BASIC_CREDENTIALS_NAME).endMetadata()
-                .addToData("username", Base64.getEncoder().encodeToString(username.getBytes()))
-                .addToData("password", Base64.getEncoder().encodeToString(password.getBytes())).build();
-
-        client.secrets().inNamespace(client.getNamespace()).createOrReplace(basicSecret);
-        log.info("secret/" + basicSecret.getMetadata().getName() + " created");
     }
 
     /**

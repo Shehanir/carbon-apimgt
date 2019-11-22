@@ -31,6 +31,8 @@ public class K8sClient {
     private String saToken;
     private String namespace;
     private int replicas;
+    private String basicSecuritySecretName;
+    private String oauthSecuritySecretName;
 
     public String getMasterURL() {
         return masterURL;
@@ -62,6 +64,22 @@ public class K8sClient {
 
     public void setNamespace(String namespace) {
         this.namespace = namespace;
+    }
+
+    public String getBasicSecuritySecretName() {
+        return basicSecuritySecretName;
+    }
+
+    public String getOauthSecuritySecretName() {
+        return oauthSecuritySecretName;
+    }
+
+    public void setBasicSecuritySecretName(String basicSecuritySecretName) {
+        this.basicSecuritySecretName = basicSecuritySecretName;
+    }
+
+    public void setOauthSecuritySecretName(String oauthSecuritySecretName) {
+        this.oauthSecuritySecretName = oauthSecuritySecretName;
     }
 
     /**
