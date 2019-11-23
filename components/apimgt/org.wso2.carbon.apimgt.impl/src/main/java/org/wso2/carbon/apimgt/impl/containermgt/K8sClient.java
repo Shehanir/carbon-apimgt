@@ -31,8 +31,9 @@ public class K8sClient {
     private String saToken;
     private String namespace;
     private int replicas;
-    private String basicSecuritySecretName;
-    private String oauthSecuritySecretName;
+    private String basicSecurityCustomResourceName;
+    private String oauthSecurityCustomResourceName;
+    private String jwtSecurityCustomResourceName;
 
     public String getMasterURL() {
         return masterURL;
@@ -66,20 +67,28 @@ public class K8sClient {
         this.namespace = namespace;
     }
 
-    public String getBasicSecuritySecretName() {
-        return basicSecuritySecretName;
+    public String getBasicSecurityCustomResourceName() {
+        return basicSecurityCustomResourceName;
     }
 
-    public String getOauthSecuritySecretName() {
-        return oauthSecuritySecretName;
+    public String getOauthSecurityCustomResourceName() {
+        return oauthSecurityCustomResourceName;
     }
 
-    public void setBasicSecuritySecretName(String basicSecuritySecretName) {
-        this.basicSecuritySecretName = basicSecuritySecretName;
+    public void setBasicSecurityCustomResourceName(String basicSecurityCustomResourceName) {
+        this.basicSecurityCustomResourceName = basicSecurityCustomResourceName;
     }
 
-    public void setOauthSecuritySecretName(String oauthSecuritySecretName) {
-        this.oauthSecuritySecretName = oauthSecuritySecretName;
+    public void setOauthSecurityCustomResourceName(String oauthSecurityCustomResourceName) {
+        this.oauthSecurityCustomResourceName = oauthSecurityCustomResourceName;
+    }
+
+    public String getJwtSecurityCustomResourceName() {
+        return jwtSecurityCustomResourceName;
+    }
+
+    public void setJwtSecurityCustomResourceName(String jwtSecurityCustomResourceName) {
+        this.jwtSecurityCustomResourceName = jwtSecurityCustomResourceName;
     }
 
     /**

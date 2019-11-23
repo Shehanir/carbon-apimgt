@@ -38,9 +38,6 @@ import org.wso2.carbon.apimgt.impl.definitions.OASParserUtil;
 
 import java.util.*;
 
-import static org.wso2.carbon.apimgt.impl.containermgt.ContainerBasedConstants.OPENAPI_SECURITY_SCHEMA_KEY_BASIC;
-import static org.wso2.carbon.apimgt.impl.containermgt.ContainerBasedConstants.OPENAPI_SECURITY_SCHEMA_KEY_OAUTH2;
-
 /**
  * This class extends the OAS3Parser class in order to override its method
  * "getOASDefinitionForPublisher".
@@ -64,16 +61,21 @@ public class SwaggerCreator extends OAS3Parser {
      * This method returns the swagger definition of an api
      * which suits for k8s_apim_operator
      *
-     * @param api           API
-     * @param oasDefinition Open API definition
+     * @param api               API
+     * @param oasDefinition     Open API definition
+     * @param basicSecurityName
+     * @param jwtSecurityName
+     * @param oauthSecurityName
      * @return OAS definition
      * @throws APIManagementException throws if an error occurred
      * @throws ParseException         throws if the oasDefinition is not in json format
      */
 
-    @Override
-    public String getOASDefinitionForPublisher(API api, String oasDefinition)
+
+    public String getOASDefinitionForPublisher(API api, String oasDefinition, String basicSecurityName,
+                                               String jwtSecurityName, String oauthSecurityName)
             throws APIManagementException, ParseException {
+
         OpenAPI openAPI = getOpenAPI(oasDefinition);
         if (openAPI.getComponents() == null) {
             openAPI.setComponents(new Components());
@@ -153,34 +155,32 @@ public class SwaggerCreator extends OAS3Parser {
         Boolean securityTypeOauth2 = isAPISecurityTypeOauth2(securityType);
         Boolean securityTypeBasicAuth = isAPISecurityBasicAuth(securityType);
 
-        if (securityTypeBasicAuth && !securityTypeOauth2) {
-            List<SecurityRequirement> basicOauth = new ArrayList<SecurityRequirement>();
-            SecurityRequirement securityRequirement = new SecurityRequirement();
-            securityRequirement.addList(((String) ((JSONObject) jsonObject.get("info")).get("title")).toLowerCase() +
-                    OPENAPI_SECURITY_SCHEMA_KEY_BASIC, new ArrayList<String>());
-            basicOauth.add(securityRequirement);
-            jsonObject.put("security", basicOauth);
-        }
 
-        else if (securityTypeOauth2 && !securityTypeBasicAuth) {
-            List<SecurityRequirement> oauth2 = new ArrayList<SecurityRequirement>();
-            SecurityRequirement securityRequirement = new SecurityRequirement();
-            securityRequirement.addList(((String) ((JSONObject) jsonObject.get("info")).get("title")).toLowerCase() +
-                    OPENAPI_SECURITY_SCHEMA_KEY_OAUTH2, new ArrayList<String>());
-            oauth2.add(securityRequirement);
-            jsonObject.put("security", oauth2);
-        }
+        if (securityTypeBasicAuth && !securityTypeOauth2 && !basicSecurityName.equals("")) {
 
-        else if (securityTypeBasicAuth && securityTypeOauth2) {
-            List<SecurityRequirement> oauth2BasicAuth = new ArrayList<SecurityRequirement>();
-            SecurityRequirement securityRequirement = new SecurityRequirement();
-            securityRequirement.addList(((String) ((JSONObject) jsonObject.get("info")).get("title")).toLowerCase() +
-                    OPENAPI_SECURITY_SCHEMA_KEY_OAUTH2, new ArrayList<String>());
-            securityRequirement.addList(((String) ((JSONObject) jsonObject.get("info")).get("title")).toLowerCase() +
-                    OPENAPI_SECURITY_SCHEMA_KEY_BASIC, new ArrayList<String>());
+            SecurityRequirement basicOauthSecurityReq = referBasicInSwagger(basicSecurityName);
+            List<SecurityRequirement> basicAuth = new ArrayList<SecurityRequirement>();
+            basicAuth.add(basicOauthSecurityReq);
+            jsonObject.put("security", basicAuth);
+        } else if (securityTypeOauth2 && !securityTypeBasicAuth) {
 
-            oauth2BasicAuth.add(securityRequirement);
-            jsonObject.put("security", oauth2BasicAuth);
+            if (!oauthSecurityName.equals("") || !jwtSecurityName.equals("")) {
+
+                SecurityRequirement oauth2SecurityReq = referOauth2InSwagger(oauthSecurityName, jwtSecurityName);
+                List<SecurityRequirement> oauth2 = new ArrayList<SecurityRequirement>();
+                oauth2.add(oauth2SecurityReq);
+                jsonObject.put("security", oauth2);
+            }
+        } else if (securityTypeBasicAuth && securityTypeOauth2) {
+
+            if (!oauthSecurityName.equals("") || !basicSecurityName.equals("") || !jwtSecurityName.equals("")) {
+                List<SecurityRequirement> basicOauthJWT = new ArrayList<SecurityRequirement>();
+                SecurityRequirement basicOauthJWTSecurityReq = referBasicOAuth2JWTInSwagger(basicSecurityName,
+                        oauthSecurityName, jwtSecurityName);
+
+                basicOauthJWT.add(basicOauthJWTSecurityReq);
+                jsonObject.put("security", basicOauthJWT);
+            }
         }
 
         return Json.pretty(jsonObject);
@@ -215,6 +215,46 @@ public class SwaggerCreator extends OAS3Parser {
             return true;
         }
         return false;
+    }
+
+    private SecurityRequirement referOauth2InSwagger(String oauthSecurityName, String jwtSecurityName) {
+
+        SecurityRequirement securityRequirement = new SecurityRequirement();
+
+        if (!oauthSecurityName.equals("") && !jwtSecurityName.equals("")) {
+
+            securityRequirement.addList(oauthSecurityName, new ArrayList<String>());
+            securityRequirement.addList(jwtSecurityName, new ArrayList<String>());
+        } else if (!oauthSecurityName.equals("") && jwtSecurityName.equals("")) {
+
+            securityRequirement.addList(oauthSecurityName, new ArrayList<String>());
+        } else if (oauthSecurityName.equals("") && !jwtSecurityName.equals("")) {
+
+            securityRequirement.addList(jwtSecurityName, new ArrayList<String>());
+        }
+
+        return securityRequirement;
+    }
+
+    private SecurityRequirement referBasicInSwagger(String basicSecurityName) {
+
+
+        SecurityRequirement securityRequirement = new SecurityRequirement();
+        securityRequirement.addList(basicSecurityName, new ArrayList<String>());
+
+        return securityRequirement;
+    }
+
+    private SecurityRequirement referBasicOAuth2JWTInSwagger(String basicSecurityName, String oauthSecurityName,
+                                                             String jwtSecurityName) {
+
+        SecurityRequirement securityRequirement = referOauth2InSwagger(oauthSecurityName, jwtSecurityName);
+
+        if (!basicSecurityName.equals("")) {
+            securityRequirement.addList(basicSecurityName, new ArrayList<String>());
+        }
+
+        return securityRequirement;
     }
 
 }

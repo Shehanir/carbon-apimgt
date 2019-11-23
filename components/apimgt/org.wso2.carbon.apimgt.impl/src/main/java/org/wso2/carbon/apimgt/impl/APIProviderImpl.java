@@ -52,8 +52,10 @@ import org.wso2.carbon.apimgt.impl.certificatemgt.GatewayCertificateManager;
 import org.wso2.carbon.apimgt.impl.certificatemgt.ResponseCode;
 import org.wso2.carbon.apimgt.impl.clients.RegistryCacheInvalidationClient;
 import org.wso2.carbon.apimgt.impl.clients.TierCacheInvalidationClient;
+import org.wso2.carbon.apimgt.impl.containermgt.K8sClient;
 import org.wso2.carbon.apimgt.impl.containermgt.PrivateJet;
 import org.wso2.carbon.apimgt.impl.containermgt.SwaggerCreator;
+import org.wso2.carbon.apimgt.impl.containermgt.TenantConfReader;
 import org.wso2.carbon.apimgt.impl.dao.ApiMgtDAO;
 import org.wso2.carbon.apimgt.impl.definitions.GraphQLSchemaDefinition;
 import org.wso2.carbon.apimgt.impl.definitions.OASParserUtil;
@@ -6339,14 +6341,33 @@ class APIProviderImpl extends AbstractAPIManager implements APIProvider {
             throws UserStoreException, RegistryException, IOException, ParseException, APIManagementException {
 
         String content = getTenantConfigContent();
+        TenantConfReader newReader = new TenantConfReader();
+        K8sClient k8sClient = newReader.readTenant(content);
         PrivateJet privateJet = new PrivateJet();
         log.info("Publishing in Private Jet Mode");
 
         SwaggerCreator swaggerCreator = new SwaggerCreator();
         String swagger = swaggerCreator.
-                getOASDefinitionForPublisher(api, OASParserUtil.getAPIDefinition(apiIdentifier, registry));
+                getOASDefinitionForPublisher(api, OASParserUtil.getAPIDefinition(apiIdentifier, registry),
+                        k8sClient.getBasicSecurityCustomResourceName(),
+                        k8sClient.getJwtSecurityCustomResourceName(),
+                        k8sClient.getOauthSecurityCustomResourceName());
 
-        privateJet.publishInPrivateJetMode(apiIdentifier, swagger, swaggerCreator, content);
+        if (swaggerCreator.isSecurityOauth2() && k8sClient.getOauthSecurityCustomResourceName().equals("")) {
+            log.error("OAuth2 security custom resource name has not been provided");
+            log.info("The API will not be able to invoke via OAuth2 tokens");
+        }
+
+        if (swaggerCreator.isSecurityOauth2() && k8sClient.getJwtSecurityCustomResourceName().equals("")) {
+            log.error("JWT security custom resource name has not been provided");
+            log.info("The API will not be able to invoke via jwt tokens");
+        }
+
+        if(swaggerCreator.isSecurityBasicAuth() && k8sClient.getBasicSecurityCustomResourceName().equals("")) {
+            log.error("Basic-Auth security custom resource name has not been provided");
+            log.info("The API will not be able to invoke via basic-auth tokens");
+        }
+        privateJet.publishInPrivateJetMode(apiIdentifier, k8sClient, swaggerCreator, swagger, content);
     }
 
     private void cleanUpPendingAPIStateChangeTask(int apiId) throws WorkflowException, APIManagementException {

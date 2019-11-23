@@ -49,10 +49,10 @@ public class TenantConfReader {
         k8sClient.setSaToken((String) ((JSONObject) tenant_conf.get("K8sClusterInfo")).get("saToken"));
         k8sClient.setNamespace((String) ((JSONObject) tenant_conf.get("K8sClusterInfo")).get("namespace"));
         k8sClient.setReplicas(Math.toIntExact(((long) ((JSONObject) tenant_conf.get("K8sClusterInfo")).get("replicas"))));
-        k8sClient.setBasicSecuritySecretName((String) ((JSONObject)tenant_conf.get("K8sClusterInfo"))
+        k8sClient.setBasicSecurityCustomResourceName((String) ((JSONObject)tenant_conf.get("K8sClusterInfo"))
                 .get("basicSecuritySecretName"));
 
-        k8sClient.setOauthSecuritySecretName((String) ((JSONObject)tenant_conf.get("K8sClusterInfo"))
+        k8sClient.setOauthSecurityCustomResourceName((String) ((JSONObject)tenant_conf.get("K8sClusterInfo"))
                 .get("oauthSecuritySecretName"));
 
         return k8sClient;
