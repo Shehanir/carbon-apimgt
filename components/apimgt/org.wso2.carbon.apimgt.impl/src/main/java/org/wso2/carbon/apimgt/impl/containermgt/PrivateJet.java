@@ -55,11 +55,10 @@ public class PrivateJet {
      * @param k8sClient
      * @param swaggerCreator    , SwaggerCreator object for getting security info
      * @param swaggerDefinition , swagger of the API
-     * @param tenant_conf       , content of the tenant-conf.json
      * @throws ParseException , applies for readTenant method
      */
     public void publishInPrivateJetMode(APIIdentifier apiIdentifier, K8sClient k8sClient, SwaggerCreator swaggerCreator,
-                                        String swaggerDefinition, String tenant_conf) throws ParseException {
+                                        String swaggerDefinition) throws ParseException {
 
         /**
          * If the MasterURL and SAToken is not provided
@@ -91,6 +90,21 @@ public class PrivateJet {
             log.info("Created ConfigMap at " + configMap.getMetadata().getSelfLink() + " data" + configMap.getData());
             applyAPICustomResourceDefinition(client, configmapName, k8sClient.getReplicas(), apiIdentifier);
             log.info("Successfully Published in Private-Jet Mode");
+
+            if (swaggerCreator.isSecurityOauth2() && k8sClient.getOauthSecurityCustomResourceName().equals("")) {
+                log.error("OAuth2 security custom resource name has not been provided");
+                log.info("The API will not be able to invoke via OAuth2 tokens");
+            }
+
+            if (swaggerCreator.isSecurityOauth2() && k8sClient.getJwtSecurityCustomResourceName().equals("")) {
+                log.error("JWT security custom resource name has not been provided");
+                log.info("The API will not be able to invoke via jwt tokens");
+            }
+
+            if(swaggerCreator.isSecurityBasicAuth() && k8sClient.getBasicSecurityCustomResourceName().equals("")) {
+                log.error("Basic-Auth security custom resource name has not been provided");
+                log.info("The API will not be able to invoke via basic-auth tokens");
+            }
 
             PodWatcher podWatcher = new PodWatcher();
             podWatcher.setPodList(client.pods().list());
