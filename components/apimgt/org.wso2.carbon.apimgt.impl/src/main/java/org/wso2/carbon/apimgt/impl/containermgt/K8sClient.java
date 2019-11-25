@@ -27,6 +27,7 @@ import io.fabric8.kubernetes.client.KubernetesClient;
  */
 public class K8sClient {
 
+    private String name;
     private String masterURL;
     private String saToken;
     private String namespace;
@@ -34,6 +35,14 @@ public class K8sClient {
     private String basicSecurityCustomResourceName;
     private String oauthSecurityCustomResourceName;
     private String jwtSecurityCustomResourceName;
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
 
     public String getMasterURL() {
         return masterURL;

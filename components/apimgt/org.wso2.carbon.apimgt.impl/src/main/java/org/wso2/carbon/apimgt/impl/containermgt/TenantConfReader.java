@@ -18,6 +18,7 @@
 
 package org.wso2.carbon.apimgt.impl.containermgt;
 
+import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
@@ -37,13 +38,13 @@ public class TenantConfReader {
      * @return , K8sClient whose master url, namespace, satoken and replicas are set to that in the tenant-conf.json
      * @throws ParseException , to catch the syntax errors.
      */
-    public K8sClient readTenant(String tenantConf) throws ParseException {
+    public JSONObject readTenant(String tenantConf) throws ParseException {
 
         JSONParser jsonParser = new JSONParser();
         Object tenantObject = jsonParser.parse(tenantConf);
         JSONObject tenant_conf = (JSONObject) tenantObject;
 
-        K8sClient k8sClient = new K8sClient();
+        /*K8sClient k8sClient = new K8sClient();
 
         k8sClient.setMasterURL((String) ((JSONObject)tenant_conf.get("K8sClusterInfo")).get("k8sMasterURL"));
         k8sClient.setSaToken((String) ((JSONObject) tenant_conf.get("K8sClusterInfo")).get("saToken"));
@@ -58,6 +59,20 @@ public class TenantConfReader {
         k8sClient.setJwtSecurityCustomResourceName((String) ((JSONObject)tenant_conf.get("K8sClusterInfo"))
                 .get("jwtSecurityCustomResourceName"));
 
-        return k8sClient;
+         */
+
+
+        JSONArray k8sClusterInfo = (JSONArray) tenant_conf.get("K8sClusterInfo");
+        JSONObject clusters = new JSONObject();
+        for (int i=0; i<k8sClusterInfo.size(); i++) {
+
+            JSONObject clusterInfo = (JSONObject) k8sClusterInfo.get(i);
+            String name = (String) ((JSONObject) k8sClusterInfo.get(i)).get("name");
+            clusterInfo.remove("name");
+            clusters.put(name, clusterInfo);
+
+        }
+
+        return clusters;
     }
 }

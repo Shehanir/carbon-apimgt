@@ -28,7 +28,6 @@ import org.wso2.carbon.apimgt.api.model.API;
 import org.wso2.carbon.apimgt.api.model.Tier;
 import org.wso2.carbon.apimgt.impl.APIConstants;
 import org.wso2.carbon.apimgt.impl.APIManagerFactory;
-import org.wso2.carbon.apimgt.impl.containermgt.ContainerBasedConstants;
 import org.wso2.carbon.apimgt.impl.internal.ServiceReferenceHolder;
 import org.wso2.carbon.apimgt.impl.utils.APIUtil;
 import org.wso2.carbon.apimgt.impl.utils.APIVersionComparator;
@@ -213,8 +212,7 @@ public class APIExecutor implements Execution {
 
         boolean deprecateOldVersions = false;
         boolean makeKeysForwardCompatible = false;
-        boolean publishInPrivateJet = false;
-        int deprecateOldVersionsCheckListOrder = 0, makeKeysForwardCompatibleCheckListOrder = 1, publishInPrivateJetCheckListOrder = 2;
+        int deprecateOldVersionsCheckListOrder = 0, makeKeysForwardCompatibleCheckListOrder = 1;
         //If the API status is CREATED/PROTOTYPED ,check for check list items of lifecycle
         if (isCurrentCreatedOrPrototyped) {
             CheckListItemBean[] checkListItemBeans = GovernanceUtils
@@ -225,8 +223,6 @@ public class APIExecutor implements Execution {
                         deprecateOldVersionsCheckListOrder = checkListItemBean.getOrder();
                     } else if (APIConstants.RESUBSCRIBE_CHECK_LIST_ITEM.equals(checkListItemBean.getName())) {
                         makeKeysForwardCompatibleCheckListOrder = checkListItemBean.getOrder();
-                    } else if (ContainerBasedConstants.PRIVATE_JET_MODE_LIST_ITEM.equals(checkListItemBean.getName())) {
-                        publishInPrivateJetCheckListOrder = checkListItemBean.getOrder();
                     }
                 }
             }
@@ -234,8 +230,6 @@ public class APIExecutor implements Execution {
                     .isLCItemChecked(deprecateOldVersionsCheckListOrder, APIConstants.API_LIFE_CYCLE);
             makeKeysForwardCompatible = !(apiArtifact
                     .isLCItemChecked(makeKeysForwardCompatibleCheckListOrder, APIConstants.API_LIFE_CYCLE));
-            publishInPrivateJet = apiArtifact
-                    .isLCItemChecked(publishInPrivateJetCheckListOrder, APIConstants.API_LIFE_CYCLE);
         }
 
         if (isStateTransitionToPublished) {
@@ -257,9 +251,6 @@ public class APIExecutor implements Execution {
                 }
             }
 
-            if (publishInPrivateJet) {
-                apiProvider.publishInPrivateJet(api ,api.getId());
-            }
         }
 
         return executed;

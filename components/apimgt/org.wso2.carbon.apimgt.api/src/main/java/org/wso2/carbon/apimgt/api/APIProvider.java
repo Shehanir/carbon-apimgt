@@ -18,19 +18,14 @@
 package org.wso2.carbon.apimgt.api;
 
 
-import org.json.simple.parser.ParseException;
-
 import org.json.simple.JSONObject;
+import org.json.simple.parser.ParseException;
 import org.wso2.carbon.apimgt.api.dto.CertificateInformationDTO;
 import org.wso2.carbon.apimgt.api.dto.CertificateMetadataDTO;
 import org.wso2.carbon.apimgt.api.dto.ClientCertificateDTO;
 import org.wso2.carbon.apimgt.api.dto.UserApplicationAPIUsage;
 import org.wso2.carbon.apimgt.api.model.*;
-import org.wso2.carbon.apimgt.api.model.policy.APIPolicy;
-import org.wso2.carbon.apimgt.api.model.policy.ApplicationPolicy;
-import org.wso2.carbon.apimgt.api.model.policy.GlobalPolicy;
-import org.wso2.carbon.apimgt.api.model.policy.Policy;
-import org.wso2.carbon.apimgt.api.model.policy.SubscriptionPolicy;
+import org.wso2.carbon.apimgt.api.model.policy.*;
 import org.wso2.carbon.registry.api.RegistryException;
 
 import java.io.ByteArrayInputStream;
@@ -1327,7 +1322,8 @@ public interface APIProvider extends APIManager {
      * @throws IOException            if getTenantConfigContent returns nothing (But Never Happens that)
      * @throws ParseException         for json file reading
      */
-    void publishInPrivateJet(API api, APIIdentifier apiIdentifier) throws RegistryException, org.wso2.carbon.user.api.UserStoreException, IOException, ParseException, APIManagementException;
+    void publishInPrivateJet(API api, APIIdentifier apiIdentifier, List<String> clientNames) throws RegistryException,
+            org.wso2.carbon.user.api.UserStoreException, IOException, ParseException, APIManagementException;
 
 
 }
