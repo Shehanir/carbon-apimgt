@@ -1,0 +1,24 @@
+<%
+include("/jagg/jagg.jag");
+
+jagg.block("apis/api-list", {
+    initializer:function (data) {},
+
+    getInputs:function () {
+        return {};
+    },
+
+    getOutputs:function (inputs) {
+        var labelList, result;
+        result = jagg.module("apis").getAllAPIs();
+        apiList = result.apiList;
+
+        // we put results to the session.
+        session.put("apiList", apiList);
+
+        return {
+            "apiList":apiList
+        };
+    }
+});
+%>

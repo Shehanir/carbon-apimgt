@@ -1,7 +1,8 @@
 {
   "EnableMonetization": false,
   "IsUnlimitedTierPaid": false,
-  "K8sClusterInfo": {
+  "K8sClusterInfo": [{
+    "name": "",
     "k8sMasterURL": "",
     "saToken": "",
     "namespace": "default",
@@ -9,7 +10,7 @@
     "basicSecurityCustomResourceName": "",
     "oauthSecurityCustomResourceName": "",
     "jwtSecurityCustomResourceName": ""
-  },
+  }],
   "ExtensionHandlerPosition": "bottom",
   "RESTAPIScopes": {
     "Scope": [
