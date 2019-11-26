@@ -128,6 +128,11 @@
                 onclick="jagg.sessionAwareJS({redirect:'<%=listMappedUrl%>',e:event,ssoEnabled:<%=ssoEnabled%>})">
                 <i class="fw fw-edit"></i><%= i18n.localize("Labels")%></a>
               </li>
+              <li <%if (reqUrl.match("label-list")){%> class="active" <% } %>><a
+                              href="<%= jagg.url("/label-list") %>"
+                              onclick="jagg.sessionAwareJS({redirect:'<%=listMappedUrl%>',e:event,ssoEnabled:<%=ssoEnabled%>})">
+                              <i class="fw fw-edit"></i><%= i18n.localize("APIs")%></a>
+                            </li>
               <%
               var APIUtil = org.wso2.carbon.apimgt.impl.utils.APIUtil;
               var isAnalyticsEnabled = APIUtil.isAnalyticsEnabled();
