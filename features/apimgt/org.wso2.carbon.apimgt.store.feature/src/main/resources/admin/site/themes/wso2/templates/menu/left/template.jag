@@ -128,8 +128,8 @@
                 onclick="jagg.sessionAwareJS({redirect:'<%=listMappedUrl%>',e:event,ssoEnabled:<%=ssoEnabled%>})">
                 <i class="fw fw-edit"></i><%= i18n.localize("Labels")%></a>
               </li>
-              <li <%if (reqUrl.match("label-list")){%> class="active" <% } %>><a
-                              href="<%= jagg.url("/label-list") %>"
+              <li <%if (reqUrl.match("apis")){%> class="active" <% } %>><a
+                              href="<%= jagg.url("/apis") %>"
                               onclick="jagg.sessionAwareJS({redirect:'<%=listMappedUrl%>',e:event,ssoEnabled:<%=ssoEnabled%>})">
                               <i class="fw fw-edit"></i><%= i18n.localize("APIs")%></a>
                             </li>
