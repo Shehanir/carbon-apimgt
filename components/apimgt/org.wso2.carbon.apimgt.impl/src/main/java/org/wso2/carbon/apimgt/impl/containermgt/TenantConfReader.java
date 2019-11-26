@@ -64,7 +64,7 @@ public class TenantConfReader {
 
         JSONArray k8sClusterInfo = (JSONArray) tenant_conf.get("K8sClusterInfo");
         JSONObject clusters = new JSONObject();
-        for (int i=0; i<k8sClusterInfo.size(); i++) {
+        for (int i = 0; i < k8sClusterInfo.size(); i++) {
 
             JSONObject clusterInfo = (JSONObject) k8sClusterInfo.get(i);
             String name = (String) ((JSONObject) k8sClusterInfo.get(i)).get("name");
