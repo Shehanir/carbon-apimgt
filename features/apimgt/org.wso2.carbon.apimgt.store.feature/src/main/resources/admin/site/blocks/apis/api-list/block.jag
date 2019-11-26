@@ -10,14 +10,14 @@ jagg.block("apis/api-list", {
 
     getOutputs:function (inputs) {
         var labelList, result;
-        result = jagg.module("apis").getAllAPIs();
-        apiList = result.apiList;
+        result = jagg.module("apis").getAllLabels();
+        labelList = result.labelList;
 
         // we put results to the session.
-        session.put("apiList", apiList);
+        session.put("labelList", labelList);
 
         return {
-            "apiList":apiList
+            "labelList":labelList
         };
     }
 });
