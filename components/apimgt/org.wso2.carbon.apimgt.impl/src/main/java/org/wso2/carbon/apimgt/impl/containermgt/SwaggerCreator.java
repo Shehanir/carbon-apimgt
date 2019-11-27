@@ -48,6 +48,9 @@ public class SwaggerCreator extends OAS3Parser {
     private static final String OPENAPI_SECURITY_SCHEMA_KEY = "default";
     private boolean securityOauth2 = false;
     private boolean securityBasicAuth = false;
+    private String basicSecurityName;
+    private String jwtSecurityName;
+    private String oauthSecurityName;
 
     public boolean isSecurityOauth2() {
         return securityOauth2;
@@ -57,23 +60,26 @@ public class SwaggerCreator extends OAS3Parser {
         return securityBasicAuth;
     }
 
+    public SwaggerCreator(String basicSecurityName, String jwtSecurityName, String oauthSecurityName) {
+
+        this.basicSecurityName = basicSecurityName;
+        this.jwtSecurityName = jwtSecurityName;
+        this.oauthSecurityName = oauthSecurityName;
+    }
+
     /**
      * This method returns the swagger definition of an api
      * which suits for k8s_apim_operator
      *
      * @param api               API
      * @param oasDefinition     Open API definition
-     * @param basicSecurityName Security CR name for basic-auth
-     * @param jwtSecurityName   Security CR name for jwt
-     * @param oauthSecurityName Security CR name for OAuth2
      * @return OAS definition
      * @throws APIManagementException throws if an error occurred
      * @throws ParseException         throws if the oasDefinition is not in json format
      */
 
-
-    public String getOASDefinitionForPublisher(API api, String oasDefinition, String basicSecurityName,
-                                               String jwtSecurityName, String oauthSecurityName)
+    @Override
+    public String getOASDefinitionForPublisher(API api, String oasDefinition)
             throws APIManagementException, ParseException {
 
         OpenAPI openAPI = getOpenAPI(oasDefinition);

@@ -52,9 +52,6 @@ import org.wso2.carbon.apimgt.impl.certificatemgt.GatewayCertificateManager;
 import org.wso2.carbon.apimgt.impl.certificatemgt.ResponseCode;
 import org.wso2.carbon.apimgt.impl.clients.RegistryCacheInvalidationClient;
 import org.wso2.carbon.apimgt.impl.clients.TierCacheInvalidationClient;
-import org.wso2.carbon.apimgt.impl.containermgt.K8sClient;
-import org.wso2.carbon.apimgt.impl.containermgt.PrivateJet;
-import org.wso2.carbon.apimgt.impl.containermgt.SwaggerCreator;
 import org.wso2.carbon.apimgt.impl.dao.ApiMgtDAO;
 import org.wso2.carbon.apimgt.impl.definitions.GraphQLSchemaDefinition;
 import org.wso2.carbon.apimgt.impl.definitions.OASParserUtil;
@@ -4851,27 +4848,6 @@ class APIProviderImpl extends AbstractAPIManager implements APIProvider {
                 String apiVersion = apiArtifact.getAttribute(APIConstants.API_OVERVIEW_VERSION);
                 String currentStatus = apiArtifact.getLifecycleState();
 
-//                if (currentStatus.equals("Created")){
-//                    String content = getTenantConfigContent();
-//                    TenantConfReader confReader = new TenantConfReader();
-//                    Client k8sClient = confReader.readTenant(content);
-//                    log.info("Successfully Published to Store");
-//                    String masterURL = k8sClient.getMasterURL();
-//                    log.info(masterURL);
-//                    String saToken = k8sClient.getSaToken();
-//                    String namespace = k8sClient.getNamespace();
-//                    int replicas = k8sClient.getReplicas();
-//                    if (!masterURL.equals("") && !saToken.equals("")) {
-//                        String swagger = OASParserUtil.getAPIDefinition(apiIdentifier, registry);
-//
-//                        PrivateJet privateJet = new PrivateJet();
-//                        try {
-//                            privateJet.publishPrivateJet(masterURL, saToken, namespace, swagger, replicas, apiIdentifier, k8sClient);
-//                        }catch (KubernetesClientException e){
-//                            e.printStackTrace();
-//                        }
-//                    }
-//                }
 
                 int apiId = apiMgtDAO.getAPIID(apiIdentifier, null);
 
@@ -6341,38 +6317,7 @@ class APIProviderImpl extends AbstractAPIManager implements APIProvider {
     public void publishInPrivateJet(API api, APIIdentifier apiIdentifier, List<String> clientNames)
             throws UserStoreException, RegistryException, IOException, ParseException, APIManagementException {
 
-        String content = getTenantConfigContent();
-        APIUtil util = new APIUtil();
-        JSONObject allClients = util.getClusterInfoFromConfig(content);
 
-        if (clientNames.size() != 0) {
-
-            log.info("Publishing in Private Jet Mode");
-            for (int i = 0; i < clientNames.size(); i++) {
-
-                String clusterName = clientNames.get(i);
-                JSONObject cluster = (JSONObject) allClients.get(clusterName);
-                K8sClient k8sClient = new K8sClient();
-                k8sClient.setName(clusterName);
-                k8sClient.setMasterURL((String) cluster.get("MasterURL"));
-                k8sClient.setNamespace((String) cluster.get("Namespace"));
-                k8sClient.setReplicas(Math.toIntExact((long) cluster.get("Replicas")));
-                k8sClient.setSaToken((String) cluster.get("SAToken"));
-                k8sClient.setJwtSecurityCustomResourceName((String) cluster.get("JWTSecurityCustomResourceName"));
-                k8sClient.setBasicSecurityCustomResourceName((String) cluster.get("BasicSecurityCustomResourceName"));
-                k8sClient.setOauthSecurityCustomResourceName((String) cluster.get("OauthSecurityCustomResourceName"));
-
-                SwaggerCreator swaggerCreator = new SwaggerCreator();
-                String swagger = swaggerCreator.
-                        getOASDefinitionForPublisher(api, OASParserUtil.getAPIDefinition(apiIdentifier, registry),
-                                k8sClient.getBasicSecurityCustomResourceName(),
-                                k8sClient.getJwtSecurityCustomResourceName(),
-                                k8sClient.getOauthSecurityCustomResourceName());
-
-                PrivateJet privateJet = new PrivateJet();
-                privateJet.publishInPrivateJetMode(apiIdentifier, k8sClient, swaggerCreator, swagger);
-            }
-        }
     }
 
     private void cleanUpPendingAPIStateChangeTask(int apiId) throws WorkflowException, APIManagementException {
