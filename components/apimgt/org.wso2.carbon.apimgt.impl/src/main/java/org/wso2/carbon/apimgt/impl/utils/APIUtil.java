@@ -147,6 +147,59 @@ import org.wso2.carbon.utils.NetworkUtils;
 import org.wso2.carbon.utils.multitenancy.MultitenantUtils;
 import org.xml.sax.SAXException;
 
+
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FilenameFilter;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.StringWriter;
+import java.io.UnsupportedEncodingException;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.net.Inet4Address;
+import java.net.InetAddress;
+import java.net.MalformedURLException;
+import java.net.NetworkInterface;
+import java.net.SocketException;
+import java.net.URL;
+import java.nio.charset.Charset;
+import java.rmi.RemoteException;
+import java.security.InvalidKeyException;
+import java.security.KeyManagementException;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.security.PrivateKey;
+import java.security.PublicKey;
+import java.security.Signature;
+import java.security.SignatureException;
+import java.security.UnrecoverableKeyException;
+import java.security.cert.Certificate;
+import java.security.cert.CertificateException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Optional;
+import java.util.Properties;
+import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeMap;
+import java.util.TreeSet;
+import java.util.concurrent.TimeUnit;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import javax.cache.Cache;
 import javax.cache.CacheConfiguration;
 import javax.cache.CacheManager;
@@ -5368,6 +5421,17 @@ public final class APIUtil {
     }
 
     /**
+     * Return the sequence extension name.
+     * eg: admin--testAPi--v1.00
+     *
+     * @param api
+     * @return
+     */
+    public static String getSequenceExtensionName(String provider, String name, String version) {
+        return  provider+ "--" + name + ":v" + version;
+    }
+
+    /**
      * @param token
      * @return
      */
@@ -9566,6 +9630,43 @@ public final class APIUtil {
             String msg = "Unable to signing certificate alias in the token";
             throw new APIManagementException(msg, e);
         }
+    }
+
+    public static String convertOMtoString(OMElement faultSequence) throws XMLStreamException {
+
+        StringWriter stringWriter = new StringWriter();
+        faultSequence.serializeAndConsume(stringWriter);
+        return stringWriter.toString();
+    }
+
+    public static String getFaultSequenceName(API api) throws APIManagementException {
+
+        if (APIUtil.isSequenceDefined(api.getFaultSequence())) {
+            String tenantDomain = org.wso2.carbon.utils.multitenancy.MultitenantConstants.SUPER_TENANT_DOMAIN_NAME;
+            if (api.getId().getProviderName().contains("-AT-")) {
+                String provider = api.getId().getProviderName().replace("-AT-", "@");
+                tenantDomain = MultitenantUtils.getTenantDomain(provider);
+            }
+            int tenantId;
+            try {
+                tenantId = ServiceReferenceHolder.getInstance().getRealmService().
+                        getTenantManager().getTenantId(tenantDomain);
+                if (APIUtil.isPerAPISequence(api.getFaultSequence(), tenantId, api.getId(),
+                        APIConstants.API_CUSTOM_SEQUENCE_TYPE_FAULT)) {
+                    return APIUtil.getSequenceExtensionName(api) + APIConstants.API_CUSTOM_SEQ_FAULT_EXT;
+                } else {
+                    return api.getFaultSequence();
+                }
+            } catch (UserStoreException e) {
+                throw new APIManagementException("Error while retrieving tenant Id from " +
+                        api.getId().getProviderName(), e);
+            } catch (APIManagementException e) {
+                throw new APIManagementException("Error while checking whether sequence " + api.getFaultSequence() +
+                        " is a per API sequence.", e);
+            }
+        }
+        return null;
+
     }
 
     /**

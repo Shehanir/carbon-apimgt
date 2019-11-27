@@ -155,11 +155,11 @@ public abstract class APIDefinition {
      *
      * @param api            API
      * @param oasDefinition  OAS definition
-     * @param hostWithScheme host address with protocol
+     * @param hostsWithSchemes host addresses with protocol mapping
      * @return updated OAS definition
      * @throws APIManagementException throws if an error occurred
      */
-    public abstract String getOASDefinitionForStore(API api, String oasDefinition, String hostWithScheme)
+    public abstract String getOASDefinitionForStore(API api, String oasDefinition, Map<String, String> hostsWithSchemes)
             throws APIManagementException;
 
     /**
@@ -167,12 +167,12 @@ public abstract class APIDefinition {
      *
      * @param product        APIProduct
      * @param oasDefinition  OAS definition
-     * @param hostWithScheme host address with protocol
+     * @param hostsWithSchemes host addresses with protocol mapping
      * @return updated OAS definition
      * @throws APIManagementException throws if an error occurred
      */
-    public abstract String getOASDefinitionForStore(APIProduct product, String oasDefinition, String hostWithScheme)
-            throws APIManagementException;
+    public abstract String getOASDefinitionForStore(APIProduct product, String oasDefinition,
+                                                    Map<String, String> hostsWithSchemes) throws APIManagementException;
 
     /**
      * Update OAS definition for API Publisher

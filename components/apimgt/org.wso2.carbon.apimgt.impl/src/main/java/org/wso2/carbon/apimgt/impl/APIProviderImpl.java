@@ -1856,7 +1856,7 @@ class APIProviderImpl extends AbstractAPIManager implements APIProvider {
         }
 
         APIGatewayManager gatewayManager = APIGatewayManager.getInstance();
-        gatewayManager.setProductResourceSequences(this, apiProduct, tenantDomain);
+        gatewayManager.setProductResourceSequences(this, apiProduct);
 
         try {
             builder = getAPITemplateBuilder(apiProduct);
@@ -2171,11 +2171,13 @@ class APIProviderImpl extends AbstractAPIManager implements APIProvider {
 
     private Map<String, String> removeFromGateway(APIProduct apiProduct) throws APIManagementException {
         String tenantDomain = null;
+
         if (apiProduct.getId().getProviderName().contains("AT")) {
             String provider = apiProduct.getId().getProviderName().replace("-AT-", "@");
             tenantDomain = MultitenantUtils.getTenantDomain(provider);
+        } else {
+            tenantDomain = PrivilegedCarbonContext.getThreadLocalCarbonContext().getTenantDomain();
         }
-
         Map<String, String> failedEnvironment = removeFromGateway(apiProduct, tenantDomain);
         if (log.isDebugEnabled()) {
             String logMessage = "API Name: " + apiProduct.getId().getName() + ", API Version " + apiProduct.getId().getVersion()
