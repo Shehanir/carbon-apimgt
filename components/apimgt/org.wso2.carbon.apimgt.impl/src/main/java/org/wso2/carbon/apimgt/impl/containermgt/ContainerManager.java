@@ -25,10 +25,12 @@ import org.wso2.carbon.apimgt.api.model.APIIdentifier;
 import org.wso2.carbon.registry.core.exceptions.RegistryException;
 import org.wso2.carbon.user.api.UserStoreException;
 
-import java.util.List;
+import java.util.Map;
 
 public interface ContainerManager {
 
-    void DeployAPI(API api, APIIdentifier apiIdentifier, List<String> clientNames)
+    void initManager(Map<String, String> parameters);
+
+    void DeployAPI(API api, APIIdentifier apiIdentifier)
             throws UserStoreException, RegistryException, ParseException, APIManagementException;
 }

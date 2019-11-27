@@ -18,9 +18,6 @@
 
 package org.wso2.carbon.apimgt.impl.containermgt;
 
-import io.fabric8.kubernetes.api.model.ConfigMap;
-import io.fabric8.kubernetes.api.model.ConfigMapBuilder;
-import io.fabric8.kubernetes.api.model.DoneableConfigMap;
 import io.fabric8.kubernetes.api.model.ObjectMeta;
 import io.fabric8.kubernetes.api.model.apiextensions.CustomResourceDefinition;
 import io.fabric8.kubernetes.api.model.apiextensions.CustomResourceDefinitionBuilder;
@@ -34,28 +31,22 @@ import io.fabric8.kubernetes.client.dsl.Resource;
 import io.fabric8.kubernetes.internal.KubernetesDeserializer;
 import io.fabric8.openshift.client.DefaultOpenShiftClient;
 import io.fabric8.openshift.client.OpenShiftClient;
-import org.json.simple.JSONObject;
+import io.swagger.v3.core.util.Json;
 import org.json.simple.parser.ParseException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.wso2.carbon.apimgt.api.APIManagementException;
 import org.wso2.carbon.apimgt.api.model.API;
 import org.wso2.carbon.apimgt.api.model.APIIdentifier;
-import org.wso2.carbon.apimgt.api.model.Identifier;
-import org.wso2.carbon.apimgt.impl.APIConstants;
-import org.wso2.carbon.apimgt.impl.APIMRegistryService;
-import org.wso2.carbon.apimgt.impl.APIMRegistryServiceImpl;
 import org.wso2.carbon.apimgt.impl.containermgt.k8scrd.*;
 import org.wso2.carbon.apimgt.impl.definitions.OASParserUtil;
 import org.wso2.carbon.apimgt.impl.internal.ServiceReferenceHolder;
-import org.wso2.carbon.apimgt.impl.utils.APIUtil;
 import org.wso2.carbon.registry.core.Registry;
 import org.wso2.carbon.registry.core.exceptions.RegistryException;
 import org.wso2.carbon.registry.core.service.RegistryService;
-import org.wso2.carbon.user.api.UserStoreException;
-import org.wso2.carbon.utils.multitenancy.MultitenantUtils;
 
 import java.util.List;
+import java.util.Map;
 
 import static org.wso2.carbon.apimgt.impl.containermgt.ContainerBasedConstants.*;
 
@@ -63,93 +54,79 @@ public class K8sManager implements ContainerManager {
 
     private static final Logger log = LoggerFactory.getLogger(K8sManager.class);
 
+    private String masterURL;
+    private String saToken;
+    private String namespace;
+    private int replicas;
+    private String clusterName;
+    private String jwtSecurityCRName = "";
+    private String oauthSecurityCRName = "";
+    private String basicAuthSecurityCRName ="";
+    private OpenShiftClient openShiftClient;
+
     @Override
-    public void DeployAPI(API api, APIIdentifier apiIdentifier, List<String> clientNames)
-            throws UserStoreException, RegistryException, ParseException, APIManagementException {
+    public void initManager(Map<String, String> parameters) {
 
-        String content = getTenantConfigContent(getTenantDomain(apiIdentifier));
-        APIUtil util = new APIUtil();
-        JSONObject allClients = util.getClusterInfoFromConfig(content);
+        setValues(parameters);
+        setClient();
+    }
 
+    @Override
+    public void DeployAPI(API api, APIIdentifier apiIdentifier)
+            throws RegistryException, ParseException, APIManagementException {
+
+        log.info("hiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii");
         Registry registry = getRegistryService().getGovernanceUserRegistry();
 
-        if (clientNames.size() != 0) {
+        SwaggerCreator swaggerCreator = new SwaggerCreator(
+                basicAuthSecurityCRName, jwtSecurityCRName, oauthSecurityCRName);
+        String swagger = swaggerCreator.
+                getOASDefinitionForPublisher(api, OASParserUtil.getAPIDefinition(apiIdentifier, registry));
 
-            log.info("Publishing in Private Jet Mode");
-            for (int i = 0; i < clientNames.size(); i++) {
+        log.info(Json.pretty(swagger));
 
-                String clusterName = clientNames.get(i);
-                JSONObject cluster = (JSONObject) allClients.get(clusterName);
-                String masterURL = cluster.get("MasterURL").toString();
-                String namespace = cluster.get("Namespace").toString();
-                int replicas = Math.toIntExact((long) cluster.get("Replicas"));
-                String saToken = cluster.get("SAToken").toString();
-                String jwtSecurityCRName = cluster.get("JWTSecurityCustomResourceName").toString();
-                String basicSecurityCRName = cluster.get("BasicSecurityCustomResourceName").toString();
-                String oauthSecurityCRName = cluster.get("OauthSecurityCustomResourceName").toString();
-
-                SwaggerCreator swaggerCreator = new SwaggerCreator(
-                        basicSecurityCRName, jwtSecurityCRName, oauthSecurityCRName);
-                String swagger = swaggerCreator.
-                        getOASDefinitionForPublisher(api, OASParserUtil.getAPIDefinition(apiIdentifier, registry));
-
-                if (!saToken.equals("") && !masterURL.equals("")) {
-
-                    Config config = new ConfigBuilder().withMasterUrl(masterURL)
-                            .withOauthToken(saToken).withNamespace(namespace).build();
-
-                    OpenShiftClient client = new DefaultOpenShiftClient(config);
-                    /**
-                     * configmapName would be "apiname.v" + "apiVersion"
-                     */
-                    String configmapName = apiIdentifier.getApiName().toLowerCase() + ".v" + apiIdentifier.getVersion();
-
-                    io.fabric8.kubernetes.client.dsl.Resource<ConfigMap, DoneableConfigMap> configMapResource
-                            = client.configMaps().inNamespace(namespace).withName(configmapName);
-
-                    ConfigMap configMap = configMapResource.createOrReplace(new ConfigMapBuilder().withNewMetadata().
-                            withName(configmapName).withNamespace(namespace).endMetadata().
-                            withApiVersion("v1").addToData(apiIdentifier.getApiName() + ".json", swagger).build());
-
-                    /**
-                     * Remove this later!
-                     * Outputs the swagger of API
-                     */
-                    log.info("Created ConfigMap at " + configMap.getMetadata().getSelfLink() + " data" + configMap.getData());
-                    applyAPICustomResourceDefinition(client, configmapName, replicas, apiIdentifier);
-                    log.info("Successfully Published in Private-Jet Mode");
-
-                    if (swaggerCreator.isSecurityOauth2() && oauthSecurityCRName.equals("")) {
-                        log.warn("OAuth2 security custom resource name has not been provided");
-                        log.info("The API will not be able to invoke via OAuth2 tokens");
-                    }
-
-                    if (swaggerCreator.isSecurityOauth2() && jwtSecurityCRName.equals("")) {
-                        log.warn("JWT security custom resource name has not been provided");
-                        log.info("The API will not be able to invoke via jwt tokens");
-                    }
-
-                    if (swaggerCreator.isSecurityBasicAuth() && basicSecurityCRName.equals("")) {
-                        log.warn("Basic-Auth security custom resource name has not been provided");
-                        log.info("The API will not be able to invoke via basic-auth tokens");
-                    }
-                }
-            }
-        }
-
+//        if (!saToken.equals("") && !masterURL.equals("")) {
+//
+//            /**
+//             * configmapName would be "apiname.v" + "apiVersion"
+//             */
+//            String configmapName = apiIdentifier.getApiName().toLowerCase() + ".v" + apiIdentifier.getVersion();
+//
+//            io.fabric8.kubernetes.client.dsl.Resource<ConfigMap, DoneableConfigMap> configMapResource
+//                    = openShiftClient.configMaps().inNamespace(namespace).withName(configmapName);
+//
+//            ConfigMap configMap = configMapResource.createOrReplace(new ConfigMapBuilder().withNewMetadata().
+//                    withName(configmapName).withNamespace(namespace).endMetadata().
+//                    withApiVersion("v1").addToData(apiIdentifier.getApiName() + ".json", swagger).build());
+//
+//            /**
+//             * Remove this later!
+//             * Outputs the swagger of API
+//             */
+//            log.info("Created ConfigMap at " + configMap.getMetadata().getSelfLink() + " data" + configMap.getData());
+//            applyAPICustomResourceDefinition(openShiftClient, configmapName, replicas, apiIdentifier);
+//            log.info("Successfully Published in Private-Jet Mode");
+//
+//            if (swaggerCreator.isSecurityOauth2() && oauthSecurityCRName.equals("")) {
+//                log.warn("OAuth2 security custom resource name has not been provided");
+//                log.info("The API will not be able to invoke via OAuth2 tokens");
+//            }
+//
+//            if (swaggerCreator.isSecurityOauth2() && jwtSecurityCRName.equals("")) {
+//                log.warn("JWT security custom resource name has not been provided");
+//                log.info("The API will not be able to invoke via jwt tokens");
+//            }
+//
+//            if (swaggerCreator.isSecurityBasicAuth() && basicAuthSecurityCRName.equals("")) {
+//                log.warn("Basic-Auth security custom resource name has not been provided");
+//                log.info("The API will not be able to invoke via basic-auth tokens");
+//            }
+//        } else {
+//            log.warn("Master URL and/or Service-account Token hasn't been Provided.");
+//            log.warn("The API will not be Published in " + clusterName);
+//        }
     }
 
-    private String getTenantConfigContent(String tenantDomain) throws RegistryException, UserStoreException {
-        APIMRegistryService apimRegistryService = new APIMRegistryServiceImpl();
-
-        return apimRegistryService
-                .getConfigRegistryResourceContent(tenantDomain, APIConstants.API_TENANT_CONF_LOCATION);
-    }
-
-    protected String getTenantDomain(Identifier identifier) {
-        return MultitenantUtils.getTenantDomain(
-                APIUtil.replaceEmailDomainBack(identifier.getProviderName()));
-    }
 
     protected RegistryService getRegistryService() {
         return ServiceReferenceHolder.getInstance().getRegistryService();
@@ -223,5 +200,26 @@ public class K8sManager implements ContainerManager {
 
         apiCrdClient.createOrReplace(apiCustomResourceDef);
         log.info(API_CRD_NAME + "/" + apiCustomResourceDef.getMetadata().getName() + "created");
+    }
+
+    void setValues(Map<String, String> clusterParameters) {
+
+        this.masterURL = clusterParameters.get(MASTER_URL);
+        this.saToken = clusterParameters.get(SATOKEN);
+        this.namespace = clusterParameters.get(NAMESPACE);
+        this.replicas = Integer.parseInt(clusterParameters.get(REPLICAS));
+        this.clusterName = clusterParameters.get(CLUSTER_NAME);
+        this.jwtSecurityCRName = clusterParameters.get(JWT_SECURITY_CR_NAME);
+        this.oauthSecurityCRName = clusterParameters.get(OAUTH2_SECURITY_CR_NAME);
+        this.basicAuthSecurityCRName = clusterParameters.get(BASICAUTH_SECURITY_CR_NAME);
+    }
+
+    void setClient() {
+
+        Config config = new ConfigBuilder().withMasterUrl(masterURL)
+                .withOauthToken(saToken).withNamespace(namespace).build();
+
+        this.openShiftClient = new DefaultOpenShiftClient(config);
+
     }
 }

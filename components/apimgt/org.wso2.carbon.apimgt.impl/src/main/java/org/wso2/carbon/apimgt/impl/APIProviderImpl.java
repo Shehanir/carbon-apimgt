@@ -52,6 +52,7 @@ import org.wso2.carbon.apimgt.impl.certificatemgt.GatewayCertificateManager;
 import org.wso2.carbon.apimgt.impl.certificatemgt.ResponseCode;
 import org.wso2.carbon.apimgt.impl.clients.RegistryCacheInvalidationClient;
 import org.wso2.carbon.apimgt.impl.clients.TierCacheInvalidationClient;
+import org.wso2.carbon.apimgt.impl.containermgt.K8sManager;
 import org.wso2.carbon.apimgt.impl.dao.ApiMgtDAO;
 import org.wso2.carbon.apimgt.impl.definitions.GraphQLSchemaDefinition;
 import org.wso2.carbon.apimgt.impl.definitions.OASParserUtil;
@@ -109,6 +110,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static org.wso2.carbon.apimgt.impl.containermgt.ContainerBasedConstants.*;
 import static org.wso2.carbon.apimgt.impl.utils.APIUtil.isAllowDisplayAPIsWithMultipleStatus;
 
 /**
@@ -6309,15 +6311,39 @@ class APIProviderImpl extends AbstractAPIManager implements APIProvider {
      *
      * @param api           API Object
      * @param apiIdentifier api identifier
-     * @throws APIManagementException if failed to add the schema as a resource to registry
-     * @throws IOException            if getTenantConfigContent returns nothing (But Never Happens that)
-     * @throws ParseException         for json file reading
      */
     @Override
     public void publishInPrivateJet(API api, APIIdentifier apiIdentifier, List<String> clientNames)
-            throws UserStoreException, RegistryException, IOException, ParseException, APIManagementException {
+            throws UserStoreException, RegistryException, ParseException, APIManagementException {
 
+        String content = getTenantConfigContent();
+        APIUtil util = new APIUtil();
+        JSONObject allClients = util.getClusterInfoFromConfig(content);
 
+        if (clientNames.size()!=0) {
+
+            log.info("Publishing in Private Jet Mode");
+            for (int i = 0; i < clientNames.size(); i++) {
+
+                String clusterName = clientNames.get(i);
+                JSONObject cluster = (JSONObject) allClients.get(clusterName);
+
+                Map<String, String> clusterProperties = new HashMap<String, String>();
+                clusterProperties.put(MASTER_URL, cluster.get("MasterURL").toString());
+                clusterProperties.put(SATOKEN, cluster.get("SAToken").toString());
+                clusterProperties.put(NAMESPACE, cluster.get("Namespace").toString());
+                clusterProperties.put(REPLICAS, String.valueOf((long) cluster.get("Replicas")));
+                clusterProperties.put(JWT_SECURITY_CR_NAME, cluster.get("JWTSecurityCustomResourceName").toString());
+                clusterProperties.put(BASICAUTH_SECURITY_CR_NAME, cluster.get("BasicSecurityCustomResourceName").toString());
+                clusterProperties.put(OAUTH2_SECURITY_CR_NAME, cluster.get("OauthSecurityCustomResourceName").toString());
+                clusterProperties.put(CLUSTER_NAME, clusterName);
+
+                K8sManager k8sManager = new K8sManager();
+                k8sManager.initManager(clusterProperties);
+                k8sManager.DeployAPI(api, apiIdentifier);
+
+            }
+        }
     }
 
     private void cleanUpPendingAPIStateChangeTask(int apiId) throws WorkflowException, APIManagementException {

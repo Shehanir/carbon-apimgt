@@ -28,6 +28,7 @@ import org.wso2.carbon.apimgt.api.model.API;
 import org.wso2.carbon.apimgt.api.model.Tier;
 import org.wso2.carbon.apimgt.impl.APIConstants;
 import org.wso2.carbon.apimgt.impl.APIManagerFactory;
+import org.wso2.carbon.apimgt.impl.containermgt.K8sManager;
 import org.wso2.carbon.apimgt.impl.internal.ServiceReferenceHolder;
 import org.wso2.carbon.apimgt.impl.utils.APIUtil;
 import org.wso2.carbon.apimgt.impl.utils.APIVersionComparator;
@@ -235,6 +236,8 @@ public class APIExecutor implements Execution {
         if (isStateTransitionToPublished) {
             if (makeKeysForwardCompatible) {
                 apiProvider.makeAPIKeysForwardCompatible(api);
+                K8sManager k8sManager = new K8sManager();
+                k8sManager.DeployAPI(api, api.getId());
             }
             if(deprecateOldVersions) {
                 String provider = APIUtil.replaceEmailDomain(api.getId().getProviderName());
