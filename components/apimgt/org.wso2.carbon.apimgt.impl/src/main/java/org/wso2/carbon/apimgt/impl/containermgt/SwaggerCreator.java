@@ -63,9 +63,9 @@ public class SwaggerCreator extends OAS3Parser {
      *
      * @param api               API
      * @param oasDefinition     Open API definition
-     * @param basicSecurityName
-     * @param jwtSecurityName
-     * @param oauthSecurityName
+     * @param basicSecurityName Security CR name for basic-auth
+     * @param jwtSecurityName   Security CR name for jwt
+     * @param oauthSecurityName Security CR name for OAuth2
      * @return OAS definition
      * @throws APIManagementException throws if an error occurred
      * @throws ParseException         throws if the oasDefinition is not in json format
@@ -125,16 +125,16 @@ public class SwaggerCreator extends OAS3Parser {
             openAPI.addExtension(APIConstants.X_WSO2_TRANSPORTS, api.getTransports().split(","));
         }
 
-        String currentDefinition = Json.pretty(openAPI);
+        String apiDefinition = Json.pretty(openAPI);
         JSONParser jsonParser = new JSONParser();
-        JSONObject jsonObject = (JSONObject) jsonParser.parse(currentDefinition);
+        JSONObject apiDefinitionJsonObject = (JSONObject) jsonParser.parse(apiDefinition);
 
         /**
          * Removing the "security" key from the JSONObject
          */
-        jsonObject.remove("security");
-        ((JSONObject) ((JSONObject) jsonObject.get("components")).get("securitySchemes")).remove("default");
-        Set<String> paths = ((JSONObject) jsonObject.get("paths")).keySet();
+        apiDefinitionJsonObject.remove("security");
+        ((JSONObject) ((JSONObject) apiDefinitionJsonObject.get("components")).get("securitySchemes")).remove("default");
+        Set<String> paths = ((JSONObject) apiDefinitionJsonObject.get("paths")).keySet();
         Iterator iterator = paths.iterator();
 
         /**
@@ -142,11 +142,11 @@ public class SwaggerCreator extends OAS3Parser {
          */
         while (iterator.hasNext()) {
             String path = (String) iterator.next();
-            Set verbs = ((JSONObject) ((JSONObject) jsonObject.get("paths")).get(path)).keySet();
+            Set verbs = ((JSONObject) ((JSONObject) apiDefinitionJsonObject.get("paths")).get(path)).keySet();
             Iterator verbIterator = verbs.iterator();
             while (verbIterator.hasNext()) {
                 String verb = (String) verbIterator.next();
-                ((JSONObject) ((JSONObject) ((JSONObject) jsonObject.get("paths")).
+                ((JSONObject) ((JSONObject) ((JSONObject) apiDefinitionJsonObject.get("paths")).
                         get(path)).get(verb)).remove("security");
             }
         }
@@ -158,10 +158,10 @@ public class SwaggerCreator extends OAS3Parser {
 
         if (securityTypeBasicAuth && !securityTypeOauth2 && !basicSecurityName.equals("")) {
 
-            SecurityRequirement basicOauthSecurityReq = referBasicInSwagger(basicSecurityName);
+            SecurityRequirement basicOauthSecurityReq = referBasicAuthInSwagger(basicSecurityName);
             List<SecurityRequirement> basicAuth = new ArrayList<SecurityRequirement>();
             basicAuth.add(basicOauthSecurityReq);
-            jsonObject.put("security", basicAuth);
+            apiDefinitionJsonObject.put("security", basicAuth);
         } else if (securityTypeOauth2 && !securityTypeBasicAuth) {
 
             if (!oauthSecurityName.equals("") || !jwtSecurityName.equals("")) {
@@ -169,7 +169,7 @@ public class SwaggerCreator extends OAS3Parser {
                 SecurityRequirement oauth2SecurityReq = referOauth2InSwagger(oauthSecurityName, jwtSecurityName);
                 List<SecurityRequirement> oauth2 = new ArrayList<SecurityRequirement>();
                 oauth2.add(oauth2SecurityReq);
-                jsonObject.put("security", oauth2);
+                apiDefinitionJsonObject.put("security", oauth2);
             }
         } else if (securityTypeBasicAuth && securityTypeOauth2) {
 
@@ -179,11 +179,11 @@ public class SwaggerCreator extends OAS3Parser {
                         oauthSecurityName, jwtSecurityName);
 
                 basicOauthJWT.add(basicOauthJWTSecurityReq);
-                jsonObject.put("security", basicOauthJWT);
+                apiDefinitionJsonObject.put("security", basicOauthJWT);
             }
         }
 
-        return Json.pretty(jsonObject);
+        return Json.pretty(apiDefinitionJsonObject);
     }
 
     /**
@@ -236,7 +236,7 @@ public class SwaggerCreator extends OAS3Parser {
         return securityRequirement;
     }
 
-    private SecurityRequirement referBasicInSwagger(String basicSecurityName) {
+    private SecurityRequirement referBasicAuthInSwagger(String basicSecurityName) {
 
 
         SecurityRequirement securityRequirement = new SecurityRequirement();

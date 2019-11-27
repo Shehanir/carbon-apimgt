@@ -80,12 +80,12 @@ public class K8sClient {
         return basicSecurityCustomResourceName;
     }
 
-    public String getOauthSecurityCustomResourceName() {
-        return oauthSecurityCustomResourceName;
-    }
-
     public void setBasicSecurityCustomResourceName(String basicSecurityCustomResourceName) {
         this.basicSecurityCustomResourceName = basicSecurityCustomResourceName;
+    }
+
+    public String getOauthSecurityCustomResourceName() {
+        return oauthSecurityCustomResourceName;
     }
 
     public void setOauthSecurityCustomResourceName(String oauthSecurityCustomResourceName) {
@@ -106,8 +106,8 @@ public class K8sClient {
      * @return , Kubernetes client
      */
     public KubernetesClient createClient() {
-        Config config = new ConfigBuilder().withMasterUrl(this.masterURL).withOauthToken(this.saToken).withNamespace(this.namespace)
-                .build();
+        Config config = new ConfigBuilder().withMasterUrl(this.masterURL)
+                .withOauthToken(this.saToken).withNamespace(this.namespace).build();
 
         KubernetesClient client = new DefaultKubernetesClient(config);
         return client;

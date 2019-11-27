@@ -67,7 +67,7 @@ public class TenantConfReader {
         for (int i = 0; i < k8sClusterInfo.size(); i++) {
 
             JSONObject clusterInfo = (JSONObject) k8sClusterInfo.get(i);
-            String name = (String) ((JSONObject) k8sClusterInfo.get(i)).get("name");
+            String name = (String) clusterInfo.get("name");
             clusterInfo.remove("name");
             clusters.put(name, clusterInfo);
 

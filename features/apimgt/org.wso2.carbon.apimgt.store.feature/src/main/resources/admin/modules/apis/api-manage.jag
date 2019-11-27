@@ -1,7 +1,7 @@
 <%
 var log = new Log();
 
-var getAllLabels = function(){
+var getAllAPIs = function(){
     try{
         var MultitenantUtils = Packages.org.wso2.carbon.utils.multitenancy.MultitenantUtils;
         var tenantDomain = MultitenantUtils.getTenantDomain(jagg.getUser().username);

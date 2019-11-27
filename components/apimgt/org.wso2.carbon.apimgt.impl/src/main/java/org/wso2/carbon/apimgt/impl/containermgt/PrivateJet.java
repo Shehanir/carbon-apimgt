@@ -92,17 +92,17 @@ public class PrivateJet {
             log.info("Successfully Published in Private-Jet Mode");
 
             if (swaggerCreator.isSecurityOauth2() && k8sClient.getOauthSecurityCustomResourceName().equals("")) {
-                log.error("OAuth2 security custom resource name has not been provided");
+                log.warn("OAuth2 security custom resource name has not been provided");
                 log.info("The API will not be able to invoke via OAuth2 tokens");
             }
 
             if (swaggerCreator.isSecurityOauth2() && k8sClient.getJwtSecurityCustomResourceName().equals("")) {
-                log.error("JWT security custom resource name has not been provided");
+                log.warn("JWT security custom resource name has not been provided");
                 log.info("The API will not be able to invoke via jwt tokens");
             }
 
-            if(swaggerCreator.isSecurityBasicAuth() && k8sClient.getBasicSecurityCustomResourceName().equals("")) {
-                log.error("Basic-Auth security custom resource name has not been provided");
+            if (swaggerCreator.isSecurityBasicAuth() && k8sClient.getBasicSecurityCustomResourceName().equals("")) {
+                log.warn("Basic-Auth security custom resource name has not been provided");
                 log.info("The API will not be able to invoke via basic-auth tokens");
             }
 

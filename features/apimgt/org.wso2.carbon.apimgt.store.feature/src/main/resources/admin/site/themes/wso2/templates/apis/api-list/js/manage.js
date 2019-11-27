@@ -1,4 +1,4 @@
-var deleteLabel = function (uuid) {
+var deleteAPI = function (uuid) {
     $("#messageModal div.modal-footer").html("");
     jagg.message({
         content:i18n.t('Are you sure you want to delete this api?'),

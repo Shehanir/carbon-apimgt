@@ -6344,10 +6344,10 @@ class APIProviderImpl extends AbstractAPIManager implements APIProvider {
         TenantConfReader newReader = new TenantConfReader();
         JSONObject allClients = newReader.readTenant(content);
 
-        if (clientNames.size()!=0) {
+        if (clientNames.size() != 0) {
 
             log.info("Publishing in Private Jet Mode");
-            for (int i=0; i<clientNames.size(); i++) {
+            for (int i = 0; i < clientNames.size(); i++) {
 
                 String clusterName = clientNames.get(i);
                 JSONObject cluster = (JSONObject) allClients.get(clusterName);
@@ -6644,7 +6644,7 @@ class APIProviderImpl extends AbstractAPIManager implements APIProvider {
             for (int i = 0; i < regexList.length; i++) {
                 Pattern p = Pattern.compile(regexList[i]);
                 Iterator<String> itr = filteredUserRoles.iterator();
-                while(itr.hasNext()) {
+                while (itr.hasNext()) {
                     String role = itr.next();
                     Matcher m = p.matcher(role);
                     if (m.matches()) {
