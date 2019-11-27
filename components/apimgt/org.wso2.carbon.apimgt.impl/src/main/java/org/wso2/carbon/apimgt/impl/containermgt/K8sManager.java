@@ -20,7 +20,9 @@ package org.wso2.carbon.apimgt.impl.containermgt;
 
 import org.wso2.carbon.apimgt.api.model.APIIdentifier;
 
-public interface ContainerManager {
+public class K8sManager implements ContainerManager{
+    @Override
+    public void DeployAPI(APIIdentifier apiIdentifier) {
 
-    void DeployAPI(APIIdentifier apiIdentifier);
+    }
 }

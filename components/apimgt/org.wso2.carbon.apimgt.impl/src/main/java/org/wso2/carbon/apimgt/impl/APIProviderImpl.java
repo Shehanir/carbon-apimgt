@@ -55,7 +55,6 @@ import org.wso2.carbon.apimgt.impl.clients.TierCacheInvalidationClient;
 import org.wso2.carbon.apimgt.impl.containermgt.K8sClient;
 import org.wso2.carbon.apimgt.impl.containermgt.PrivateJet;
 import org.wso2.carbon.apimgt.impl.containermgt.SwaggerCreator;
-import org.wso2.carbon.apimgt.impl.containermgt.TenantConfReader;
 import org.wso2.carbon.apimgt.impl.dao.ApiMgtDAO;
 import org.wso2.carbon.apimgt.impl.definitions.GraphQLSchemaDefinition;
 import org.wso2.carbon.apimgt.impl.definitions.OASParserUtil;
@@ -6341,8 +6340,8 @@ class APIProviderImpl extends AbstractAPIManager implements APIProvider {
             throws UserStoreException, RegistryException, IOException, ParseException, APIManagementException {
 
         String content = getTenantConfigContent();
-        TenantConfReader newReader = new TenantConfReader();
-        JSONObject allClients = newReader.readTenant(content);
+        APIUtil util = new APIUtil();
+        JSONObject allClients = util.getClusterInfoFromConfig(content);
 
         if (clientNames.size() != 0) {
 
@@ -6353,13 +6352,13 @@ class APIProviderImpl extends AbstractAPIManager implements APIProvider {
                 JSONObject cluster = (JSONObject) allClients.get(clusterName);
                 K8sClient k8sClient = new K8sClient();
                 k8sClient.setName(clusterName);
-                k8sClient.setMasterURL((String) cluster.get("k8sMasterURL"));
-                k8sClient.setNamespace((String) cluster.get("namespace"));
-                k8sClient.setReplicas(Math.toIntExact((long) cluster.get("replicas")));
-                k8sClient.setSaToken((String) cluster.get("saToken"));
-                k8sClient.setJwtSecurityCustomResourceName((String) cluster.get("jwtSecurityCustomResourceName"));
-                k8sClient.setBasicSecurityCustomResourceName((String) cluster.get("basicSecurityCustomResourceName"));
-                k8sClient.setOauthSecurityCustomResourceName((String) cluster.get("oauthSecurityCustomResourceName"));
+                k8sClient.setMasterURL((String) cluster.get("MasterURL"));
+                k8sClient.setNamespace((String) cluster.get("Namespace"));
+                k8sClient.setReplicas(Math.toIntExact((long) cluster.get("Replicas")));
+                k8sClient.setSaToken((String) cluster.get("SAToken"));
+                k8sClient.setJwtSecurityCustomResourceName((String) cluster.get("JWTSecurityCustomResourceName"));
+                k8sClient.setBasicSecurityCustomResourceName((String) cluster.get("BasicSecurityCustomResourceName"));
+                k8sClient.setOauthSecurityCustomResourceName((String) cluster.get("OauthSecurityCustomResourceName"));
 
                 SwaggerCreator swaggerCreator = new SwaggerCreator();
                 String swagger = swaggerCreator.

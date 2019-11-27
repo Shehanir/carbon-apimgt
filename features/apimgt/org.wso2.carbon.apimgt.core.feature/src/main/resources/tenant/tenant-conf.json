@@ -1,16 +1,24 @@
 {
   "EnableMonetization": false,
   "IsUnlimitedTierPaid": false,
-  "K8sClusterInfo": [{
-    "name": "",
-    "k8sMasterURL": "",
-    "saToken": "",
-    "namespace": "default",
-    "replicas": 1,
-    "basicSecurityCustomResourceName": "",
-    "oauthSecurityCustomResourceName": "",
-    "jwtSecurityCustomResourceName": ""
-  }],
+  "ContainerMgtInfo": {
+    "Type": "Kubernetes",
+    "ClassName": "",
+    "ClusterInfo": [
+      {
+        "Name": "",
+        "Properties": {
+          "MasterURL": "",
+          "SAToken": "",
+          "Namespace": "default",
+          "Replicas": 1,
+          "BasicSecurityCustomResourceName": "",
+          "OauthSecurityCustomResourceName": "",
+          "JWTSecurityCustomResourceName": ""
+        }
+      }
+    ]
+  },
   "ExtensionHandlerPosition": "bottom",
   "RESTAPIScopes": {
     "Scope": [
