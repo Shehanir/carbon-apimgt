@@ -5,7 +5,7 @@ jagg.module("apis", {
         return jagg.require(jagg.getModulesDir() + "apis/api-edit.jag").addLabel.apply(this, arguments);
     },
     getAllLabels:function () {
-        return jagg.require(jagg.getModulesDir() + "apis/api-manage.jag").getAllLabels.apply(this, arguments);
+        return jagg.require(jagg.getModulesDir() + "apis/api-manage.jag").getAllAPIs.apply(this, arguments);
     },
     deleteLabel:function () {
         return jagg.require(jagg.getModulesDir() + "apis/api-manage.jag").deleteLabel.apply(this, arguments);

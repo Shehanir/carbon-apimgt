@@ -19,8 +19,8 @@ package org.wso2.carbon.apimgt.impl.containermgt;
 
 import io.fabric8.kubernetes.client.Config;
 import io.fabric8.kubernetes.client.ConfigBuilder;
-import io.fabric8.kubernetes.client.DefaultKubernetesClient;
-import io.fabric8.kubernetes.client.KubernetesClient;
+import io.fabric8.openshift.client.DefaultOpenShiftClient;
+import io.fabric8.openshift.client.OpenShiftClient;
 
 /**
  * This class creates the client for accessing the kubernetes cluster.
@@ -105,11 +105,11 @@ public class K8sClient {
      *
      * @return , Kubernetes client
      */
-    public KubernetesClient createClient() {
+    public OpenShiftClient createClient() {
         Config config = new ConfigBuilder().withMasterUrl(this.masterURL)
                 .withOauthToken(this.saToken).withNamespace(this.namespace).build();
 
-        KubernetesClient client = new DefaultKubernetesClient(config);
+        OpenShiftClient client = new DefaultOpenShiftClient(config);
         return client;
     }
 }

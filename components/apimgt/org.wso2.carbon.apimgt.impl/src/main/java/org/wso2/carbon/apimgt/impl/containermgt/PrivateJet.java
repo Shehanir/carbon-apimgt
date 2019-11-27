@@ -29,6 +29,7 @@ import io.fabric8.kubernetes.client.dsl.MixedOperation;
 import io.fabric8.kubernetes.client.dsl.NonNamespaceOperation;
 import io.fabric8.kubernetes.client.dsl.Resource;
 import io.fabric8.kubernetes.internal.KubernetesDeserializer;
+import io.fabric8.openshift.client.OpenShiftClient;
 import io.swagger.v3.core.util.Json;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.ParseException;
@@ -69,7 +70,7 @@ public class PrivateJet {
 
         if (publishInPrivateJet) {
 
-            KubernetesClient client = k8sClient.createClient(); //creating the client
+            OpenShiftClient client = k8sClient.createClient(); //creating the client
 
             /**
              * configmapName would be "apiname.v" + "apiVersion"
