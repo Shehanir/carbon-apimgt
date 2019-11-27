@@ -83,6 +83,17 @@ import org.wso2.carbon.apimgt.impl.clients.OAuthAdminClient;
 import org.wso2.carbon.apimgt.impl.clients.UserInformationRecoveryClient;
 import org.wso2.carbon.apimgt.impl.dao.ApiMgtDAO;
 import org.wso2.carbon.apimgt.impl.dto.*;
+import org.wso2.carbon.apimgt.impl.definitions.OASParserUtil;
+import org.wso2.carbon.apimgt.impl.dto.APIKeyValidationInfoDTO;
+import org.wso2.carbon.apimgt.impl.dto.APISubscriptionInfoDTO;
+import org.wso2.carbon.apimgt.impl.dto.ConditionDto;
+import org.wso2.carbon.apimgt.impl.dto.Environment;
+import org.wso2.carbon.apimgt.impl.dto.JwtTokenInfoDTO;
+import org.wso2.carbon.apimgt.impl.dto.SubscribedApiDTO;
+import org.wso2.carbon.apimgt.impl.dto.SubscriptionPolicyDTO;
+import org.wso2.carbon.apimgt.impl.dto.ThrottleProperties;
+import org.wso2.carbon.apimgt.impl.dto.UserRegistrationConfigDTO;
+import org.wso2.carbon.apimgt.impl.dto.WorkflowDTO;
 import org.wso2.carbon.apimgt.impl.factory.KeyManagerHolder;
 import org.wso2.carbon.apimgt.impl.internal.APIManagerComponent;
 import org.wso2.carbon.apimgt.impl.internal.ServiceReferenceHolder;
@@ -531,6 +542,16 @@ public final class APIUtil {
 
             Set<URITemplate> uriTemplates = ApiMgtDAO.getInstance().getURITemplatesOfAPI(api.getId());
 
+            // AWS Lambda: get paths
+            OASParserUtil oasParserUtil = new OASParserUtil();
+            String resourceConfigsString = oasParserUtil.getAPIDefinition(apiIdentifier, registry);
+            JSONParser jsonParser = new JSONParser();
+            JSONObject paths = null;
+            if (resourceConfigsString != null) {
+                JSONObject resourceConfigsJSON = (JSONObject) jsonParser.parse(resourceConfigsString);
+                paths = (JSONObject) resourceConfigsJSON.get(APIConstants.SWAGGER_PATHS);
+            }
+
             for (URITemplate uriTemplate : uriTemplates) {
                 String uTemplate = uriTemplate.getUriTemplate();
                 String method = uriTemplate.getHTTPVerb();
@@ -540,6 +561,17 @@ public final class APIUtil {
                 uriTemplate.setScopes(scope);
                 uriTemplate.setResourceURI(api.getUrl());
                 uriTemplate.setResourceSandboxURI(api.getSandboxUrl());
+                // AWS Lambda: set arn to URI template
+                if (paths != null) {
+                    JSONObject path = (JSONObject) paths.get(uTemplate);
+                    if (path != null) {
+                        JSONObject operation = (JSONObject) path.get(method.toLowerCase());
+                        if (operation != null && operation.containsKey(APIConstants.SWAGGER_X_AMZN_RESOURCE_NAME)) {
+                            uriTemplate.setAmznResourceName((String)
+                                    operation.get(APIConstants.SWAGGER_X_AMZN_RESOURCE_NAME));
+                        }
+                    }
+                }
             }
 
             if (APIConstants.IMPLEMENTATION_TYPE_INLINE.equalsIgnoreCase(api.getImplementation())) {
