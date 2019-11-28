@@ -91,6 +91,7 @@
     "Delete": "Delete",
     "Denied": "Denied",
     "Deny": "Deny",
+    "Deployment": "Deployment",
     "Description": "Description",
     "Description of the throttle policy.": "Description of the throttle policy.",
     "Domains": "Domains",

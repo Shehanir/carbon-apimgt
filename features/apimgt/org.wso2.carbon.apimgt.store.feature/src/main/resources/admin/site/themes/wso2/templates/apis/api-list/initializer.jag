@@ -1,7 +1,0 @@
-<%
-jagg.initializer("apis/api-list", {
-    preInitialize:function (){
-        jagg.addHeaderJS("apis/api-list/", "jagg", "templates/apis/api-list/js/apis.js");
-    }
-});
-%>
