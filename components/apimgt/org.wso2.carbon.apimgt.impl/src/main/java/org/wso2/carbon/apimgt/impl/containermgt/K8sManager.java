@@ -61,9 +61,9 @@ public class K8sManager implements ContainerManager {
     private String namespace;
     private int replicas;
     private String clusterName;
-    private String jwtSecurityCRName = "";
-    private String oauthSecurityCRName = "";
-    private String basicAuthSecurityCRName ="";
+    private String jwtSecurityCRName;
+    private String oauthSecurityCRName;
+    private String basicAuthSecurityCRName;
     private OpenShiftClient openShiftClient;
 
     @Override
