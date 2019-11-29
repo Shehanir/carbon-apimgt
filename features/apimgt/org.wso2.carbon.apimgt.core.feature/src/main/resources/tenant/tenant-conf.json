@@ -1,6 +1,21 @@
 {
   "EnableMonetization" : false,
   "IsUnlimitedTierPaid" : false,
+  "containerManagementInfo": {
+    "className": "Kubernetes",
+    "k8sMasterURL": "https://localhost:9095",
+    "saToken": "",
+    "namespace": "default",
+    "replicas": 1,
+    "basicSecurityCustomResourceName": "",
+    "oauthSecurityCustomResourceName": "",
+    "jwtSecurityCustomResourceName": ""
+  },
+  "serviceMeshInfo": {
+    "className": "Istio",
+    "masterURL": "https://localhost:9095",
+    "namespace": "default"
+  },
   "ExtensionHandlerPosition": "bottom",
   "RESTAPIScopes": {
     "Scope": [

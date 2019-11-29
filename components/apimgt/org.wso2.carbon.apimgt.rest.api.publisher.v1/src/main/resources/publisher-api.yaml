@@ -8927,6 +8927,10 @@ definitions:
         description: |
           Is External Stores configuration enabled
         example: true
+      cloudClustersInfo:
+        type: array
+        items:
+          $ref: '#/definitions/cloudClustersInfo'
 
   #-----------------------------------------------------
   # The SecurityAuditAttribute resource
@@ -9169,6 +9173,27 @@ definitions:
       apiVersion: '1.0.0'
       applicationName: 'DefaultApplication'
       requestConunt: '12'
+
+  #-----------------------------------------------------
+  # The CloudClustersInfo resource
+  #-----------------------------------------------------
+  CloudClustersInfo:
+    name: CloudClustersInfo
+    required:
+      - name
+      - namespace
+      - masterUrl
+    properties:
+      name:
+        type: string
+        example: Kubernetes
+      namespace:
+        type: string
+        example: default
+      masterUrl:
+        type: string
+        example: "https://localhost:9095"
+
 
 #-----------------------------------------------------
 # END-OF-FILE
