@@ -276,7 +276,7 @@
 	  <ul class="nav nav-pills secondary-nav collapse">
             <li  <%if (reqUrl.match("deployment-apis")){%> class="active" <% } %>><a href="<%=apiDeployment%>"
               onclick="jagg.sessionAwareJS({redirect:'<%=apiDeployment%>',e:event,ssoEnabled:<%=ssoEnabled%>})">
-              <i class="fw fw-api"></i><%=i18n.localize("APIs")%></a>
+              <i class="fw fw-api"></i><%=i18n.localize("Kubernetes")%></a>
             </li>
 	  </ul>
 	</li>

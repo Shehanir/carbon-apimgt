@@ -1,0 +1,9 @@
+<%
+jagg.initializer("api-deployment", {
+
+    preInitialize:function () {
+        jagg.addHeaderJS("api-deployment", "jagg","templates/api-deployment/js/api-deployment.js");
+    }
+});
+%>
+
