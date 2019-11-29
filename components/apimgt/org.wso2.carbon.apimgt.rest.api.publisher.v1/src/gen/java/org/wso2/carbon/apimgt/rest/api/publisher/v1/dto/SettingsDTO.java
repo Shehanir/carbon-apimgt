@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import java.util.ArrayList;
 import java.util.List;
+import org.wso2.carbon.apimgt.rest.api.publisher.v1.dto.CloudClustersInfoDTO;
 import org.wso2.carbon.apimgt.rest.api.publisher.v1.dto.EnvironmentDTO;
 import org.wso2.carbon.apimgt.rest.api.publisher.v1.dto.MonetizationAttributeDTO;
 import javax.validation.constraints.*;
@@ -25,6 +26,7 @@ public class SettingsDTO   {
     private List<MonetizationAttributeDTO> monetizationAttributes = new ArrayList<>();
     private Object securityAuditProperties = null;
     private Boolean externalStoresEnabled = null;
+    private List<CloudClustersInfoDTO> cloudClustersInfo = new ArrayList<>();
 
   /**
    * Store URL
@@ -130,6 +132,23 @@ public class SettingsDTO   {
     this.externalStoresEnabled = externalStoresEnabled;
   }
 
+  /**
+   **/
+  public SettingsDTO cloudClustersInfo(List<CloudClustersInfoDTO> cloudClustersInfo) {
+    this.cloudClustersInfo = cloudClustersInfo;
+    return this;
+  }
+
+  
+  @ApiModelProperty(value = "")
+  @JsonProperty("cloudClustersInfo")
+  public List<CloudClustersInfoDTO> getCloudClustersInfo() {
+    return cloudClustersInfo;
+  }
+  public void setCloudClustersInfo(List<CloudClustersInfoDTO> cloudClustersInfo) {
+    this.cloudClustersInfo = cloudClustersInfo;
+  }
+
 
   @Override
   public boolean equals(java.lang.Object o) {
@@ -145,12 +164,13 @@ public class SettingsDTO   {
         Objects.equals(scopes, settings.scopes) &&
         Objects.equals(monetizationAttributes, settings.monetizationAttributes) &&
         Objects.equals(securityAuditProperties, settings.securityAuditProperties) &&
-        Objects.equals(externalStoresEnabled, settings.externalStoresEnabled);
+        Objects.equals(externalStoresEnabled, settings.externalStoresEnabled) &&
+        Objects.equals(cloudClustersInfo, settings.cloudClustersInfo);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(storeUrl, environment, scopes, monetizationAttributes, securityAuditProperties, externalStoresEnabled);
+    return Objects.hash(storeUrl, environment, scopes, monetizationAttributes, securityAuditProperties, externalStoresEnabled, cloudClustersInfo);
   }
 
   @Override
@@ -164,6 +184,7 @@ public class SettingsDTO   {
     sb.append("    monetizationAttributes: ").append(toIndentedString(monetizationAttributes)).append("\n");
     sb.append("    securityAuditProperties: ").append(toIndentedString(securityAuditProperties)).append("\n");
     sb.append("    externalStoresEnabled: ").append(toIndentedString(externalStoresEnabled)).append("\n");
+    sb.append("    cloudClustersInfo: ").append(toIndentedString(cloudClustersInfo)).append("\n");
     sb.append("}");
     return sb.toString();
   }

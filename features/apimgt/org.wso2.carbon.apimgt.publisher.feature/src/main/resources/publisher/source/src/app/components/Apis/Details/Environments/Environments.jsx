@@ -37,6 +37,7 @@ import Paper from '@material-ui/core/Paper';
 import { isRestricted } from 'AppData/AuthManager';
 import { makeStyles } from '@material-ui/core/styles';
 import MicroGateway from 'AppComponents/Apis/Details/Environments/MicroGateway';
+import Kubernetes from 'AppComponents/Apis/Details/Environments/Kubernetes';
 
 const useStyles = makeStyles((theme) => ({
     root: {
@@ -59,6 +60,7 @@ export default function Environments() {
     const { settings } = useAppContext();
     const [gatewayEnvironments, setGatewayEnvironments] = useState([...api.gatewayEnvironments]);
     const [selectedMgLabel, setSelectedMgLabel] = useState([...api.labels]);
+    const cloudClustersInfo = useState([...settings.cloudClustersInfo]);
 
     const [isUpdating, setUpdating] = useState(false);
 
@@ -72,7 +74,12 @@ export default function Environments() {
             gatewayEnvironments,
             labels: selectedMgLabel,
         })
-            .then(() => Alert.info('API Update Successfully'))
+            .then(() => Alert.info('API Update Successfully'),
+                console.log(settings),
+                console.log('prinitn varibale values'),
+                console.log(cloudClustersInfo),
+                console.log('printing one array'),
+                console.log(cloudClustersInfo[0].name))
             .catch((error) => {
                 if (error.response) {
                     Alert.error(error.response.body.description);
@@ -166,8 +173,24 @@ export default function Environments() {
                         setSelectedMgLabel={setSelectedMgLabel}
                         api={api}
                     />
-                )}
+                    // <Kubernetes
+                    //     cloudClustersInfo={cloudClustersInfo}
+                    // />
 
+                )}
+            {(cloudClustersInfo
+                && (
+                //     <Kubernetes
+                //     cloudClustersInfo={cloudClustersInfo[0][0]}
+                // />
+                    cloudClustersInfo[0].map((cluster) => (
+                        <Kubernetes
+                            cloudClustersInfo={cluster}
+                        />
+                    ))
+                )
+
+            ) }
             <Grid
                 container
                 direction='row'
