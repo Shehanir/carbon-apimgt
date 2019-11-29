@@ -16,7 +16,6 @@
   var subsMappedUrl=jagg.url("/site/pages/index.jag");
   var throttlePolicyUrl=jagg.getMappedUrl("/site/pages/policy-list.jag");
   var apiAvailability =jagg.url("/analytics-api-availability");
-  var apiDeployment =jagg.url("/deployment-apis");
   var APIUtil = org.wso2.carbon.apimgt.impl.utils.APIUtil;
   
   var partWithContext = request.getRequestURL().split(
@@ -271,15 +270,6 @@
             </li>
           </ul>
         </li>
-	<li class="nav-header">
-	  <a href="#"><i class="fw fw-dashboard fw-2x" style="font-size:22px;"></i><%=i18n.localize("Deployment")%><i class="fw fw-down fw-stack-1x toggle-icon-down toggle-caret remove-float"></i></a>
-	  <ul class="nav nav-pills secondary-nav collapse">
-            <li  <%if (reqUrl.match("deployment-apis")){%> class="active" <% } %>><a href="<%=apiDeployment%>"
-              onclick="jagg.sessionAwareJS({redirect:'<%=apiDeployment%>',e:event,ssoEnabled:<%=ssoEnabled%>})">
-              <i class="fw fw-api"></i><%=i18n.localize("Kubernetes")%></a>
-            </li>
-	  </ul>
-	</li>
       </ul>
       </li>
       <script>

@@ -18,6 +18,7 @@
 
 package org.wso2.carbon.apimgt.impl.containermgt.model;
 
+import io.fabric8.kubernetes.api.model.Pod;
 import io.fabric8.kubernetes.client.Config;
 import io.fabric8.kubernetes.client.ConfigBuilder;
 import io.fabric8.openshift.client.DefaultOpenShiftClient;
@@ -64,6 +65,9 @@ public class ClusterInfoImpl implements ClusterInfo {
             OpenShiftClient client = new DefaultOpenShiftClient(config);
             cluster.setPodList(client.pods().list().getItems());
             clusterList.add(cluster);
+            List<Pod> p = cluster.getPodList();
+            Pod p1 = p.get(0);
+            p1.getMetadata().getName();
         }
 
         return clusterList;
