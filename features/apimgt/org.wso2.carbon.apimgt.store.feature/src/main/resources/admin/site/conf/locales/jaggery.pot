@@ -213,6 +213,11 @@ msgstr ""
 msgid "Availability of APIs"
 msgstr ""
 
+#: site/themes/wso2/templates/alert-table/template.jag:32
+#: site/themes/wso2/templates/api-deployment/template.jag:12
+msgid "Clusters"
+msgstr ""
+
 #: site/themes/wso2/templates/alert-table/template.jag:33
 msgid "Abnormal Resource Access Pattern"
 msgstr ""
