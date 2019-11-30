@@ -1,34 +1,29 @@
 /*
-*  Copyright (c) 2005-2011, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
-*
-*  WSO2 Inc. licenses this file to you under the Apache License,
-*  Version 2.0 (the "License"); you may not use this file except
-*  in compliance with the License.
-*  You may obtain a copy of the License at
-*
-*    http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing,
-* software distributed under the License is distributed on an
-* "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
-* KIND, either express or implied.  See the License for the
-* specific language governing permissions and limitations
-* under the License.
-*/
+ *  Copyright (c) 2005-2011, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+ *
+ *  WSO2 Inc. licenses this file to you under the Apache License,
+ *  Version 2.0 (the "License"); you may not use this file except
+ *  in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
 package org.wso2.carbon.apimgt.api.model;
 
 import org.apache.commons.lang3.StringUtils;
 import org.json.simple.JSONObject;
 import org.wso2.carbon.apimgt.api.model.policy.Policy;
+import org.wso2.carbon.apimgt.impl.containermgt.Cluster;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Date;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Provider's & system's view of API
@@ -37,13 +32,11 @@ import java.util.Set;
 public class API implements Serializable {
 
     private static final long serialVersionUID = 1L;
-
+    private static final String NULL_VALUE = "NULL";
     private APIIdentifier id;
-
     // uuid of registry artifact
     // this id is provider's username independent
     private String uuid;
-
     private String description;
     private String url;
     private String sandboxUrl;
@@ -66,110 +59,151 @@ public class API implements Serializable {
     private String apiLevelPolicy;
     private AuthorizationPolicy authorizationPolicy;
     private Set<URITemplate> uriTemplates = new LinkedHashSet<URITemplate>();
-
     //dirty pattern to identify which parts to be updated
     private boolean apiHeaderChanged;
     private boolean apiResourcePatternsChanged;
-
     private String status;
-
     private String technicalOwner;
     private String technicalOwnerEmail;
     private String businessOwner;
     private String businessOwnerEmail;
-
     // Used for keeping Production & Sandbox Throttling limits.
     private String productionMaxTps;
     private String sandboxMaxTps;
-
     private String visibility;
     private String visibleRoles;
     private String visibleTenants;
-
     private List<Label> gatewayLabels;
-
     private boolean endpointSecured = false;
     private boolean endpointAuthDigest = false;
     private String endpointUTUsername;
     private String endpointUTPassword;
-
     private String transports;
     private String inSequence;
     private String outSequence;
     private String faultSequence;
-
     private String oldInSequence;
     private String oldOutSequence;
     private String oldFaultSequence;
-
     private boolean advertiseOnly;
     private String apiOwner;
     private String redirectURL;
-
     private String subscriptionAvailability;
     private String subscriptionAvailableTenants;
     private CORSConfiguration corsConfiguration;
     private String endpointConfig;
-
     private String responseCache;
     private int cacheTimeout;
-
     private String implementation = "ENDPOINT";
-
     private String monetizationCategory;
-
     //Custom authorization header specific to the API
     private String authorizationHeader;
     private Set<Scope> scopes;
-
     private boolean isDefaultVersion = false;
     private boolean isPublishedDefaultVersion = false;
-
     /**
      * Used to set the workflow status in lifecycle state change workflow
      */
     private String workflowStatus = null;
-
     private Set<String> environments;
-
     private String createdTime;
     /**
      * Customized properties relevant to the particular API.
      */
     private JSONObject additionalProperties;
-
     /**
      * Properties relevant to monetization of the particular API.
      */
     private JSONObject monetizationProperties = new JSONObject();
-
     /**
      * Property to indicate the monetization status of the particular API.
      */
     private boolean isMonetizationEnabled = false;
-
     // Used for endpoint environments configured with non empty URLs
     private Set<String> environmentList;
-
     // API security at the gateway level.
     private String apiSecurity = "oauth2";
-
-    private static final String NULL_VALUE = "NULL";
-
     private List<APIEndpoint> endpoints = new ArrayList<APIEndpoint>();
 
     /**
-     *  Property to hold the enable/disable status of the json schema validation.
+     * Property to hold the enable/disable status of the json schema validation.
      */
     private boolean enableSchemaValidation = false;
 
+    /**
+     * This will be true if an API should publish in k8s
+     */
+    private boolean deployInK8s = false;
+    private List<Cluster> clusters;
+    /**
+     * Publisher access control related parameters.
+     * AccessControl -> Specifies whether that particular API is restricted to certain set of publishers and creators.
+     * AccessControlRoles -> Specifies the roles that the particular API is visible to.
+     */
+    private String accessControl;
+    private String accessControlRoles;
+    /**
+     * The average rating provided by the API subscribers
+     */
+    private float rating;
+    private boolean isLatest;
 
-    public void setEnvironmentList(Set<String> environmentList) {
-        this.environmentList = environmentList;
+    public API(APIIdentifier id) {
+        this.id = id;
+        additionalProperties = new JSONObject();
+    }
+
+    /**
+     * This method returns endpoints according to the given endpoint config
+     *
+     * @param endpoints list of endpoints given
+     * @return String endpoint config
+     */
+    public static String getEndpointConfigString(List<APIEndpoint> endpoints) {
+        //todo improve this logic to support multiple endpoints such as failorver and load balance
+        StringBuilder sb = new StringBuilder();
+        if (endpoints != null && endpoints.size() > 0) {
+            sb.append("{");
+            for (APIEndpoint endpoint : endpoints) {
+                sb.append("\"")
+                        .append(endpoint.getType())
+                        .append("\": {\"url\":\"")
+                        .append(endpoint.getInline().getEndpointConfig().getList().get(0).getUrl())
+                        .append("\",\"timeout\":\"")
+                        .append(endpoint.getInline().getEndpointConfig().getList().get(0).getTimeout())
+                        .append("\",\"key\":\"")
+                        .append(endpoint.getKey())
+                        .append("\"},");
+            }
+            sb.append("\"endpoint_type\" : \"")
+                    .append(endpoints.get(0).getInline().getType())//assuming all the endpoints are same type
+                    .append("\"}\n");
+        }
+        return sb.toString();
+    }
+
+    public List<Cluster> getClusters() {
+        return clusters;
+    }
+
+    public void setClusters(List<Cluster> clusters) {
+        this.clusters = clusters;
+    }
+
+    public boolean isDeployInK8s() {
+        return deployInK8s;
+    }
+
+    public void setDeployInK8s(boolean deployInK8s) {
+        this.deployInK8s = deployInK8s;
     }
 
     public Set<String> getEnvironmentList() {
         return environmentList;
+    }
+
+    public void setEnvironmentList(Set<String> environmentList) {
+        this.environmentList = environmentList;
     }
 
     /**
@@ -200,6 +234,15 @@ public class API implements Serializable {
     }
 
     /**
+     * This method is used to set the monetization properties
+     *
+     * @param monetizationProperties properties related to monetization
+     */
+    public void setMonetizationProperties(JSONObject monetizationProperties) {
+        this.monetizationProperties = monetizationProperties;
+    }
+
+    /**
      * This method is used to get the monetization status (true or false)
      *
      * @return flag to indicate the monetization status (true or false)
@@ -215,15 +258,6 @@ public class API implements Serializable {
      */
     public void setMonetizationStatus(boolean monetizationStatus) {
         this.isMonetizationEnabled = monetizationStatus;
-    }
-
-    /**
-     * This method is used to set the monetization properties
-     *
-     * @param monetizationProperties properties related to monetization
-     */
-    public void setMonetizationProperties(JSONObject monetizationProperties) {
-        this.monetizationProperties = monetizationProperties;
     }
 
     /**
@@ -256,21 +290,21 @@ public class API implements Serializable {
         return additionalProperties.get(key).toString();
     }
 
-    /**
-     * Publisher access control related parameters.
-     * AccessControl -> Specifies whether that particular API is restricted to certain set of publishers and creators.
-     * AccessControlRoles -> Specifies the roles that the particular API is visible to.
-     */
-    private String accessControl;
-    private String accessControlRoles;
+    public String getSwaggerDefinition() {
+        return swaggerDefinition;
+    }
 
-    public String getSwaggerDefinition() {return swaggerDefinition; }
+    public void setSwaggerDefinition(String swaggerDefinition) {
+        this.swaggerDefinition = swaggerDefinition;
+    }
 
-    public void setSwaggerDefinition(String swaggerDefinition) { this.swaggerDefinition = swaggerDefinition; }
+    public String getGraphQLSchema() {
+        return graphQLSchema;
+    }
 
-    public void setGraphQLSchema(String graphQLSchema) { this.graphQLSchema = graphQLSchema; }
-
-    public String getGraphQLSchema() {return graphQLSchema; }
+    public void setGraphQLSchema(String graphQLSchema) {
+        this.graphQLSchema = graphQLSchema;
+    }
 
     public Set<String> getEnvironments() {
         return environments;
@@ -279,6 +313,8 @@ public class API implements Serializable {
     public void setEnvironments(Set<String> environments) {
         this.environments = environments;
     }
+
+    //TODO: missing - total user count, up time statistics,tier
 
     /**
      * Contains flag indicating whether dummy backend or not
@@ -297,15 +333,6 @@ public class API implements Serializable {
     public void setImplementation(String implementation) {
         this.implementation = implementation;
     }
-
-    /**
-     * The average rating provided by the API subscribers
-     */
-    private float rating;
-
-    private boolean isLatest;
-
-    //TODO: missing - total user count, up time statistics,tier
 
     public String getUUID() {
         return uuid;
@@ -355,11 +382,6 @@ public class API implements Serializable {
         this.redirectURL = redirectURL;
     }
 
-    public API(APIIdentifier id) {
-        this.id = id;
-        additionalProperties = new JSONObject();
-    }
-
     public APIIdentifier getId() {
         return id;
     }
@@ -404,7 +426,6 @@ public class API implements Serializable {
         this.businessOwnerEmail = businessOwnerEmail;
     }
 
-
     public String getDescription() {
         return description;
     }
@@ -433,24 +454,24 @@ public class API implements Serializable {
         return wsdlUrl;
     }
 
-    public void setContext(String context) {
-        this.context = context;
+    public void setWsdlUrl(String wsdlUrl) {
+        this.wsdlUrl = wsdlUrl;
     }
 
     public String getContext() {
         return context;
     }
 
-    public void setContextTemplate(String contextTemplate) {
-        this.contextTemplate = contextTemplate;
+    public void setContext(String context) {
+        this.context = context;
     }
 
     public String getContextTemplate() {
         return contextTemplate;
     }
 
-    public void setWsdlUrl(String wsdlUrl) {
-        this.wsdlUrl = wsdlUrl;
+    public void setContextTemplate(String contextTemplate) {
+        this.contextTemplate = contextTemplate;
     }
 
     public String getThumbnailUrl() {
@@ -555,15 +576,15 @@ public class API implements Serializable {
         this.rating = rating;
     }
 
-    public void setLatest(boolean latest) {
-        isLatest = latest;
-    }
-
     /**
      * @return true if the current version of the API is the latest
      */
     public boolean isLatest() {
         return isLatest;
+    }
+
+    public void setLatest(boolean latest) {
+        isLatest = latest;
     }
 
     public AuthorizationPolicy getAuthorizationPolicy() {
@@ -904,6 +925,15 @@ public class API implements Serializable {
     }
 
     /**
+     * To get the gateway level security specific to the relevant API.
+     *
+     * @return Relevant type of gateway security.
+     */
+    public String getApiSecurity() {
+        return apiSecurity;
+    }
+
+    /**
      * To set the gateway security for the relevant API.
      *
      * @param apiSecurity Relevant type of gateway security for the API.
@@ -912,15 +942,6 @@ public class API implements Serializable {
         if (apiSecurity != null) {
             this.apiSecurity = apiSecurity;
         }
-    }
-
-    /**
-     * To get the gateway level security specific to the relevant API.
-     *
-     * @return Relevant type of gateway security.
-     */
-    public String getApiSecurity() {
-        return apiSecurity;
     }
 
     public String getWsdlArchivePath() {
@@ -955,35 +976,6 @@ public class API implements Serializable {
     public void setEndpoint(List<APIEndpoint> endpoint) {
 
         this.endpoints = endpoint;
-    }
-
-    /**
-     * This method returns endpoints according to the given endpoint config
-     *
-     * @param endpoints list of endpoints given
-     * @return String endpoint config
-     */
-    public static String getEndpointConfigString(List<APIEndpoint> endpoints) {
-        //todo improve this logic to support multiple endpoints such as failorver and load balance
-        StringBuilder sb = new StringBuilder();
-        if (endpoints != null && endpoints.size() > 0) {
-            sb.append("{");
-            for (APIEndpoint endpoint : endpoints) {
-                sb.append("\"")
-                        .append(endpoint.getType())
-                        .append("\": {\"url\":\"")
-                        .append(endpoint.getInline().getEndpointConfig().getList().get(0).getUrl())
-                        .append("\",\"timeout\":\"")
-                        .append(endpoint.getInline().getEndpointConfig().getList().get(0).getTimeout())
-                        .append("\",\"key\":\"")
-                        .append(endpoint.getKey())
-                        .append("\"},");
-            }
-            sb.append("\"endpoint_type\" : \"")
-                    .append(endpoints.get(0).getInline().getType())//assuming all the endpoints are same type
-                    .append("\"}\n");
-        }
-        return sb.toString();
     }
 
     @Override
