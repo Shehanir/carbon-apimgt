@@ -48,7 +48,6 @@ import org.wso2.carbon.registry.core.exceptions.RegistryException;
 import org.wso2.carbon.registry.core.service.RegistryService;
 
 import java.util.List;
-import java.util.Map;
 
 import static org.wso2.carbon.apimgt.impl.containermgt.ContainerBasedConstants.*;
 
@@ -67,9 +66,9 @@ public class K8sManager implements ContainerManager {
     private OpenShiftClient openShiftClient;
 
     @Override
-    public void initManager(Map<String, String> parameters) {
+    public void initManager(Cluster cluster) {
 
-        setValues(parameters);
+        setValues(cluster);
         setClient();
     }
 
@@ -202,16 +201,16 @@ public class K8sManager implements ContainerManager {
         log.info(API_CRD_NAME + "/" + apiCustomResourceDef.getMetadata().getName() + "created");
     }
 
-    private void setValues(Map<String, String> clusterParameters) {
+    private void setValues(Cluster cluster) {
 
-        this.masterURL = clusterParameters.get(MASTER_URL);
-        this.saToken = clusterParameters.get(SATOKEN);
-        this.namespace = clusterParameters.get(NAMESPACE);
-        this.replicas = Integer.parseInt(clusterParameters.get(REPLICAS));
-        this.clusterName = clusterParameters.get(CLUSTER_NAME);
-        this.jwtSecurityCRName = clusterParameters.get(JWT_SECURITY_CR_NAME);
-        this.oauthSecurityCRName = clusterParameters.get(OAUTH2_SECURITY_CR_NAME);
-        this.basicAuthSecurityCRName = clusterParameters.get(BASICAUTH_SECURITY_CR_NAME);
+        this.masterURL = cluster.getMasterURL();
+        this.saToken = cluster.getSaToken();
+        this.namespace = cluster.getNamespace();
+        this.replicas = cluster.getReplicas();
+        this.clusterName = cluster.getClusterName();
+        this.jwtSecurityCRName = cluster.getJwtSecurityCRName();
+        this.oauthSecurityCRName = cluster.getOauth2SecurityCRName();
+        this.basicAuthSecurityCRName = cluster.getBasicAuthSecurityCRName();
     }
 
     private void setClient() {
