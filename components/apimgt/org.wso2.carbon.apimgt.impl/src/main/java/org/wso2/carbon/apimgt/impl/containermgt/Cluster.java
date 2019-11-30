@@ -16,12 +16,7 @@
  * under the License.
  */
 
-package org.wso2.carbon.apimgt.impl.containermgt.model;
-
-import io.fabric8.kubernetes.api.model.Pod;
-
-import java.util.ArrayList;
-import java.util.List;
+package org.wso2.carbon.apimgt.impl.containermgt;
 
 /**
  * This class represent the Cluster
@@ -32,17 +27,50 @@ public class Cluster {
     private String masterURL;
     private String saToken;
     private String namespace;
-    private List<Pod> podList = new ArrayList<>();
+    private int replicas;
+    private String jwtSecurityCRName;
+    private String oauth2SecurityCRName;
+    private String basicAuthSecurityCRName;
+    private String className;
 
-    public Cluster() {
+    public String getClassName() {
+        return className;
     }
 
-    public List<Pod> getPodList() {
-        return podList;
+    public void setClassName(String className) {
+        this.className = className;
     }
 
-    public void setPodList(List<Pod> podList) {
-        this.podList = podList;
+    public int getReplicas() {
+        return replicas;
+    }
+
+    public void setReplicas(int replicas) {
+        this.replicas = replicas;
+    }
+
+    public String getBasicAuthSecurityCRName() {
+        return basicAuthSecurityCRName;
+    }
+
+    public void setBasicAuthSecurityCRName(String basicAuthSecurityCRName) {
+        this.basicAuthSecurityCRName = basicAuthSecurityCRName;
+    }
+
+    public String getJwtSecurityCRName() {
+        return jwtSecurityCRName;
+    }
+
+    public void setJwtSecurityCRName(String jwtSecurityCRName) {
+        this.jwtSecurityCRName = jwtSecurityCRName;
+    }
+
+    public String getOauth2SecurityCRName() {
+        return oauth2SecurityCRName;
+    }
+
+    public void setOauth2SecurityCRName(String oauth2SecurityCRName) {
+        this.oauth2SecurityCRName = oauth2SecurityCRName;
     }
 
     public String getClusterName() {
