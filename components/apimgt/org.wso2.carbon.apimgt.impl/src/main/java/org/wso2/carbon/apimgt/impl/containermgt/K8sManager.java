@@ -65,24 +65,21 @@ public class K8sManager implements ContainerManager {
     private String basicAuthSecurityCRName;
     private OpenShiftClient openShiftClient;
 
-    @Override
-    public void initManager(Cluster cluster) {
+    @Override public void initManager(Cluster cluster) {
 
         setValues(cluster);
         setClient();
     }
 
-    @Override
-    public void DeployAPI(API api, APIIdentifier apiIdentifier)
+    @Override public void DeployAPI(API api, APIIdentifier apiIdentifier)
             throws RegistryException, ParseException, APIManagementException {
 
         Registry registry = getRegistryService().getGovernanceUserRegistry();
 
-        SwaggerCreator swaggerCreator = new SwaggerCreator(
-                basicAuthSecurityCRName, jwtSecurityCRName, oauthSecurityCRName);
+        SwaggerCreator swaggerCreator = new SwaggerCreator(basicAuthSecurityCRName, jwtSecurityCRName,
+                oauthSecurityCRName);
         String swagger = swaggerCreator.
                 getOASDefinitionForPublisher(api, OASParserUtil.getAPIDefinition(apiIdentifier, registry));
-
 
         if (!saToken.equals("") && !masterURL.equals("")) {
 
@@ -91,8 +88,8 @@ public class K8sManager implements ContainerManager {
              */
             String configmapName = apiIdentifier.getApiName().toLowerCase() + ".v" + apiIdentifier.getVersion();
 
-            io.fabric8.kubernetes.client.dsl.Resource<ConfigMap, DoneableConfigMap> configMapResource
-                    = openShiftClient.configMaps().inNamespace(namespace).withName(configmapName);
+            io.fabric8.kubernetes.client.dsl.Resource<ConfigMap, DoneableConfigMap> configMapResource = openShiftClient
+                    .configMaps().inNamespace(namespace).withName(configmapName);
 
             ConfigMap configMap = configMapResource.createOrReplace(new ConfigMapBuilder().withNewMetadata().
                     withName(configmapName).withNamespace(namespace).endMetadata().
@@ -126,13 +123,12 @@ public class K8sManager implements ContainerManager {
         }
     }
 
-
     protected RegistryService getRegistryService() {
         return ServiceReferenceHolder.getInstance().getRegistryService();
     }
 
-    private void applyAPICustomResourceDefinition(KubernetesClient client, String configmapName,
-                                                  int replicas, APIIdentifier apiIdentifier) {
+    private void applyAPICustomResourceDefinition(KubernetesClient client, String configmapName, int replicas,
+            APIIdentifier apiIdentifier) {
 
         CustomResourceDefinitionList customResourceDefinitionList = client.customResourceDefinitions().list();
         List<CustomResourceDefinition> customResourceDefinitionItems = customResourceDefinitionList.getItems();
@@ -164,20 +160,17 @@ public class K8sManager implements ContainerManager {
             log.info("Created CRD " + apiCustomResourceDefinition.getMetadata().getName());
         }
 
-        KubernetesDeserializer.registerCustomKind(API_CRD_GROUP + "/" + API_CRD_VERSION, CRD_KIND,
-                APICustomResourceDefinition.class);
+        KubernetesDeserializer
+                .registerCustomKind(API_CRD_GROUP + "/" + API_CRD_VERSION, CRD_KIND, APICustomResourceDefinition.class);
         NonNamespaceOperation<APICustomResourceDefinition, APICustomResourceDefinitionList,
                 DoneableAPICustomResourceDefinition, Resource<APICustomResourceDefinition,
-                DoneableAPICustomResourceDefinition>> apiCrdClient = client.customResources(apiCustomResourceDefinition,
-                APICustomResourceDefinition.class,
-                APICustomResourceDefinitionList.class,
-                DoneableAPICustomResourceDefinition.class);
+                DoneableAPICustomResourceDefinition>> apiCrdClient = client
+                .customResources(apiCustomResourceDefinition, APICustomResourceDefinition.class,
+                        APICustomResourceDefinitionList.class, DoneableAPICustomResourceDefinition.class);
 
-        apiCrdClient = ((MixedOperation<APICustomResourceDefinition,
-                APICustomResourceDefinitionList,
-                DoneableAPICustomResourceDefinition,
-                Resource<APICustomResourceDefinition, DoneableAPICustomResourceDefinition>>) apiCrdClient).
-                inNamespace(client.getNamespace());
+        apiCrdClient = ((MixedOperation<APICustomResourceDefinition, APICustomResourceDefinitionList,
+                DoneableAPICustomResourceDefinition, Resource<APICustomResourceDefinition,
+                DoneableAPICustomResourceDefinition>>) apiCrdClient).inNamespace(client.getNamespace());
 
         Definition definition = new Definition();
         definition.setType(SWAGGER);
@@ -215,8 +208,8 @@ public class K8sManager implements ContainerManager {
 
     private void setClient() {
 
-        Config config = new ConfigBuilder().withMasterUrl(masterURL)
-                .withOauthToken(saToken).withNamespace(namespace).build();
+        Config config = new ConfigBuilder().withMasterUrl(masterURL).withOauthToken(saToken).withNamespace(namespace)
+                .build();
 
         this.openShiftClient = new DefaultOpenShiftClient(config);
 
