@@ -81,19 +81,10 @@ import org.wso2.carbon.apimgt.impl.*;
 import org.wso2.carbon.apimgt.impl.clients.ApplicationManagementServiceClient;
 import org.wso2.carbon.apimgt.impl.clients.OAuthAdminClient;
 import org.wso2.carbon.apimgt.impl.clients.UserInformationRecoveryClient;
+import org.wso2.carbon.apimgt.impl.containermgt.Cluster;
 import org.wso2.carbon.apimgt.impl.dao.ApiMgtDAO;
-import org.wso2.carbon.apimgt.impl.dto.*;
 import org.wso2.carbon.apimgt.impl.definitions.OASParserUtil;
-import org.wso2.carbon.apimgt.impl.dto.APIKeyValidationInfoDTO;
-import org.wso2.carbon.apimgt.impl.dto.APISubscriptionInfoDTO;
-import org.wso2.carbon.apimgt.impl.dto.ConditionDto;
-import org.wso2.carbon.apimgt.impl.dto.Environment;
-import org.wso2.carbon.apimgt.impl.dto.JwtTokenInfoDTO;
-import org.wso2.carbon.apimgt.impl.dto.SubscribedApiDTO;
-import org.wso2.carbon.apimgt.impl.dto.SubscriptionPolicyDTO;
-import org.wso2.carbon.apimgt.impl.dto.ThrottleProperties;
-import org.wso2.carbon.apimgt.impl.dto.UserRegistrationConfigDTO;
-import org.wso2.carbon.apimgt.impl.dto.WorkflowDTO;
+import org.wso2.carbon.apimgt.impl.dto.*;
 import org.wso2.carbon.apimgt.impl.factory.KeyManagerHolder;
 import org.wso2.carbon.apimgt.impl.internal.APIManagerComponent;
 import org.wso2.carbon.apimgt.impl.internal.ServiceReferenceHolder;
@@ -192,37 +183,28 @@ import java.util.regex.Pattern;
  */
 public final class APIUtil {
 
-    private static final Log log = LogFactory.getLog(APIUtil.class);
-
-    private static final Log audit = CarbonConstants.AUDIT_LOG;
-
-    private static boolean isContextCacheInitialized = false;
-
     public static final String DISABLE_ROLE_VALIDATION_AT_SCOPE_CREATION = "disableRoleValidationAtScopeCreation";
-
-    private static final int ENTITY_EXPANSION_LIMIT = 0;
-
-    private static final String DESCRIPTION = "Allows [1] request(s) per minute.";
-
-    private static final int DEFAULT_TENANT_IDLE_MINS = 30;
-    private static long tenantIdleTimeMillis;
-    private static Set<String> currentLoadingTenants = new HashSet<String>();
-
-    private static volatile Set<String> whiteListedScopes;
-    private static boolean isPublisherRoleCacheEnabled = true;
-
     public static final String STRICT = "Strict";
     public static final String ALLOW_ALL = "AllowAll";
     public static final String DEFAULT_AND_LOCALHOST = "DefaultAndLocalhost";
     public static final String HOST_NAME_VERIFIER = "httpclient.hostnameVerifier";
-    public static String multiGrpAppSharing = null;
-
+    private static final Log log = LogFactory.getLog(APIUtil.class);
+    private static final Log audit = CarbonConstants.AUDIT_LOG;
+    private static final int ENTITY_EXPANSION_LIMIT = 0;
+    private static final String DESCRIPTION = "Allows [1] request(s) per minute.";
+    private static final int DEFAULT_TENANT_IDLE_MINS = 30;
     private static final String CONFIG_ELEM_OAUTH = "OAuth";
     private static final String REVOKE = "revoke";
     private static final String TOKEN = "token";
-
     private static final String SHA256_WITH_RSA = "SHA256withRSA";
     private static final String NONE = "NONE";
+    public static String multiGrpAppSharing = null;
+    private static boolean isContextCacheInitialized = false;
+    private static long tenantIdleTimeMillis;
+    private static Set<String> currentLoadingTenants = new HashSet<String>();
+    private static volatile Set<String> whiteListedScopes;
+    private static boolean isPublisherRoleCacheEnabled = true;
+    private static String hostAddress = null;
 
     //Need tenantIdleTime to check whether the tenant is in idle state in loadTenantConfig method
     static {
@@ -232,8 +214,6 @@ public final class APIUtil {
                         String.valueOf(DEFAULT_TENANT_IDLE_MINS)))
                         * 60 * 1000;
     }
-
-    private static String hostAddress = null;
 
     /**
      * To initialize the publisherRoleCache configurations, based on configurations.
@@ -403,7 +383,8 @@ public final class APIUtil {
 
     /**
      * This method used to retrieve the api resource dependencies
-     * @param api api object
+     *
+     * @param api      api object
      * @param registry registry
      * @throws APIManagementException
      */
@@ -861,7 +842,8 @@ public final class APIUtil {
 
     /**
      * This method is used to get an API in the Light Weight manner.
-     * @param artifact  generic artfact
+     *
+     * @param artifact generic artfact
      * @return this will return an API for the selected artifact.
      * @throws APIManagementException , if invalid json config for the API or Api cannot be retrieved from the artifact
      */
@@ -1184,8 +1166,8 @@ public final class APIUtil {
     /**
      * Create Governance artifact from given attributes
      *
-     * @param artifact initial governance artifact
-     * @param apiProduct     APIProduct object with the attributes value
+     * @param artifact   initial governance artifact
+     * @param apiProduct APIProduct object with the attributes value
      * @return GenericArtifact
      * @throws APIManagementException if failed to create API Product
      */
@@ -1237,14 +1219,14 @@ public final class APIUtil {
             if (APIConstants.SUPER_TENANT_DOMAIN.equals(tenantDomain)) {
                 String invalidContext = File.separator + APIConstants.VERSION_PLACEHOLDER;
                 if (invalidContext.equals(apiProduct.getContextTemplate())) {
-                    throw new APIManagementException( "API : " + apiProduct.getId() + " has an unsupported context : " +
-                                    apiProduct.getContextTemplate());
+                    throw new APIManagementException("API : " + apiProduct.getId() + " has an unsupported context : " +
+                            apiProduct.getContextTemplate());
                 }
             } else {
                 String invalidContext =
                         APIConstants.TENANT_PREFIX + tenantDomain + File.separator + APIConstants.VERSION_PLACEHOLDER;
                 if (invalidContext.equals(apiProduct.getContextTemplate())) {
-                    throw new APIManagementException( "API : " + apiProduct.getId() + " has an unsupported context : " +
+                    throw new APIManagementException("API : " + apiProduct.getId() + " has an unsupported context : " +
                             apiProduct.getContextTemplate());
                 }
             }
@@ -1280,8 +1262,8 @@ public final class APIUtil {
     /**
      * This method is used to attach micro-gateway labels to the given API
      *
-     * @param artifact genereic artifact
-     * @param api API
+     * @param artifact     genereic artifact
+     * @param api          API
      * @param tenantDomain domain name of the tenant
      * @throws APIManagementException if failed to attach micro-gateway labels
      */
@@ -3580,7 +3562,7 @@ public final class APIUtil {
                     authorizationManager.authorizeRole(APIConstants.EVERYONE_ROLE, resourcePath, ActionConstants.GET);
                     authorizationManager.denyRole(APIConstants.ANONYMOUS_ROLE, resourcePath, ActionConstants.GET);
                 } else if (visibility != null && APIConstants.DOC_OWNER_VISIBILITY.equalsIgnoreCase(visibility)) {
-                     /*If no roles have defined, deny access for everyone & anonymous role */
+                    /*If no roles have defined, deny access for everyone & anonymous role */
                     if (roles == null) {
                         authorizationManager.denyRole(APIConstants.EVERYONE_ROLE, resourcePath, ActionConstants.GET);
                         authorizationManager.denyRole(APIConstants.ANONYMOUS_ROLE, resourcePath, ActionConstants.GET);
@@ -3975,13 +3957,13 @@ public final class APIUtil {
         JSONObject scopeConfigLocal = getRESTAPIScopesConfigFromFileSystem();
         Map<String, String> scopesTenant = getRESTAPIScopesFromConfig(scopesConfigTenant);
         Map<String, String> scopesLocal = getRESTAPIScopesFromConfig(scopeConfigLocal);
-        JSONArray tenantScopesArray = (JSONArray)scopesConfigTenant.get(APIConstants.REST_API_SCOPE);
+        JSONArray tenantScopesArray = (JSONArray) scopesConfigTenant.get(APIConstants.REST_API_SCOPE);
 
         Set<String> scopes = scopesLocal.keySet();
         //Find any scopes that are not added to tenant conf which is available in local tenant-conf
         scopes.removeAll(scopesTenant.keySet());
         if (!scopes.isEmpty()) {
-            for (String scope: scopes) {
+            for (String scope : scopes) {
                 JSONObject scopeJson = new JSONObject();
                 scopeJson.put(APIConstants.REST_API_SCOPE_NAME, scope);
                 scopeJson.put(APIConstants.REST_API_SCOPE_ROLE, scopesLocal.get(scope));
@@ -4476,51 +4458,6 @@ public final class APIUtil {
         }
     }
 
-    public void setupSelfRegistration(APIManagerConfiguration config, int tenantId) throws APIManagementException {
-        boolean enabled = Boolean.parseBoolean(config.getFirstProperty(APIConstants.SELF_SIGN_UP_ENABLED));
-        if (!enabled) {
-            return;
-        }
-        // Create the subscriber role as an internal role
-        String role = UserCoreConstants.INTERNAL_DOMAIN + CarbonConstants.DOMAIN_SEPARATOR
-                + config.getFirstProperty(APIConstants.SELF_SIGN_UP_ROLE);
-        if ((UserCoreConstants.INTERNAL_DOMAIN + CarbonConstants.DOMAIN_SEPARATOR).equals(role)) {
-            // Required parameter missing - Throw an exception and interrupt startup
-            throw new APIManagementException("Required subscriber role parameter missing "
-                    + "in the self sign up configuration");
-        }
-
-        try {
-            RealmService realmService = ServiceReferenceHolder.getInstance().getRealmService();
-            UserRealm realm;
-            org.wso2.carbon.user.api.UserRealm tenantRealm;
-            UserStoreManager manager;
-
-            if (tenantId < 0) {
-                realm = realmService.getBootstrapRealm();
-                manager = realm.getUserStoreManager();
-            } else {
-                tenantRealm = realmService.getTenantUserRealm(tenantId);
-                manager = tenantRealm.getUserStoreManager();
-            }
-            if (!manager.isExistingRole(role)) {
-                if (log.isDebugEnabled()) {
-                    log.debug("Creating subscriber role: " + role);
-                }
-                Permission[] subscriberPermissions = new Permission[]{
-                        new Permission("/permission/admin/login", UserMgtConstants.EXECUTE_ACTION),
-                        new Permission(APIConstants.Permissions.API_SUBSCRIBE, UserMgtConstants.EXECUTE_ACTION)};
-                String tenantAdminName = ServiceReferenceHolder.getInstance().getRealmService()
-                        .getTenantUserRealm(tenantId).getRealmConfiguration().getAdminUserName();
-                String[] userList = new String[]{tenantAdminName};
-                manager.addRole(role, userList, subscriberPermissions);
-            }
-        } catch (UserStoreException e) {
-            throw new APIManagementException("Error while creating subscriber role: " + role + " - "
-                    + "Self registration might not function properly.", e);
-        }
-    }
-
     public static String removeAnySymbolFromUriTempate(String uriTemplate) {
         if (uriTemplate != null) {
             int anySymbolIndex = uriTemplate.indexOf("/*");
@@ -4862,6 +4799,7 @@ public final class APIUtil {
 
     /**
      * Check whether roles exist for the user.
+     *
      * @param userName
      * @param roleName
      * @return
@@ -5409,7 +5347,7 @@ public final class APIUtil {
      * @return
      */
     public static String getSequenceExtensionName(String provider, String name, String version) {
-        return  provider+ "--" + name + ":v" + version;
+        return provider + "--" + name + ":v" + version;
     }
 
     /**
@@ -7031,43 +6969,6 @@ public final class APIUtil {
         return scopes;
     }
 
-    public JSONObject getClusterInfoFromConfig(String tenantConfigContent) throws ParseException {
-
-        JSONParser jsonParser = new JSONParser();
-        JSONObject tenantConf = (JSONObject) jsonParser.parse(tenantConfigContent);
-        JSONArray ClusterInfo = (JSONArray) tenantConf.get("ClusterInfo");
-        JSONObject clusters = new JSONObject();
-        for (int i = 0; i < ClusterInfo.size(); i++) {
-
-            JSONObject clusterProperties = (JSONObject) ((JSONObject) ClusterInfo.get(i)).get("Properties");
-            String name = ((JSONObject) ClusterInfo.get(i)).get("Name").toString();
-            clusters.put(name, clusterProperties);
-
-        }
-        return clusters;
-    }
-
-    public Map<String, String> getClusterPropertiesFromConfig(JSONObject properties) {
-        Map<String, String> clusterProperties = new HashMap<String, String>();
-        String masterURL = properties.get("MasterURL").toString();
-        String saToken = properties.get("SAToken").toString();
-        String namespace = properties.get("Namespace").toString();
-        String replicas = properties.get("Replicas").toString();
-        String basicSecurityCRName = properties.get("BasicSecurityCustomResourceName").toString();
-        String jwtSecurityCRName = properties.get("JWTSecurityCustomResourceName").toString();
-        String oauthSecurityCRName = properties.get("OauthSecurityCustomResourceName").toString();
-
-        clusterProperties.put("masterURL", masterURL);
-        clusterProperties.put("saToken", saToken);
-        clusterProperties.put("namespace", namespace);
-        clusterProperties.put("replicas", replicas);
-        clusterProperties.put("basicSecurityCRName", basicSecurityCRName);
-        clusterProperties.put("jwtSecurityCRName", jwtSecurityCRName);
-        clusterProperties.put("oauthSecurityCRName", oauthSecurityCRName);
-
-        return clusterProperties;
-    }
-
     /**
      * Determines if the scope is specified in the whitelist.
      *
@@ -7101,7 +7002,7 @@ public final class APIUtil {
         return false;
     }
 
-    public static int getManagementTransportPort (String mgtTransport){
+    public static int getManagementTransportPort(String mgtTransport) {
         if (StringUtils.isEmpty(mgtTransport)) {
             mgtTransport = APIConstants.HTTPS_PROTOCOL;
         }
@@ -7198,9 +7099,10 @@ public final class APIUtil {
 
     /**
      * Get the API Provider name by giving the api name version and the tenant which it belongs to
-     * @param apiName Name of the API
+     *
+     * @param apiName    Name of the API
      * @param apiVersion Version of the API
-     * @param tenant Tenant name
+     * @param tenant     Tenant name
      * @return Provider name who created the API
      * @throws APIManagementException
      */
@@ -7760,7 +7662,7 @@ public final class APIUtil {
                 if (policy instanceof SubscriptionPolicy) {
                     SubscriptionPolicy subscriptionPolicy = (SubscriptionPolicy) policy;
                     setBillingPlanAndCustomAttributesToTier(subscriptionPolicy, tier);
-                    if(StringUtils.equals(subscriptionPolicy.getBillingPlan(),APIConstants.COMMERCIAL_TIER_PLAN)){
+                    if (StringUtils.equals(subscriptionPolicy.getBillingPlan(), APIConstants.COMMERCIAL_TIER_PLAN)) {
                         tier.setMonetizationAttributes(subscriptionPolicy.getMonetizationPlanProperties());
                     }
                 }
@@ -7873,11 +7775,6 @@ public final class APIUtil {
 
         }
         return result;
-    }
-
-    public String getFullLifeCycleData(Registry registry) throws XMLStreamException, RegistryException {
-        return CommonUtil.getLifecycleConfiguration(APIConstants.API_LIFE_CYCLE, registry);
-
     }
 
     /**
@@ -8704,8 +8601,6 @@ public final class APIUtil {
         return null;
     }
 
-
-
     /**
      * Get the Security Audit Attributes for tenant from the Registry
      *
@@ -8879,9 +8774,9 @@ public final class APIUtil {
     /**
      * This method is used to extact group ids from Extractor.
      *
-     * @param response  login response String.
-     * @param groupingExtractorClass    extractor class.
-     * @return  group ids
+     * @param response               login response String.
+     * @param groupingExtractorClass extractor class.
+     * @return group ids
      * @throws APIManagementException Throws is an error occured when stractoing group Ids
      */
     public static String[] getGroupIdsFromExtractor(String response, String groupingExtractorClass)
@@ -9449,6 +9344,7 @@ public final class APIUtil {
     /**
      * Get expiry time of a given jwt token. This method should be called only after validating whether the token is
      * JWT via isValidJWT method.
+     *
      * @param token jwt token.
      * @return the expiry time.
      */
@@ -9463,6 +9359,7 @@ public final class APIUtil {
     /**
      * Checks whether the given token is a valid JWT by parsing header and validating the
      * header,payload,signature format
+     *
      * @param token the token to be validated
      * @return true if valid JWT
      */
@@ -9489,6 +9386,7 @@ public final class APIUtil {
     /**
      * Get signature of  given JWT token. This method should be called only after validating whether the token is
      * JWT via isValidJWT method.
+     *
      * @param token jwt token.
      * @return signature of the jwt token.
      */
@@ -9500,6 +9398,7 @@ public final class APIUtil {
 
     /**
      * Extracts the tenant domain of the subject in a given JWT
+     *
      * @param token jwt token
      * @return tenant domain of the the sub claim
      */
@@ -9544,13 +9443,15 @@ public final class APIUtil {
         }
         return publicCert;
     }
-        /**
-         * Verify the JWT token signature.
-         *
-         * This method only used for API Key revocation which contains some duplicate logic in GatewayUtils class.
-         * @param splitToken The JWT token which is split into [header, payload, signature]
-         * @return whether the signature is verified or or not
-         */
+
+    /**
+     * Verify the JWT token signature.
+     * <p>
+     * This method only used for API Key revocation which contains some duplicate logic in GatewayUtils class.
+     *
+     * @param splitToken The JWT token which is split into [header, payload, signature]
+     * @return whether the signature is verified or or not
+     */
     public static boolean verifyTokenSignature(String[] splitToken, Certificate certificate,
                                                String signatureAlgorithm) throws APIManagementException {
         // Retrieve public key from the certificate
@@ -9653,12 +9554,83 @@ public final class APIUtil {
 
     /**
      * return skipRolesByRegex config
-     *
      */
     public static String getSkipRolesByRegex() {
         APIManagerConfiguration config = ServiceReferenceHolder.getInstance().
                 getAPIManagerConfigurationService().getAPIManagerConfiguration();
         String skipRolesByRegex = config.getFirstProperty(APIConstants.SKIP_ROLES_BY_REGEX);
         return skipRolesByRegex;
+    }
+
+    public void setupSelfRegistration(APIManagerConfiguration config, int tenantId) throws APIManagementException {
+        boolean enabled = Boolean.parseBoolean(config.getFirstProperty(APIConstants.SELF_SIGN_UP_ENABLED));
+        if (!enabled) {
+            return;
+        }
+        // Create the subscriber role as an internal role
+        String role = UserCoreConstants.INTERNAL_DOMAIN + CarbonConstants.DOMAIN_SEPARATOR
+                + config.getFirstProperty(APIConstants.SELF_SIGN_UP_ROLE);
+        if ((UserCoreConstants.INTERNAL_DOMAIN + CarbonConstants.DOMAIN_SEPARATOR).equals(role)) {
+            // Required parameter missing - Throw an exception and interrupt startup
+            throw new APIManagementException("Required subscriber role parameter missing "
+                    + "in the self sign up configuration");
+        }
+
+        try {
+            RealmService realmService = ServiceReferenceHolder.getInstance().getRealmService();
+            UserRealm realm;
+            org.wso2.carbon.user.api.UserRealm tenantRealm;
+            UserStoreManager manager;
+
+            if (tenantId < 0) {
+                realm = realmService.getBootstrapRealm();
+                manager = realm.getUserStoreManager();
+            } else {
+                tenantRealm = realmService.getTenantUserRealm(tenantId);
+                manager = tenantRealm.getUserStoreManager();
+            }
+            if (!manager.isExistingRole(role)) {
+                if (log.isDebugEnabled()) {
+                    log.debug("Creating subscriber role: " + role);
+                }
+                Permission[] subscriberPermissions = new Permission[]{
+                        new Permission("/permission/admin/login", UserMgtConstants.EXECUTE_ACTION),
+                        new Permission(APIConstants.Permissions.API_SUBSCRIBE, UserMgtConstants.EXECUTE_ACTION)};
+                String tenantAdminName = ServiceReferenceHolder.getInstance().getRealmService()
+                        .getTenantUserRealm(tenantId).getRealmConfiguration().getAdminUserName();
+                String[] userList = new String[]{tenantAdminName};
+                manager.addRole(role, userList, subscriberPermissions);
+            }
+        } catch (UserStoreException e) {
+            throw new APIManagementException("Error while creating subscriber role: " + role + " - "
+                    + "Self registration might not function properly.", e);
+        }
+    }
+
+    public Map<String, Cluster> getClusterInfoFromConfig(JSONObject tenantConf) throws ParseException {
+
+        JSONArray ClusterInfo = (JSONArray) ((JSONObject) tenantConf.get("ContainerMgtInfo")).get("ClusterInfo");
+        Map<String, Cluster> clusters = new HashMap<String, Cluster>();
+        for (Object info : ClusterInfo) {
+
+            JSONObject clusterProperties = (JSONObject) ((JSONObject) info).get("Properties");
+            Cluster cluster = new Cluster();
+            cluster.setClusterName(((JSONObject) info).get("Name").toString());
+            cluster.setBasicAuthSecurityCRName(clusterProperties.get("BasicSecurityCustomResourceName").toString());
+            cluster.setJwtSecurityCRName(clusterProperties.get("JWTSecurityCustomResourceName").toString());
+            cluster.setBasicAuthSecurityCRName(clusterProperties.get("BasicSecurityCustomResourceName").toString());
+            cluster.setMasterURL(clusterProperties.get("MasterURL").toString());
+            cluster.setNamespace(clusterProperties.get("Namespace").toString());
+            cluster.setReplicas(Math.toIntExact((long) clusterProperties.get("Replicas")));
+            cluster.setSaToken(clusterProperties.get("SAToken").toString());
+
+            clusters.put(cluster.getClusterName(), cluster);
+        }
+        return clusters;
+    }
+
+    public String getFullLifeCycleData(Registry registry) throws XMLStreamException, RegistryException {
+        return CommonUtil.getLifecycleConfiguration(APIConstants.API_LIFE_CYCLE, registry);
+
     }
 }

@@ -29,6 +29,8 @@ public class APICustomResourceDefinitionSpec implements KubernetesResource {
     private int replicas;
     private String mode;
     private Definition definition;
+    private boolean override;
+    private String updateTimeStamp;
 
     public Definition getDefinition() {
         return definition;
@@ -73,6 +75,8 @@ public class APICustomResourceDefinitionSpec implements KubernetesResource {
                 "replicas=" + replicas  +
                 ", mode=" + mode +
                 ", definition=" + definition +
+                ", override=" + override +
+                ", updateTimeStamp=" + updateTimeStamp +
                 "}";
     }
 }
