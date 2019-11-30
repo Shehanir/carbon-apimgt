@@ -23,37 +23,10 @@ import io.fabric8.kubernetes.api.model.KubernetesResource;
 
 @JsonDeserialize(using = JsonDeserializer.None.class)
 
-public class Definition implements KubernetesResource {
+public class Status implements KubernetesResource {
 
-    private String configmapName;
-    private String type;
-
-    public String getConfigmapName() {
-        return configmapName;
-    }
-
-    public void setconfigmapName(String configmapName) {
-        this.configmapName = configmapName;
-    }
-
-    public String getType() {
-        return type;
-    }
-
-    public void setType(String type) {
-        this.type = type;
-    }
-
-    /**
-     * This method is to create the following json object
-     * {
-     * "configmapName": "${configmapName}",
-     * "type": "swagger"
-     * },
-     *
-     * @return
-     */
     @Override public String toString() {
-        return "Definition{" + "configmapName=" + configmapName + ", type=" + type + "}";
+        return "Status{" + "}";
     }
+
 }

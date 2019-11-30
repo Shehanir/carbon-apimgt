@@ -23,6 +23,15 @@ import io.fabric8.kubernetes.client.CustomResource;
 public class APICustomResourceDefinition extends CustomResource {
 
     private APICustomResourceDefinitionSpec spec;
+    private Status status;
+
+    public Status getStatus() {
+        return status;
+    }
+
+    public void setStatus(Status status) {
+        this.status = status;
+    }
 
     public APICustomResourceDefinitionSpec getSpec() {
         return spec;
@@ -40,28 +49,27 @@ public class APICustomResourceDefinition extends CustomResource {
      * "name": "${apiName}"
      * },
      * "spec": {
-     * "definition": {
-     * "configmapName": "${configmapName}",
-     * "type": "${type}"
-     * },
-     * "replicas": "${replicas}",
-     * "mode": "${mode}"
-     * }
+     *      "definition": {
+     *          "configmapName": "${configmapName}",
+     *          "type": "${type}"
+     *      },
+     *      "replicas": "${replicas}",
+     *      "mode": "${mode}"
+     *      "interceptorConfName" : "",
+     *      "override" : bool
+     *      "updateTimeStamp" : ""
+     *      }
+     * "status": {}
      * }
      *
      * @return
      */
-    @Override
-    public String toString() {
-        return "APICrd{" +
-                "apiVersion='" + getApiVersion() + "'" +
-                ", metadata=" + getMetadata() +
-                ", spec=" + spec +
-                "}";
+    @Override public String toString() {
+        return "APICrd{" + "apiVersion='" + getApiVersion() + "'" + ", metadata=" + getMetadata() + ", spec=" + spec
+                + ", status" + status + "}";
     }
 
-    @Override
-    public ObjectMeta getMetadata() {
+    @Override public ObjectMeta getMetadata() {
         return super.getMetadata();
     }
 
