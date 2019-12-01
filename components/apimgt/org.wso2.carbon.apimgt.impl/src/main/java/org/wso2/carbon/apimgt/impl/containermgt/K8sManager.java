@@ -47,6 +47,8 @@ import org.wso2.carbon.registry.core.Registry;
 import org.wso2.carbon.registry.core.exceptions.RegistryException;
 import org.wso2.carbon.registry.core.service.RegistryService;
 
+import java.sql.Timestamp;
+import java.util.Date;
 import java.util.List;
 
 import static org.wso2.carbon.apimgt.impl.containermgt.ContainerBasedConstants.*;
@@ -71,7 +73,7 @@ public class K8sManager implements ContainerManager {
         setClient();
     }
 
-    @Override public void DeployAPI(API api, APIIdentifier apiIdentifier)
+    @Override public void changeLCStateCreatedToPublished(API api, APIIdentifier apiIdentifier)
             throws RegistryException, ParseException, APIManagementException {
 
         Registry registry = getRegistryService().getGovernanceUserRegistry();
@@ -160,13 +162,14 @@ public class K8sManager implements ContainerManager {
             log.info("Created CRD " + apiCustomResourceDefinition.getMetadata().getName());
         }
 
-        KubernetesDeserializer
-                .registerCustomKind(API_CRD_GROUP + "/" + API_CRD_VERSION, CRD_KIND, APICustomResourceDefinition.class);
+        KubernetesDeserializer.registerCustomKind(API_CRD_GROUP + "/" + API_CRD_VERSION, CRD_KIND,
+                APICustomResourceDefinition.class);
+
         NonNamespaceOperation<APICustomResourceDefinition, APICustomResourceDefinitionList,
                 DoneableAPICustomResourceDefinition, Resource<APICustomResourceDefinition,
-                DoneableAPICustomResourceDefinition>> apiCrdClient = client
-                .customResources(apiCustomResourceDefinition, APICustomResourceDefinition.class,
-                        APICustomResourceDefinitionList.class, DoneableAPICustomResourceDefinition.class);
+                DoneableAPICustomResourceDefinition>> apiCrdClient = client.customResources(apiCustomResourceDefinition,
+                APICustomResourceDefinition.class, APICustomResourceDefinitionList.class,
+                DoneableAPICustomResourceDefinition.class);
 
         apiCrdClient = ((MixedOperation<APICustomResourceDefinition, APICustomResourceDefinitionList,
                 DoneableAPICustomResourceDefinition, Resource<APICustomResourceDefinition,
@@ -180,9 +183,15 @@ public class K8sManager implements ContainerManager {
         apiCustomResourceDefinitionSpec.setDefinition(definition);
         apiCustomResourceDefinitionSpec.setMode(MODE);
         apiCustomResourceDefinitionSpec.setReplicas(replicas);
+        apiCustomResourceDefinitionSpec.setInterceptorConfName("");
+        apiCustomResourceDefinitionSpec.setOverride(true);
+        apiCustomResourceDefinitionSpec.setUpdateTimeStamp("");
+
+        Status status = new Status();
 
         APICustomResourceDefinition apiCustomResourceDef = new APICustomResourceDefinition();
         apiCustomResourceDef.setSpec(apiCustomResourceDefinitionSpec);
+        apiCustomResourceDef.setStatus(status);
         apiCustomResourceDef.setApiVersion(API_VERSION);
         apiCustomResourceDef.setKind(CRD_KIND);
         ObjectMeta meta = new ObjectMeta();
@@ -192,6 +201,95 @@ public class K8sManager implements ContainerManager {
 
         apiCrdClient.createOrReplace(apiCustomResourceDef);
         log.info(API_CRD_NAME + "/" + apiCustomResourceDef.getMetadata().getName() + "created");
+    }
+
+    @Override public void deleteAPI(API api) {
+
+        String apiName = api.getId().getApiName();
+
+        List<Cluster> clusters = api.getClusters();
+        for (Cluster cluster : clusters) {
+
+            Config config = new ConfigBuilder().withMasterUrl(cluster.getMasterURL())
+                    .withOauthToken(cluster.getSaToken()).withNamespace(cluster.getNamespace()).build();
+
+            OpenShiftClient client = new DefaultOpenShiftClient(config);
+            CustomResourceDefinition apiCRD = client.customResourceDefinitions().withName(API_CRD_NAME).get();
+            client.customResources(apiCRD, APICustomResourceDefinition.class, APICustomResourceDefinitionList.class,
+                    DoneableAPICustomResourceDefinition.class).withName(apiName.toLowerCase()).delete();
+
+            client.apps().deployments().withName(apiName.toLowerCase()).delete();
+            client.apps().replicaSets().withLabel("app", apiName.toLowerCase()).delete();
+            client.autoscaling().horizontalPodAutoscalers().withName(apiName.toLowerCase() + "-hpa").delete();
+            client.services().withName(apiName.toLowerCase()).delete();
+        }
+    }
+
+    @Override public void changeLCStatePublishedToCreated(API api) {
+
+        deleteAPI(api);
+
+    }
+
+    @Override public void apiRepublish(API api) {
+
+        String apiName = api.getId().getApiName();
+
+        List<Cluster> clusters = api.getClusters();
+        for (Cluster cluster : clusters) {
+
+            Config config = new ConfigBuilder().withMasterUrl(cluster.getMasterURL())
+                    .withOauthToken(cluster.getSaToken()).withNamespace(cluster.getNamespace()).build();
+
+            OpenShiftClient client = new DefaultOpenShiftClient(config);
+            CustomResourceDefinition crd = client.customResourceDefinitions().withName(API_CRD_NAME).get();
+
+            APICustomResourceDefinition apiCustomResourceDefinition = client
+                    .customResources(crd, APICustomResourceDefinition.class, APICustomResourceDefinitionList.class,
+                            DoneableAPICustomResourceDefinition.class).withName(apiName.toLowerCase()).get();
+
+            Date date = new Date();
+            long time = date.getTime();
+            Timestamp timestamp = new Timestamp(time);
+            apiCustomResourceDefinition.getSpec().setUpdateTimeStamp(timestamp.toString());
+
+            client.customResources(crd, APICustomResourceDefinition.class, APICustomResourceDefinitionList.class,
+                    DoneableAPICustomResourceDefinition.class).createOrReplace(apiCustomResourceDefinition);
+
+        }
+
+    }
+
+    @Override public void changeLCStateToBlocked(API api) {
+
+        deleteAPI(api);
+
+    }
+
+    @Override public void changeLCStateBlockedToRepublished(API api) {
+
+        String apiName = api.getId().getApiName();
+
+        List<Cluster> clusters = api.getClusters();
+        for (Cluster cluster : clusters) {
+
+            Config config = new ConfigBuilder().withMasterUrl(cluster.getMasterURL())
+                    .withOauthToken(cluster.getSaToken()).withNamespace(cluster.getNamespace()).build();
+
+            OpenShiftClient client = new DefaultOpenShiftClient(config);
+            CustomResourceDefinition crd = client.customResourceDefinitions().withName(API_CRD_NAME).get();
+
+            APICustomResourceDefinition apiCustomResourceDefinition = client
+                    .customResources(crd, APICustomResourceDefinition.class, APICustomResourceDefinitionList.class,
+                            DoneableAPICustomResourceDefinition.class).withName(apiName.toLowerCase()).get();
+
+            apiCustomResourceDefinition.getSpec().setOverride(false);
+
+            client.customResources(crd, APICustomResourceDefinition.class, APICustomResourceDefinitionList.class,
+                    DoneableAPICustomResourceDefinition.class).createOrReplace(apiCustomResourceDefinition);
+
+        }
+
     }
 
     private void setValues(Cluster cluster) {
