@@ -29,6 +29,17 @@ public interface ContainerManager {
 
     void initManager(Cluster cluster);
 
-    void DeployAPI(API api, APIIdentifier apiIdentifier)
+    void changeLCStateCreatedToPublished(API api, APIIdentifier apiIdentifier)
             throws UserStoreException, RegistryException, ParseException, APIManagementException;
+
+    void deleteAPI(API api);
+
+    void changeLCStatePublishedToCreated(API api);
+
+    void apiRepublish(API api);
+
+    void changeLCStateToBlocked(API api);
+
+    void changeLCStateBlockedToRepublished(API api);
+
 }
