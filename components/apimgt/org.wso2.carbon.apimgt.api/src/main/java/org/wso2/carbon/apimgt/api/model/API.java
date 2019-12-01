@@ -28,8 +28,7 @@ import java.util.*;
 /**
  * Provider's & system's view of API
  */
-@SuppressWarnings("unused")
-public class API implements Serializable {
+@SuppressWarnings("unused") public class API implements Serializable {
 
     private static final long serialVersionUID = 1L;
     private static final String NULL_VALUE = "NULL";
@@ -135,6 +134,7 @@ public class API implements Serializable {
      */
     private boolean deployInK8s = false;
     private List<Cluster> clusters;
+    private String className;
     /**
      * Publisher access control related parameters.
      * AccessControl -> Specifies whether that particular API is restricted to certain set of publishers and creators.
@@ -165,21 +165,25 @@ public class API implements Serializable {
         if (endpoints != null && endpoints.size() > 0) {
             sb.append("{");
             for (APIEndpoint endpoint : endpoints) {
-                sb.append("\"")
-                        .append(endpoint.getType())
-                        .append("\": {\"url\":\"")
+                sb.append("\"").append(endpoint.getType()).append("\": {\"url\":\"")
                         .append(endpoint.getInline().getEndpointConfig().getList().get(0).getUrl())
                         .append("\",\"timeout\":\"")
                         .append(endpoint.getInline().getEndpointConfig().getList().get(0).getTimeout())
-                        .append("\",\"key\":\"")
-                        .append(endpoint.getKey())
-                        .append("\"},");
+                        .append("\",\"key\":\"").append(endpoint.getKey()).append("\"},");
             }
             sb.append("\"endpoint_type\" : \"")
                     .append(endpoints.get(0).getInline().getType())//assuming all the endpoints are same type
                     .append("\"}\n");
         }
         return sb.toString();
+    }
+
+    public String getClassName() {
+        return className;
+    }
+
+    public void setClassName(String className) {
+        this.className = className;
     }
 
     public List<Cluster> getClusters() {
@@ -978,9 +982,9 @@ public class API implements Serializable {
         this.endpoints = endpoint;
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (o == this) return true;
+    @Override public boolean equals(Object o) {
+        if (o == this)
+            return true;
 
         if (!(o instanceof API)) {
             return false;
@@ -989,8 +993,7 @@ public class API implements Serializable {
         return Objects.equals(id, ((API) o).id);
     }
 
-    @Override
-    public int hashCode() {
+    @Override public int hashCode() {
         return Objects.hash(id);
     }
 }
