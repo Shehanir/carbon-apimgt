@@ -82,12 +82,15 @@ import io.fabric8.kubernetes.api.model.KubernetesResource;
     /**
      * This method returns the following json object.
      * {
-     * "definition": {
-     * "configmapName": "${configmapName}",
-     * "type": "${type}"
-     * },
-     * "replicas": "${replicas}",
-     * "mode": "${mode}"
+     *      "definition": {
+     *          "configmapName": "${configmapName}",
+     *          "type": "${type}"
+     *      },
+     *      "replicas": "${replicas}",
+     *      "mode": "${mode}",
+     *      "override": bool,
+     *      "updateTimeStamp": "",
+     *      "interceptorConfName": ""
      * }
      *
      * @return
