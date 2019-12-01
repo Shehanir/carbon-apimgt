@@ -6229,6 +6229,7 @@ class APIProviderImpl extends AbstractAPIManager implements APIProvider {
             ClassNotFoundException, IllegalAccessException, InstantiationException {
 
         api.setDeployInK8s(true);
+        List<Cluster> deployedClusters = new ArrayList<>();
         String content = getTenantConfigContent();
         JSONParser jsonParser = new JSONParser();
         JSONObject tenantConf = (JSONObject) jsonParser.parse(content);
@@ -6243,14 +6244,16 @@ class APIProviderImpl extends AbstractAPIManager implements APIProvider {
 
                 String clusterName = clientNames.get(i);
                 Cluster cluster = allClusters.get(clusterName);
+                deployedClusters.add(cluster);
 
                 Class<ContainerManager> CloudManager = (Class<ContainerManager>) Class.forName(className);
                 ContainerManager containerManager = CloudManager.newInstance();
 
                 containerManager.initManager(cluster);
-                containerManager.DeployAPI(api, apiIdentifier);
+                containerManager.changeLCStateCreatedToPublished(api, apiIdentifier);
             }
         }
+        api.setClusters(deployedClusters);
     }
 
     private void cleanUpPendingAPIStateChangeTask(int apiId) throws WorkflowException, APIManagementException {
