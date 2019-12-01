@@ -16,7 +16,7 @@
  * under the License.
  */
 
-package org.wso2.carbon.apimgt.impl.containermgt;
+package org.wso2.carbon.apimgt.api.model;
 
 /**
  * This class represent the Cluster

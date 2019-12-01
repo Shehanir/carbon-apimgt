@@ -52,7 +52,6 @@ import org.wso2.carbon.apimgt.impl.certificatemgt.GatewayCertificateManager;
 import org.wso2.carbon.apimgt.impl.certificatemgt.ResponseCode;
 import org.wso2.carbon.apimgt.impl.clients.RegistryCacheInvalidationClient;
 import org.wso2.carbon.apimgt.impl.clients.TierCacheInvalidationClient;
-import org.wso2.carbon.apimgt.impl.containermgt.Cluster;
 import org.wso2.carbon.apimgt.impl.containermgt.ContainerManager;
 import org.wso2.carbon.apimgt.impl.dao.ApiMgtDAO;
 import org.wso2.carbon.apimgt.impl.definitions.GraphQLSchemaDefinition;

@@ -81,7 +81,6 @@ import org.wso2.carbon.apimgt.impl.*;
 import org.wso2.carbon.apimgt.impl.clients.ApplicationManagementServiceClient;
 import org.wso2.carbon.apimgt.impl.clients.OAuthAdminClient;
 import org.wso2.carbon.apimgt.impl.clients.UserInformationRecoveryClient;
-import org.wso2.carbon.apimgt.impl.containermgt.Cluster;
 import org.wso2.carbon.apimgt.impl.dao.ApiMgtDAO;
 import org.wso2.carbon.apimgt.impl.definitions.OASParserUtil;
 import org.wso2.carbon.apimgt.impl.dto.*;

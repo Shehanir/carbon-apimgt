@@ -20,7 +20,6 @@ package org.wso2.carbon.apimgt.api.model;
 import org.apache.commons.lang3.StringUtils;
 import org.json.simple.JSONObject;
 import org.wso2.carbon.apimgt.api.model.policy.Policy;
-import org.wso2.carbon.apimgt.impl.containermgt.Cluster;
 
 import java.io.Serializable;
 import java.util.*;

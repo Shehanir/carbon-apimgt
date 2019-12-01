@@ -43,10 +43,6 @@
             <version>4.5.1</version>
             <scope>compile</scope>
         </dependency>
-        <dependency>
-            <groupId>org.wso2.carbon.apimgt</groupId>
-            <artifactId>org.wso2.carbon.apimgt.impl</artifactId>
-        </dependency>
     </dependencies>
     <build>
         <plugins>
@@ -62,7 +58,6 @@
                             org.wso2.carbon.apimgt.api.*;version="${carbon.apimgt.version}"
                         </Export-Package>
                         <Import-Package>
-                            org.wso2.carbon.apimgt.impl.containermgt.*;version="${carbon.apimgt.imp.pkg.version}",
                             *;resolution:=optional
                         </Import-Package>
                     </instructions>
