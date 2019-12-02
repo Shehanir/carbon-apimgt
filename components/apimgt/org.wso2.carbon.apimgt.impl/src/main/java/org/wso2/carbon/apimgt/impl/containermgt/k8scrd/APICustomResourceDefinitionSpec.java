@@ -21,14 +21,39 @@ import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import io.fabric8.kubernetes.api.model.KubernetesResource;
 
-@JsonDeserialize(
-        using = JsonDeserializer.None.class
-)
-public class APICustomResourceDefinitionSpec implements KubernetesResource {
+@JsonDeserialize(using = JsonDeserializer.None.class) public class APICustomResourceDefinitionSpec
+        implements KubernetesResource {
 
     private int replicas;
     private String mode;
     private Definition definition;
+    private boolean override;
+    private String updateTimeStamp;
+    private String interceptorConfName;
+
+    public String getUpdateTimeStamp() {
+        return updateTimeStamp;
+    }
+
+    public void setUpdateTimeStamp(String updateTimeStamp) {
+        this.updateTimeStamp = updateTimeStamp;
+    }
+
+    public String getInterceptorConfName() {
+        return interceptorConfName;
+    }
+
+    public void setInterceptorConfName(String interceptorConfName) {
+        this.interceptorConfName = interceptorConfName;
+    }
+
+    public boolean isOverride() {
+        return override;
+    }
+
+    public void setOverride(boolean override) {
+        this.override = override;
+    }
 
     public Definition getDefinition() {
         return definition;
@@ -57,22 +82,22 @@ public class APICustomResourceDefinitionSpec implements KubernetesResource {
     /**
      * This method returns the following json object.
      * {
-     * "definition": {
-     * "configmapName": "${configmapName}",
-     * "type": "${type}"
-     * },
-     * "replicas": "${replicas}",
-     * "mode": "${mode}"
+     *      "definition": {
+     *          "configmapName": "${configmapName}",
+     *          "type": "${type}"
+     *      },
+     *      "replicas": "${replicas}",
+     *      "mode": "${mode}",
+     *      "override": bool,
+     *      "updateTimeStamp": "",
+     *      "interceptorConfName": ""
      * }
      *
      * @return
      */
-    @Override
-    public String toString() {
-        return "APICrdSpec{" +
-                "replicas=" + replicas  +
-                ", mode=" + mode +
-                ", definition=" + definition +
-                "}";
+    @Override public String toString() {
+        return "APICrdSpec{" + "replicas=" + replicas + ", mode=" + mode + ", definition=" + definition + ", override="
+                + override + ", updateTimeStamp=" + updateTimeStamp + ", interceptorConfName" + interceptorConfName
+                + "}";
     }
 }

@@ -40,6 +40,7 @@ import org.slf4j.LoggerFactory;
 import org.wso2.carbon.apimgt.api.APIManagementException;
 import org.wso2.carbon.apimgt.api.model.API;
 import org.wso2.carbon.apimgt.api.model.APIIdentifier;
+import org.wso2.carbon.apimgt.api.model.Cluster;
 import org.wso2.carbon.apimgt.impl.containermgt.k8scrd.*;
 import org.wso2.carbon.apimgt.impl.definitions.OASParserUtil;
 import org.wso2.carbon.apimgt.impl.internal.ServiceReferenceHolder;
@@ -47,8 +48,9 @@ import org.wso2.carbon.registry.core.Registry;
 import org.wso2.carbon.registry.core.exceptions.RegistryException;
 import org.wso2.carbon.registry.core.service.RegistryService;
 
+import java.sql.Timestamp;
+import java.util.Date;
 import java.util.List;
-import java.util.Map;
 
 import static org.wso2.carbon.apimgt.impl.containermgt.ContainerBasedConstants.*;
 
@@ -66,24 +68,32 @@ public class K8sManager implements ContainerManager {
     private String basicAuthSecurityCRName;
     private OpenShiftClient openShiftClient;
 
-    @Override
-    public void initManager(Map<String, String> parameters) {
+    /**
+     * This would initialize the class
+     * Have used a Cluster to initiate instead of a HashMap. Because,
+     * If used a HashMap, would have to return a Map<String, Map<String, String>>
+     * in the getClusterInfoFromConfig method in APIUtil.java.
+     * Then would have to do a Cluster object initialization at the APIProviderImpl
+     * in the publishInPrivateJet method.
+     *
+     * @param cluster
+     */
 
-        setValues(parameters);
+    @Override public void initManager(Cluster cluster) {
+
+        setValues(cluster);
         setClient();
     }
 
-    @Override
-    public void DeployAPI(API api, APIIdentifier apiIdentifier)
+    @Override public void changeLCStateCreatedToPublished(API api, APIIdentifier apiIdentifier)
             throws RegistryException, ParseException, APIManagementException {
 
         Registry registry = getRegistryService().getGovernanceUserRegistry();
 
-        SwaggerCreator swaggerCreator = new SwaggerCreator(
-                basicAuthSecurityCRName, jwtSecurityCRName, oauthSecurityCRName);
+        SwaggerCreator swaggerCreator = new SwaggerCreator(basicAuthSecurityCRName, jwtSecurityCRName,
+                oauthSecurityCRName);
         String swagger = swaggerCreator.
                 getOASDefinitionForPublisher(api, OASParserUtil.getAPIDefinition(apiIdentifier, registry));
-
 
         if (!saToken.equals("") && !masterURL.equals("")) {
 
@@ -92,8 +102,8 @@ public class K8sManager implements ContainerManager {
              */
             String configmapName = apiIdentifier.getApiName().toLowerCase() + ".v" + apiIdentifier.getVersion();
 
-            io.fabric8.kubernetes.client.dsl.Resource<ConfigMap, DoneableConfigMap> configMapResource
-                    = openShiftClient.configMaps().inNamespace(namespace).withName(configmapName);
+            io.fabric8.kubernetes.client.dsl.Resource<ConfigMap, DoneableConfigMap> configMapResource = openShiftClient
+                    .configMaps().inNamespace(namespace).withName(configmapName);
 
             ConfigMap configMap = configMapResource.createOrReplace(new ConfigMapBuilder().withNewMetadata().
                     withName(configmapName).withNamespace(namespace).endMetadata().
@@ -127,13 +137,12 @@ public class K8sManager implements ContainerManager {
         }
     }
 
-
     protected RegistryService getRegistryService() {
         return ServiceReferenceHolder.getInstance().getRegistryService();
     }
 
-    private void applyAPICustomResourceDefinition(KubernetesClient client, String configmapName,
-                                                  int replicas, APIIdentifier apiIdentifier) {
+    private void applyAPICustomResourceDefinition(KubernetesClient client, String configmapName, int replicas,
+            APIIdentifier apiIdentifier) {
 
         CustomResourceDefinitionList customResourceDefinitionList = client.customResourceDefinitions().list();
         List<CustomResourceDefinition> customResourceDefinitionItems = customResourceDefinitionList.getItems();
@@ -165,20 +174,17 @@ public class K8sManager implements ContainerManager {
             log.info("Created CRD " + apiCustomResourceDefinition.getMetadata().getName());
         }
 
-        KubernetesDeserializer.registerCustomKind(API_CRD_GROUP + "/" + API_CRD_VERSION, CRD_KIND,
-                APICustomResourceDefinition.class);
-        NonNamespaceOperation<APICustomResourceDefinition, APICustomResourceDefinitionList,
-                DoneableAPICustomResourceDefinition, Resource<APICustomResourceDefinition,
-                DoneableAPICustomResourceDefinition>> apiCrdClient = client.customResources(apiCustomResourceDefinition,
-                APICustomResourceDefinition.class,
-                APICustomResourceDefinitionList.class,
-                DoneableAPICustomResourceDefinition.class);
+        KubernetesDeserializer
+                .registerCustomKind(API_CRD_GROUP + "/" + API_CRD_VERSION, CRD_KIND, APICustomResourceDefinition.class);
 
-        apiCrdClient = ((MixedOperation<APICustomResourceDefinition,
-                APICustomResourceDefinitionList,
-                DoneableAPICustomResourceDefinition,
-                Resource<APICustomResourceDefinition, DoneableAPICustomResourceDefinition>>) apiCrdClient).
-                inNamespace(client.getNamespace());
+        NonNamespaceOperation<APICustomResourceDefinition, APICustomResourceDefinitionList, DoneableAPICustomResourceDefinition,
+                Resource<APICustomResourceDefinition, DoneableAPICustomResourceDefinition>> apiCrdClient = client
+                .customResources(apiCustomResourceDefinition, APICustomResourceDefinition.class,
+                        APICustomResourceDefinitionList.class, DoneableAPICustomResourceDefinition.class);
+
+        apiCrdClient = ((MixedOperation<APICustomResourceDefinition, APICustomResourceDefinitionList,
+                DoneableAPICustomResourceDefinition, Resource<APICustomResourceDefinition, DoneableAPICustomResourceDefinition>>)
+                apiCrdClient).inNamespace(client.getNamespace());
 
         Definition definition = new Definition();
         definition.setType(SWAGGER);
@@ -188,9 +194,15 @@ public class K8sManager implements ContainerManager {
         apiCustomResourceDefinitionSpec.setDefinition(definition);
         apiCustomResourceDefinitionSpec.setMode(MODE);
         apiCustomResourceDefinitionSpec.setReplicas(replicas);
+        apiCustomResourceDefinitionSpec.setInterceptorConfName("");
+        apiCustomResourceDefinitionSpec.setOverride(true);
+        apiCustomResourceDefinitionSpec.setUpdateTimeStamp("");
+
+        Status status = new Status();
 
         APICustomResourceDefinition apiCustomResourceDef = new APICustomResourceDefinition();
         apiCustomResourceDef.setSpec(apiCustomResourceDefinitionSpec);
+        apiCustomResourceDef.setStatus(status);
         apiCustomResourceDef.setApiVersion(API_VERSION);
         apiCustomResourceDef.setKind(CRD_KIND);
         ObjectMeta meta = new ObjectMeta();
@@ -202,22 +214,109 @@ public class K8sManager implements ContainerManager {
         log.info(API_CRD_NAME + "/" + apiCustomResourceDef.getMetadata().getName() + "created");
     }
 
-    private void setValues(Map<String, String> clusterParameters) {
+    @Override public void deleteAPI(API api) {
 
-        this.masterURL = clusterParameters.get(MASTER_URL);
-        this.saToken = clusterParameters.get(SATOKEN);
-        this.namespace = clusterParameters.get(NAMESPACE);
-        this.replicas = Integer.parseInt(clusterParameters.get(REPLICAS));
-        this.clusterName = clusterParameters.get(CLUSTER_NAME);
-        this.jwtSecurityCRName = clusterParameters.get(JWT_SECURITY_CR_NAME);
-        this.oauthSecurityCRName = clusterParameters.get(OAUTH2_SECURITY_CR_NAME);
-        this.basicAuthSecurityCRName = clusterParameters.get(BASICAUTH_SECURITY_CR_NAME);
+        String apiName = api.getId().getApiName();
+
+        List<Cluster> clusters = api.getClusters();
+        for (Cluster cluster : clusters) {
+
+            Config config = new ConfigBuilder().withMasterUrl(cluster.getMasterURL())
+                    .withOauthToken(cluster.getSaToken()).withNamespace(cluster.getNamespace()).build();
+
+            OpenShiftClient client = new DefaultOpenShiftClient(config);
+            CustomResourceDefinition apiCRD = client.customResourceDefinitions().withName(API_CRD_NAME).get();
+            client.customResources(apiCRD, APICustomResourceDefinition.class, APICustomResourceDefinitionList.class,
+                    DoneableAPICustomResourceDefinition.class).withName(apiName.toLowerCase()).delete();
+
+            client.apps().deployments().withName(apiName.toLowerCase()).delete();
+            client.apps().replicaSets().withLabel("app", apiName.toLowerCase()).delete();
+            client.autoscaling().horizontalPodAutoscalers().withName(apiName.toLowerCase() + "-hpa").delete();
+            client.services().withName(apiName.toLowerCase()).delete();
+        }
+    }
+
+    @Override public void changeLCStatePublishedToCreated(API api) {
+
+        deleteAPI(api);
+    }
+
+    @Override public void apiRepublish(API api) {
+
+        String apiName = api.getId().getApiName();
+
+        List<Cluster> clusters = api.getClusters();
+        for (Cluster cluster : clusters) {
+
+            Config config = new ConfigBuilder().withMasterUrl(cluster.getMasterURL())
+                    .withOauthToken(cluster.getSaToken()).withNamespace(cluster.getNamespace()).build();
+
+            OpenShiftClient client = new DefaultOpenShiftClient(config);
+            CustomResourceDefinition crd = client.customResourceDefinitions().withName(API_CRD_NAME).get();
+
+            APICustomResourceDefinition apiCustomResourceDefinition = client
+                    .customResources(crd, APICustomResourceDefinition.class, APICustomResourceDefinitionList.class,
+                            DoneableAPICustomResourceDefinition.class).withName(apiName.toLowerCase()).get();
+
+            Date date = new Date();
+            long time = date.getTime();
+            Timestamp timestamp = new Timestamp(time);
+            apiCustomResourceDefinition.getSpec().setUpdateTimeStamp(timestamp.toString());
+
+            client.customResources(crd, APICustomResourceDefinition.class, APICustomResourceDefinitionList.class,
+                    DoneableAPICustomResourceDefinition.class).createOrReplace(apiCustomResourceDefinition);
+
+        }
+
+    }
+
+    @Override public void changeLCStateToBlocked(API api) {
+
+        deleteAPI(api);
+    }
+
+    @Override public void changeLCStateBlockedToRepublished(API api) {
+
+        String apiName = api.getId().getApiName();
+
+        List<Cluster> clusters = api.getClusters();
+        for (Cluster cluster : clusters) {
+
+            Config config = new ConfigBuilder().withMasterUrl(cluster.getMasterURL())
+                    .withOauthToken(cluster.getSaToken()).withNamespace(cluster.getNamespace()).build();
+
+            OpenShiftClient client = new DefaultOpenShiftClient(config);
+            CustomResourceDefinition crd = client.customResourceDefinitions().withName(API_CRD_NAME).get();
+
+            APICustomResourceDefinition apiCustomResourceDefinition = client
+                    .customResources(crd, APICustomResourceDefinition.class, APICustomResourceDefinitionList.class,
+                            DoneableAPICustomResourceDefinition.class).withName(apiName.toLowerCase()).get();
+
+            apiCustomResourceDefinition.getSpec().setOverride(false);
+
+            client.customResources(crd, APICustomResourceDefinition.class, APICustomResourceDefinitionList.class,
+                    DoneableAPICustomResourceDefinition.class).createOrReplace(apiCustomResourceDefinition);
+
+        }
+
+    }
+
+    private void setValues(Cluster cluster) {
+
+        this.masterURL = cluster.getMasterURL();
+        this.saToken = cluster.getSaToken();
+        this.namespace = cluster.getNamespace();
+        this.replicas = cluster.getReplicas();
+        this.clusterName = cluster.getClusterName();
+        this.jwtSecurityCRName = cluster.getJwtSecurityCRName();
+        this.oauthSecurityCRName = cluster.getOauth2SecurityCRName();
+        this.basicAuthSecurityCRName = cluster.getBasicAuthSecurityCRName();
     }
 
     private void setClient() {
 
-        Config config = new ConfigBuilder().withMasterUrl(masterURL)
-                .withOauthToken(saToken).withNamespace(namespace).build();
+        Config config = new ConfigBuilder().withMasterUrl(masterURL).withOauthToken(saToken).withNamespace(namespace)
+                .build();
 
         this.openShiftClient = new DefaultOpenShiftClient(config);
 

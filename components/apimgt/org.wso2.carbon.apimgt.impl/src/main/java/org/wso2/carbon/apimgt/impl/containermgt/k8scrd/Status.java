@@ -15,16 +15,18 @@
  * specific language governing permissions and limitations
  * under the License.
  */
+package org.wso2.carbon.apimgt.impl.containermgt.k8scrd;
 
-package org.wso2.carbon.apimgt.impl.containermgt.model;
+import com.fasterxml.jackson.databind.JsonDeserializer;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import io.fabric8.kubernetes.api.model.KubernetesResource;
 
-import org.json.simple.parser.ParseException;
-import org.wso2.carbon.registry.core.exceptions.RegistryException;
-import org.wso2.carbon.user.api.UserStoreException;
+@JsonDeserialize(using = JsonDeserializer.None.class)
 
-import java.util.List;
+public class Status implements KubernetesResource {
 
-public interface ClusterInfo {
+    @Override public String toString() {
+        return "Status{" + "}";
+    }
 
-    List<Cluster> getAllClusters(String tenantDomain) throws UserStoreException, RegistryException, ParseException;
 }

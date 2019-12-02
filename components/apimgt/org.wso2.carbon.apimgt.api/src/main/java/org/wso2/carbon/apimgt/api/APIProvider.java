@@ -1323,7 +1323,7 @@ public interface APIProvider extends APIManager {
      * @throws ParseException         for json file reading
      */
     void publishInPrivateJet(API api, APIIdentifier apiIdentifier, List<String> clientNames) throws RegistryException,
-            org.wso2.carbon.user.api.UserStoreException, IOException, ParseException, APIManagementException;
+            org.wso2.carbon.user.api.UserStoreException, IOException, ParseException, APIManagementException, ClassNotFoundException, IllegalAccessException, InstantiationException;
 
 
 }

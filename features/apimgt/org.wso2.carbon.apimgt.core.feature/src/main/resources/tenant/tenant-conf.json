@@ -3,7 +3,7 @@
   "IsUnlimitedTierPaid": false,
   "ContainerMgtInfo": {
     "Type": "Kubernetes",
-    "ClassName": "",
+    "ClassName": "org.wso2.carbon.apimgt.impl.containermgt.K8sManager",
     "ClusterInfo": [
       {
         "Name": "",

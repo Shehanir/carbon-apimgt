@@ -21,9 +21,7 @@ import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import io.fabric8.kubernetes.api.model.KubernetesResource;
 
-@JsonDeserialize(
-        using = JsonDeserializer.None.class
-)
+@JsonDeserialize(using = JsonDeserializer.None.class)
 
 public class Definition implements KubernetesResource {
 
@@ -55,11 +53,7 @@ public class Definition implements KubernetesResource {
      *
      * @return
      */
-    @Override
-    public String toString() {
-        return "Definition{" +
-                "configmapName=" + configmapName +
-                ", type=" + type +
-                "}";
+    @Override public String toString() {
+        return "Definition{" + "configmapName=" + configmapName + ", type=" + type + "}";
     }
 }
