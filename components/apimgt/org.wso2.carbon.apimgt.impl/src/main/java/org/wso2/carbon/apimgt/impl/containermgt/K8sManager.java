@@ -68,6 +68,17 @@ public class K8sManager implements ContainerManager {
     private String basicAuthSecurityCRName;
     private OpenShiftClient openShiftClient;
 
+    /**
+     * This would initialize the class
+     * Have used a Cluster to initiate instead of a HashMap. Because,
+     * If used a HashMap, would have to return a Map<String, Map<String, String>>
+     * in the getClusterInfoFromConfig method in APIUtil.java.
+     * Then would have to do a Cluster object initialization at the APIProviderImpl
+     * in the publishInPrivateJet method.
+     *
+     * @param cluster
+     */
+
     @Override public void initManager(Cluster cluster) {
 
         setValues(cluster);
@@ -163,18 +174,17 @@ public class K8sManager implements ContainerManager {
             log.info("Created CRD " + apiCustomResourceDefinition.getMetadata().getName());
         }
 
-        KubernetesDeserializer.registerCustomKind(API_CRD_GROUP + "/" + API_CRD_VERSION, CRD_KIND,
-                APICustomResourceDefinition.class);
+        KubernetesDeserializer
+                .registerCustomKind(API_CRD_GROUP + "/" + API_CRD_VERSION, CRD_KIND, APICustomResourceDefinition.class);
 
-        NonNamespaceOperation<APICustomResourceDefinition, APICustomResourceDefinitionList,
-                DoneableAPICustomResourceDefinition, Resource<APICustomResourceDefinition,
-                DoneableAPICustomResourceDefinition>> apiCrdClient = client.customResources(apiCustomResourceDefinition,
-                APICustomResourceDefinition.class, APICustomResourceDefinitionList.class,
-                DoneableAPICustomResourceDefinition.class);
+        NonNamespaceOperation<APICustomResourceDefinition, APICustomResourceDefinitionList, DoneableAPICustomResourceDefinition,
+                Resource<APICustomResourceDefinition, DoneableAPICustomResourceDefinition>> apiCrdClient = client
+                .customResources(apiCustomResourceDefinition, APICustomResourceDefinition.class,
+                        APICustomResourceDefinitionList.class, DoneableAPICustomResourceDefinition.class);
 
         apiCrdClient = ((MixedOperation<APICustomResourceDefinition, APICustomResourceDefinitionList,
-                DoneableAPICustomResourceDefinition, Resource<APICustomResourceDefinition,
-                DoneableAPICustomResourceDefinition>>) apiCrdClient).inNamespace(client.getNamespace());
+                DoneableAPICustomResourceDefinition, Resource<APICustomResourceDefinition, DoneableAPICustomResourceDefinition>>)
+                apiCrdClient).inNamespace(client.getNamespace());
 
         Definition definition = new Definition();
         definition.setType(SWAGGER);
@@ -229,7 +239,6 @@ public class K8sManager implements ContainerManager {
     @Override public void changeLCStatePublishedToCreated(API api) {
 
         deleteAPI(api);
-
     }
 
     @Override public void apiRepublish(API api) {
@@ -264,7 +273,6 @@ public class K8sManager implements ContainerManager {
     @Override public void changeLCStateToBlocked(API api) {
 
         deleteAPI(api);
-
     }
 
     @Override public void changeLCStateBlockedToRepublished(API api) {

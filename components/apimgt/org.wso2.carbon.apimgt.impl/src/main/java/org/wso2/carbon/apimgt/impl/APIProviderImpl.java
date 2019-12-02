@@ -6227,7 +6227,6 @@ class APIProviderImpl extends AbstractAPIManager implements APIProvider {
             throws UserStoreException, RegistryException, ParseException, APIManagementException,
             ClassNotFoundException, IllegalAccessException, InstantiationException {
 
-        api.setDeployInK8s(true);
         List<Cluster> deployedClusters = new ArrayList<>();
         String content = getTenantConfigContent();
         JSONParser jsonParser = new JSONParser();
@@ -6252,7 +6251,13 @@ class APIProviderImpl extends AbstractAPIManager implements APIProvider {
                 containerManager.changeLCStateCreatedToPublished(api, apiIdentifier);
             }
         }
+
+        /**
+         * Set the API's attributes to identify if it has published on K8s (For later)
+         */
+        api.setDeployInK8s(true);
         api.setClusters(deployedClusters);
+        api.setClassName(className);
     }
 
     private void cleanUpPendingAPIStateChangeTask(int apiId) throws WorkflowException, APIManagementException {
