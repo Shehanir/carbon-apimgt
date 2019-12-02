@@ -55,23 +55,21 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 /**
- * Renders CloudClustersInfo List
+ * Renders deployments List
  * @class CloudClusters
  * @param {*} props
  * @extends {React.Component}
  */
 export default function CloudClusters(props) {
     const classes = useStyles();
-    const { cloudClustersInfo } = props;
-    console.log('info in Kubernetes component');
-    console.log(cloudClustersInfo);
+    const { deployments } = props;
 
     return (
         <>
             <Typography variant='h4' align='left' className={classes.mainTitle}>
                 <FormattedMessage
                     id='Apis.Details.Environments.Environments.CloudClusters'
-                    defaultMessage={cloudClustersInfo.name}
+                    defaultMessage={deployments.name}
                 />
             </Typography>
 
@@ -86,35 +84,33 @@ export default function CloudClusters(props) {
                         </TableRow>
                     </TableHead>
                     <TableBody>
-                        <TableRow key={cloudClustersInfo.name}>
-                            <TableCell padding='checkbox'>
-                                <Checkbox
-                                    // disabled={isRestricted(['apim:api_create', 'apim:api_publish'], api)}
-                                    checked={console.log('checked ' + cloudClustersInfo.name)}
-                                    onChange={
-                                        (event) => {
-                                            const { checked, name } = event.target;
-                                            console.log('checkbox');
-                                            console.log(checked + ' ' + name);
+                        {deployments.clusters.map((row) => (
+                            <TableRow key={row.clusterName}>
+                                <TableCell padding='checkbox'>
+                                    <Checkbox
+                                        checked={console.log('checked ' + row.clusterName)}
+                                        onChange={
+                                            (event) => {
+                                                const { checked, name } = event.target;
+                                                console.log(checked + ' ' + name);
                                             // if (checked) {
-                                            //     setGatewayEnvironments([...gatewayEnvironments, name]);
+                                            //     console.log("checked " + row.clusterName)
                                             // } else {
-                                            //     setGatewayEnvironments(
-                                            //         gatewayEnvironments.filter((env) => env !== name),
                                             //     );
                                             // }
+                                            }
                                         }
-                                    }
-                                    name={cloudClustersInfo.name}
-                                    color='primary'
-                                />
-                            </TableCell>
-                            <TableCell component='th' scope='row'>
-                                {cloudClustersInfo.name}
-                            </TableCell>
-                            <TableCell align='left'>{cloudClustersInfo.namespace}</TableCell>
-                            <TableCell align='left'>{cloudClustersInfo.masterUrl}</TableCell>
-                        </TableRow>
+                                        name={row.clusterName}
+                                        color='primary'
+                                    />
+                                </TableCell>
+                                <TableCell component='th' scope='row'>
+                                    {row.clusterName}
+                                </TableCell>
+                                <TableCell align='left'>{row.namespace}</TableCell>
+                                <TableCell align='left'>{row.masterURL}</TableCell>
+                            </TableRow>
+                        ))}
                     </TableBody>
                 </Table>
             </Paper>

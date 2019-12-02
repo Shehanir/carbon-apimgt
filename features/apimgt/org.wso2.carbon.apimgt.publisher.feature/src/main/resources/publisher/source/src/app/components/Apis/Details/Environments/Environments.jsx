@@ -60,7 +60,6 @@ export default function Environments() {
     const { settings } = useAppContext();
     const [gatewayEnvironments, setGatewayEnvironments] = useState([...api.gatewayEnvironments]);
     const [selectedMgLabel, setSelectedMgLabel] = useState([...api.labels]);
-    const cloudClustersInfo = useState([...settings.cloudClustersInfo]);
 
     const [isUpdating, setUpdating] = useState(false);
 
@@ -74,12 +73,7 @@ export default function Environments() {
             gatewayEnvironments,
             labels: selectedMgLabel,
         })
-            .then(() => Alert.info('API Update Successfully'),
-                console.log(settings),
-                console.log('prinitn varibale values'),
-                console.log(cloudClustersInfo),
-                console.log('printing one array'),
-                console.log(cloudClustersInfo[0].name))
+            .then(() => Alert.info('API Update Successfully'))
             .catch((error) => {
                 if (error.response) {
                     Alert.error(error.response.body.description);
@@ -173,19 +167,12 @@ export default function Environments() {
                         setSelectedMgLabel={setSelectedMgLabel}
                         api={api}
                     />
-                    // <Kubernetes
-                    //     cloudClustersInfo={cloudClustersInfo}
-                    // />
-
                 )}
-            {(cloudClustersInfo
+            {(settings.deployments
                 && (
-                //     <Kubernetes
-                //     cloudClustersInfo={cloudClustersInfo[0][0]}
-                // />
-                    cloudClustersInfo[0].map((cluster) => (
+                    settings.deployments.map((cluster) => (
                         <Kubernetes
-                            cloudClustersInfo={cluster}
+                            deployments={cluster}
                         />
                     ))
                 )
