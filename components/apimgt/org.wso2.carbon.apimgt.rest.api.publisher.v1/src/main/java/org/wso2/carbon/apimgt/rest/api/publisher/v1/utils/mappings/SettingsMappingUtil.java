@@ -74,8 +74,6 @@ public class SettingsMappingUtil {
             if (environments != null) {
                 environmentListDTO = EnvironmentMappingUtil.fromEnvironmentCollectionToDTO(environments.values());
             }
-            //get kubernetes and istio cluster info
-//            settingsDTO.setCloudClustersInfo(getCloudClusterInfoFromTenantConf());
             settingsDTO.setEnvironment(environmentListDTO.getList());
             settingsDTO.setStoreUrl(APIUtil.getStoreUrl());
             settingsDTO.setMonetizationAttributes(getMonetizationAttributes());
@@ -87,52 +85,6 @@ public class SettingsMappingUtil {
         settingsDTO.setScopes(GetScopeList());
         return settingsDTO;
     }
-
-    public Map<String, Environment> getCloudClusterInfo () throws APIManagementException{
-
-        //get environment list from conf file
-        Map<String, Environment> environments = APIUtil.getEnvironments();
-        //Get cloud environments from tenant-conf.json file
-        //Get tenant domain to access tenant conf
-        APIMRegistryService apimRegistryService = new APIMRegistryServiceImpl();
-//        String username = RestApiUtil.getLoggedInUsername();
-//        MultitenantUtils.getTenantDomain(username);
-        String tenantDomain = RestApiUtil.getLoggedInUserTenantDomain();
-        //read tenant-conf.json and get details
-        try {
-            String getTenantDoimanConfContent = apimRegistryService
-                    .getConfigRegistryResourceContent(tenantDomain, APIConstants.API_TENANT_CONF_LOCATION);
-
-            //parse tenant-conf to a json objectxx
-            JSONParser jsonParser = new JSONParser();
-            Object tenantObject = jsonParser.parse(getTenantDoimanConfContent);
-            JSONObject tenant_conf = (JSONObject) tenantObject;
-
-            //iterate tenant conf k8sClusterInfo JSONarray and add values to environment obj and add it to the environments list
-            JSONArray k8sClusterInfo = (JSONArray) tenant_conf.get("K8sClusterInfo");
-            for (int i = 0; i < k8sClusterInfo.size(); i++) {
-                Environment env = new Environment();
-                env.setName("Kubernetes");
-                env.setServerURL((String) ((JSONObject) k8sClusterInfo.get(i)).get("k8sMasterURL"));
-                env.setApiGatewayEndpoint("https://localhost:9095");
-
-                environments.put("Kubernetes", env);
-            }
-            System.out.println("printing the full map");
-            for (Map.Entry<String, Environment> entry : environments.entrySet()) {
-                System.out.println(entry.getKey() + ":" + entry.getValue().toString());
-            }
-        }  catch (RegistryException e) {
-            handleException("Couldn't read tenant configuration from tenant registry", e);
-        } catch (UserStoreException e) {
-            handleException("Couldn't read tenant configuration from tenant registry", e);
-        } catch (ParseException e) {
-            handleException("Couldn't parse tenant configuration for reading extension handler position", e);
-        }
-        return environments;
-
-    }
-
     /**
      * This method returns the scope list from the publisher-api.yaml
      * @return  List<String> scope list
@@ -183,7 +135,14 @@ public class SettingsMappingUtil {
         return monetizationAttributeDTOSList;
     }
 
-    private List<DeploymentsDTO> getCloudClusterInfoFromTenantConf() throws APIManagementException{
+    /**
+     * This method returns the deployments list from the tenant configurations
+     *
+     * @return DeploymentsDTO list. List of Deployments
+     * @throws APIManagementException
+     */
+    private List<DeploymentsDTO> getCloudClusterInfoFromTenantConf() throws APIManagementException {
+
         List<DeploymentsDTO> deploymentsList = new ArrayList<DeploymentsDTO>();
 
         //Get cloud environments from tenant-conf.json file
@@ -194,8 +153,6 @@ public class SettingsMappingUtil {
         try {
             String getTenantDomainConfContent = apimRegistryService
                     .getConfigRegistryResourceContent(tenantDomain, APIConstants.API_TENANT_CONF_LOCATION);
-
-            //parse tenant-conf to a json object
             JSONParser jsonParser = new JSONParser();
             Object tenantObject = jsonParser.parse(getTenantDomainConfContent);
             JSONObject tenant_conf = (JSONObject) tenantObject;
@@ -203,7 +160,7 @@ public class SettingsMappingUtil {
             JSONObject ContainerMgtInfo = (JSONObject) tenant_conf.get("ContainerMgtInfo");
             DeploymentsDTO k8sClustersInfoDTO = new DeploymentsDTO();
             k8sClustersInfoDTO.setName((String) ContainerMgtInfo.get("Type"));
-            //get cluster info
+            //get clusters' properties
             List<DeploymentClusterInfoDTO> deploymentClusterInfoDTOList = new ArrayList<>();
             JSONObject clustersInfo = APIUtil.getClusterInfoFromConfig(ContainerMgtInfo.toString());
             clustersInfo.keySet().forEach(keyStr ->
@@ -211,8 +168,8 @@ public class SettingsMappingUtil {
                 Object clusterProperties = clustersInfo.get(keyStr);
                 DeploymentClusterInfoDTO deploymentClusterInfoDTO = new DeploymentClusterInfoDTO();
                 deploymentClusterInfoDTO.setClusterName((String) keyStr);
-                deploymentClusterInfoDTO.setMasterURL(((JSONObject)clusterProperties).get("MasterURL").toString());
-                deploymentClusterInfoDTO.setNamespace(((JSONObject)clusterProperties).get("Namespace").toString());
+                deploymentClusterInfoDTO.setMasterURL(((JSONObject) clusterProperties).get("MasterURL").toString());
+                deploymentClusterInfoDTO.setNamespace(((JSONObject) clusterProperties).get("Namespace").toString());
 
                 deploymentClusterInfoDTOList.add(deploymentClusterInfoDTO);
             });
@@ -220,15 +177,7 @@ public class SettingsMappingUtil {
             k8sClustersInfoDTO.setClusters(deploymentClusterInfoDTOList);
             deploymentsList.add(k8sClustersInfoDTO);
 
-//            //get istio cluster info
-//            JSONObject istioClusterInfo = (JSONObject) tenant_conf.get("serviceMeshInfo");
-//            CloudClustersInfoDTO istioClustersInfoDTO = new CloudClustersInfoDTO();
-//            istioClustersInfoDTO.setName((String) istioClusterInfo.get("className"));
-//            istioClustersInfoDTO.setMasterUrl((String) istioClusterInfo.get("masterURL"));
-//            istioClustersInfoDTO.setNamespace((String) istioClusterInfo.get("namespace"));
-//            cloudClusterInfoDTOSList.add(istioClustersInfoDTO);
-
-        }  catch (RegistryException e) {
+        } catch (RegistryException e) {
             handleException("Couldn't read tenant configuration from tenant registry", e);
         } catch (UserStoreException e) {
             handleException("Couldn't read tenant configuration from tenant registry", e);
