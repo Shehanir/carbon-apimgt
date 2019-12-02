@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import java.util.ArrayList;
 import java.util.List;
-import org.wso2.carbon.apimgt.rest.api.publisher.v1.dto.CloudClustersInfoDTO;
+import org.wso2.carbon.apimgt.rest.api.publisher.v1.dto.DeploymentsDTO;
 import org.wso2.carbon.apimgt.rest.api.publisher.v1.dto.EnvironmentDTO;
 import org.wso2.carbon.apimgt.rest.api.publisher.v1.dto.MonetizationAttributeDTO;
 import javax.validation.constraints.*;
@@ -26,7 +26,7 @@ public class SettingsDTO   {
     private List<MonetizationAttributeDTO> monetizationAttributes = new ArrayList<>();
     private Object securityAuditProperties = null;
     private Boolean externalStoresEnabled = null;
-    private List<CloudClustersInfoDTO> cloudClustersInfo = new ArrayList<>();
+    private List<DeploymentsDTO> deployments = new ArrayList<>();
 
   /**
    * Store URL
@@ -134,19 +134,19 @@ public class SettingsDTO   {
 
   /**
    **/
-  public SettingsDTO cloudClustersInfo(List<CloudClustersInfoDTO> cloudClustersInfo) {
-    this.cloudClustersInfo = cloudClustersInfo;
+  public SettingsDTO deployments(List<DeploymentsDTO> deployments) {
+    this.deployments = deployments;
     return this;
   }
 
   
   @ApiModelProperty(value = "")
-  @JsonProperty("cloudClustersInfo")
-  public List<CloudClustersInfoDTO> getCloudClustersInfo() {
-    return cloudClustersInfo;
+  @JsonProperty("deployments")
+  public List<DeploymentsDTO> getDeployments() {
+    return deployments;
   }
-  public void setCloudClustersInfo(List<CloudClustersInfoDTO> cloudClustersInfo) {
-    this.cloudClustersInfo = cloudClustersInfo;
+  public void setDeployments(List<DeploymentsDTO> deployments) {
+    this.deployments = deployments;
   }
 
 
@@ -165,12 +165,12 @@ public class SettingsDTO   {
         Objects.equals(monetizationAttributes, settings.monetizationAttributes) &&
         Objects.equals(securityAuditProperties, settings.securityAuditProperties) &&
         Objects.equals(externalStoresEnabled, settings.externalStoresEnabled) &&
-        Objects.equals(cloudClustersInfo, settings.cloudClustersInfo);
+        Objects.equals(deployments, settings.deployments);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(storeUrl, environment, scopes, monetizationAttributes, securityAuditProperties, externalStoresEnabled, cloudClustersInfo);
+    return Objects.hash(storeUrl, environment, scopes, monetizationAttributes, securityAuditProperties, externalStoresEnabled, deployments);
   }
 
   @Override
@@ -184,7 +184,7 @@ public class SettingsDTO   {
     sb.append("    monetizationAttributes: ").append(toIndentedString(monetizationAttributes)).append("\n");
     sb.append("    securityAuditProperties: ").append(toIndentedString(securityAuditProperties)).append("\n");
     sb.append("    externalStoresEnabled: ").append(toIndentedString(externalStoresEnabled)).append("\n");
-    sb.append("    cloudClustersInfo: ").append(toIndentedString(cloudClustersInfo)).append("\n");
+    sb.append("    deployments: ").append(toIndentedString(deployments)).append("\n");
     sb.append("}");
     return sb.toString();
   }

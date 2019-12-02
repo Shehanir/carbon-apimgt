@@ -2,6 +2,9 @@ package org.wso2.carbon.apimgt.rest.api.publisher.v1.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonCreator;
+import java.util.ArrayList;
+import java.util.List;
+import org.wso2.carbon.apimgt.rest.api.publisher.v1.dto.DeploymentClusterInfoDTO;
 import javax.validation.constraints.*;
 
 
@@ -13,15 +16,14 @@ import org.wso2.carbon.apimgt.rest.api.util.annotations.Scope;
 
 
 
-public class CloudClustersInfoDTO   {
+public class DeploymentsDTO   {
   
     private String name = null;
-    private String namespace = null;
-    private String masterUrl = null;
+    private List<DeploymentClusterInfoDTO> clusters = new ArrayList<>();
 
   /**
    **/
-  public CloudClustersInfoDTO name(String name) {
+  public DeploymentsDTO name(String name) {
     this.name = name;
     return this;
   }
@@ -39,38 +41,20 @@ public class CloudClustersInfoDTO   {
 
   /**
    **/
-  public CloudClustersInfoDTO namespace(String namespace) {
-    this.namespace = namespace;
+  public DeploymentsDTO clusters(List<DeploymentClusterInfoDTO> clusters) {
+    this.clusters = clusters;
     return this;
   }
 
   
-  @ApiModelProperty(example = "default", required = true, value = "")
-  @JsonProperty("namespace")
+  @ApiModelProperty(required = true, value = "")
+  @JsonProperty("clusters")
   @NotNull
-  public String getNamespace() {
-    return namespace;
+  public List<DeploymentClusterInfoDTO> getClusters() {
+    return clusters;
   }
-  public void setNamespace(String namespace) {
-    this.namespace = namespace;
-  }
-
-  /**
-   **/
-  public CloudClustersInfoDTO masterUrl(String masterUrl) {
-    this.masterUrl = masterUrl;
-    return this;
-  }
-
-  
-  @ApiModelProperty(example = "https://localhost:9095", required = true, value = "")
-  @JsonProperty("masterUrl")
-  @NotNull
-  public String getMasterUrl() {
-    return masterUrl;
-  }
-  public void setMasterUrl(String masterUrl) {
-    this.masterUrl = masterUrl;
+  public void setClusters(List<DeploymentClusterInfoDTO> clusters) {
+    this.clusters = clusters;
   }
 
 
@@ -82,25 +66,23 @@ public class CloudClustersInfoDTO   {
     if (o == null || getClass() != o.getClass()) {
       return false;
     }
-    CloudClustersInfoDTO cloudClustersInfo = (CloudClustersInfoDTO) o;
-    return Objects.equals(name, cloudClustersInfo.name) &&
-        Objects.equals(namespace, cloudClustersInfo.namespace) &&
-        Objects.equals(masterUrl, cloudClustersInfo.masterUrl);
+    DeploymentsDTO deployments = (DeploymentsDTO) o;
+    return Objects.equals(name, deployments.name) &&
+        Objects.equals(clusters, deployments.clusters);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(name, namespace, masterUrl);
+    return Objects.hash(name, clusters);
   }
 
   @Override
   public String toString() {
     StringBuilder sb = new StringBuilder();
-    sb.append("class CloudClustersInfoDTO {\n");
+    sb.append("class DeploymentsDTO {\n");
     
     sb.append("    name: ").append(toIndentedString(name)).append("\n");
-    sb.append("    namespace: ").append(toIndentedString(namespace)).append("\n");
-    sb.append("    masterUrl: ").append(toIndentedString(masterUrl)).append("\n");
+    sb.append("    clusters: ").append(toIndentedString(clusters)).append("\n");
     sb.append("}");
     return sb.toString();
   }

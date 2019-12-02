@@ -35,7 +35,8 @@ import org.wso2.carbon.apimgt.impl.definitions.OASParserUtil;
 import org.wso2.carbon.apimgt.impl.dto.Environment;
 import org.wso2.carbon.apimgt.impl.internal.ServiceReferenceHolder;
 import org.wso2.carbon.apimgt.impl.utils.APIUtil;
-import org.wso2.carbon.apimgt.rest.api.publisher.v1.dto.CloudClustersInfoDTO;
+import org.wso2.carbon.apimgt.rest.api.publisher.v1.dto.DeploymentClusterInfoDTO;
+import org.wso2.carbon.apimgt.rest.api.publisher.v1.dto.DeploymentsDTO;
 import org.wso2.carbon.apimgt.rest.api.publisher.v1.dto.EnvironmentListDTO;
 import org.wso2.carbon.apimgt.rest.api.publisher.v1.dto.MonetizationAttributeDTO;
 import org.wso2.carbon.apimgt.rest.api.publisher.v1.dto.SecurityAuditAttributeDTO;
@@ -74,13 +75,14 @@ public class SettingsMappingUtil {
                 environmentListDTO = EnvironmentMappingUtil.fromEnvironmentCollectionToDTO(environments.values());
             }
             //get kubernetes and istio cluster info
-            settingsDTO.setCloudClustersInfo(getCloudClusterInfoFromTenantConf());
+//            settingsDTO.setCloudClustersInfo(getCloudClusterInfoFromTenantConf());
             settingsDTO.setEnvironment(environmentListDTO.getList());
             settingsDTO.setStoreUrl(APIUtil.getStoreUrl());
             settingsDTO.setMonetizationAttributes(getMonetizationAttributes());
             settingsDTO.setSecurityAuditProperties(getSecurityAuditProperties());
             settingsDTO.setExternalStoresEnabled(
                     APIUtil.isExternalStoresEnabled(RestApiUtil.getLoggedInUserTenantDomain()));
+            settingsDTO.setDeployments(getCloudClusterInfoFromTenantConf());
         }
         settingsDTO.setScopes(GetScopeList());
         return settingsDTO;
@@ -181,40 +183,50 @@ public class SettingsMappingUtil {
         return monetizationAttributeDTOSList;
     }
 
-    private List<CloudClustersInfoDTO> getCloudClusterInfoFromTenantConf() throws APIManagementException{
-        List<CloudClustersInfoDTO> cloudClusterInfoDTOSList = new ArrayList<CloudClustersInfoDTO>();
+    private List<DeploymentsDTO> getCloudClusterInfoFromTenantConf() throws APIManagementException{
+        List<DeploymentsDTO> deploymentsList = new ArrayList<DeploymentsDTO>();
 
         //Get cloud environments from tenant-conf.json file
         //Get tenant domain to access tenant conf
         APIMRegistryService apimRegistryService = new APIMRegistryServiceImpl();
-//        String username = RestApiUtil.getLoggedInUsername();
-//        MultitenantUtils.getTenantDomain(username);
         String tenantDomain = RestApiUtil.getLoggedInUserTenantDomain();
         //read tenant-conf.json and get details
         try {
-            String getTenantDoimanConfContent = apimRegistryService
+            String getTenantDomainConfContent = apimRegistryService
                     .getConfigRegistryResourceContent(tenantDomain, APIConstants.API_TENANT_CONF_LOCATION);
 
-            //parse tenant-conf to a json objectxx
+            //parse tenant-conf to a json object
             JSONParser jsonParser = new JSONParser();
-            Object tenantObject = jsonParser.parse(getTenantDoimanConfContent);
+            Object tenantObject = jsonParser.parse(getTenantDomainConfContent);
             JSONObject tenant_conf = (JSONObject) tenantObject;
-
             //get kubernetes cluster info
-            JSONObject k8sClusterInfo = (JSONObject) tenant_conf.get("containerManagementInfo");
-            CloudClustersInfoDTO k8sClustersInfoDTO = new CloudClustersInfoDTO();
-            k8sClustersInfoDTO.setName((String) k8sClusterInfo.get("className"));
-            k8sClustersInfoDTO.setMasterUrl((String) k8sClusterInfo.get("k8sMasterURL"));
-            k8sClustersInfoDTO.setNamespace((String) k8sClusterInfo.get("namespace"));
-            cloudClusterInfoDTOSList.add(k8sClustersInfoDTO);
+            JSONObject ContainerMgtInfo = (JSONObject) tenant_conf.get("ContainerMgtInfo");
+            DeploymentsDTO k8sClustersInfoDTO = new DeploymentsDTO();
+            k8sClustersInfoDTO.setName((String) ContainerMgtInfo.get("Type"));
+            //get cluster info
+            List<DeploymentClusterInfoDTO> deploymentClusterInfoDTOList = new ArrayList<>();
+            JSONObject clustersInfo = APIUtil.getClusterInfoFromConfig(ContainerMgtInfo.toString());
+            clustersInfo.keySet().forEach(keyStr ->
+            {
+                Object clusterProperties = clustersInfo.get(keyStr);
+                DeploymentClusterInfoDTO deploymentClusterInfoDTO = new DeploymentClusterInfoDTO();
+                deploymentClusterInfoDTO.setClusterName((String) keyStr);
+                deploymentClusterInfoDTO.setMasterURL(((JSONObject)clusterProperties).get("MasterURL").toString());
+                deploymentClusterInfoDTO.setNamespace(((JSONObject)clusterProperties).get("Namespace").toString());
 
-            //get istio cluster info
-            JSONObject istioClusterInfo = (JSONObject) tenant_conf.get("serviceMeshInfo");
-            CloudClustersInfoDTO istioClustersInfoDTO = new CloudClustersInfoDTO();
-            istioClustersInfoDTO.setName((String) istioClusterInfo.get("className"));
-            istioClustersInfoDTO.setMasterUrl((String) istioClusterInfo.get("masterURL"));
-            istioClustersInfoDTO.setNamespace((String) istioClusterInfo.get("namespace"));
-            cloudClusterInfoDTOSList.add(istioClustersInfoDTO);
+                deploymentClusterInfoDTOList.add(deploymentClusterInfoDTO);
+            });
+
+            k8sClustersInfoDTO.setClusters(deploymentClusterInfoDTOList);
+            deploymentsList.add(k8sClustersInfoDTO);
+
+//            //get istio cluster info
+//            JSONObject istioClusterInfo = (JSONObject) tenant_conf.get("serviceMeshInfo");
+//            CloudClustersInfoDTO istioClustersInfoDTO = new CloudClustersInfoDTO();
+//            istioClustersInfoDTO.setName((String) istioClusterInfo.get("className"));
+//            istioClustersInfoDTO.setMasterUrl((String) istioClusterInfo.get("masterURL"));
+//            istioClustersInfoDTO.setNamespace((String) istioClusterInfo.get("namespace"));
+//            cloudClusterInfoDTOSList.add(istioClustersInfoDTO);
 
         }  catch (RegistryException e) {
             handleException("Couldn't read tenant configuration from tenant registry", e);
@@ -223,7 +235,7 @@ public class SettingsMappingUtil {
         } catch (ParseException e) {
             handleException("Couldn't parse tenant configuration for reading extension handler position", e);
         }
-        return cloudClusterInfoDTOSList;
+        return deploymentsList;
     }
 
     /**

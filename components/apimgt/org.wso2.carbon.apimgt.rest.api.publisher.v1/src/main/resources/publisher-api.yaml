@@ -8978,10 +8978,10 @@ definitions:
         description: |
           Is External Stores configuration enabled
         example: true
-      cloudClustersInfo:
+      deployments:
         type: array
         items:
-          $ref: '#/definitions/cloudClustersInfo'
+          $ref: '#/definitions/Deployments'
 
   #-----------------------------------------------------
   # The SecurityAuditAttribute resource
@@ -9226,24 +9226,41 @@ definitions:
       requestConunt: '12'
 
   #-----------------------------------------------------
-  # The CloudClustersInfo resource
+  # The Deployment resource
   #-----------------------------------------------------
-  CloudClustersInfo:
-    name: CloudClustersInfo
+  Deployments:
+    title: Deployments
     required:
       - name
-      - namespace
-      - masterUrl
+      - clusters
     properties:
       name:
         type: string
         example: Kubernetes
-      namespace:
+      clusters:
+        type: array
+        items:
+          $ref: '#/definitions/DeploymentClusterInfo'
+
+  #-----------------------------------------------------
+  # The DeploymentClusterInfo resource
+  #-----------------------------------------------------
+  DeploymentClusterInfo:
+    title: DeploymentClusterInfo
+    required:
+      - clusterName
+      - masterURL
+      - namespace
+    properties:
+      clusterName:
         type: string
-        example: default
-      masterUrl:
+        example: Kubernetes
+      masterURL:
         type: string
         example: "https://localhost:9095"
+      namespace:
+        type: string
+        example: "def"
 
 
 #-----------------------------------------------------

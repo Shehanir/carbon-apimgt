@@ -7031,7 +7031,7 @@ public final class APIUtil {
         return scopes;
     }
 
-    public JSONObject getClusterInfoFromConfig(String tenantConfigContent) throws ParseException {
+    public static JSONObject getClusterInfoFromConfig(String tenantConfigContent) throws ParseException {
 
         JSONParser jsonParser = new JSONParser();
         JSONObject tenantConf = (JSONObject) jsonParser.parse(tenantConfigContent);
