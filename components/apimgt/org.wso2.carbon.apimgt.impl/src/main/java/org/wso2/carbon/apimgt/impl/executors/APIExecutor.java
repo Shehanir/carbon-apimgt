@@ -265,7 +265,8 @@ public class APIExecutor implements Execution {
                 }
             }
             List<String> clusters = new ArrayList<String>();
-            //clients.add("cluster1");
+            //getting clusters to publish API from the publisher UI
+            clusters.add("docker-desktop");
             if (publishInPrivateJet) {
                 apiProvider.publishInPrivateJet(api, api.getId(), clusters);
             }

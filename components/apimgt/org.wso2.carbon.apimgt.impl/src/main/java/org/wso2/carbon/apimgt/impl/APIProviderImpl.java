@@ -4900,10 +4900,12 @@ class APIProviderImpl extends AbstractAPIManager implements APIProvider {
 
             log.info("Publishing the [API] " + apiIdentifier.getApiName() + " in Kubernetes");
             for (String clusterName : clusterNames) {
-
+//clusterinfo map only contains propertymap: name is not there. remove items from the allcusters map and send. removeIf
                 Map<String, String> clusterInfo = allClusters.get(clusterName);
                 ContainerManager containerManager = getContainerManagerInstance();
-                containerManager.initManager(clusterInfo);
+                Map<String, Map<String, String>> selectedClusterInfo =  new HashMap<String, Map<String, String>>();
+                selectedClusterInfo.put(clusterName,clusterInfo);
+                containerManager.initManager(selectedClusterInfo);
                 containerManager.changeLCStateCreatedToPublished(api, apiIdentifier);
             }
         }

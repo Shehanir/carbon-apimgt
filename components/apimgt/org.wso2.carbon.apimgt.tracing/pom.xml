@@ -50,6 +50,12 @@
         <dependency>
             <groupId>org.wso2.carbon.apimgt</groupId>
             <artifactId>org.wso2.carbon.apimgt.impl</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.wso2.orbit.io.fabric8</groupId>
+                    <artifactId>kubernetes-client</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.powermock</groupId>
