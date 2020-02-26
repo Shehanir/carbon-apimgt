@@ -4002,11 +4002,11 @@ class APIProviderImpl extends AbstractAPIManager implements APIProvider {
 
             if (clusterNames.size() != 0) {
 
-                for (String name : clusterNames) {
+                for (String clusterId : clusterNames) {
 
                     ContainerManager containerManager = getContainerManagerInstance();
 
-                    containerManager.deleteAPI(identifier, allClusters.get(name));
+                    containerManager.deleteAPI(identifier, allClusters.get(clusterId));
                 }
             }
             if (log.isDebugEnabled()) {
@@ -5447,10 +5447,10 @@ class APIProviderImpl extends AbstractAPIManager implements APIProvider {
 
                     Map<String, Map<String, String>> allClusters = APIUtil.getClusterInfoFromConfig(tenantConf);
                     List<String> clusterNames = new ArrayList<String>();
-                    //clusterNames.add("cluster1");
+                    clusterNames.add("docker-desktop");
                     if (clusterNames.size() != 0) {
-                        for (String name : clusterNames) {
-                            Map<String, String> clusterProperties = allClusters.get(name);
+                        for (String clusterId : clusterNames) {
+                            Map<String, String> clusterProperties = allClusters.get(clusterId);
                             ContainerManager containerManager = getContainerManagerInstance();
 
                             if (action.equals(ContainerBasedConstants.BLOCK)) {

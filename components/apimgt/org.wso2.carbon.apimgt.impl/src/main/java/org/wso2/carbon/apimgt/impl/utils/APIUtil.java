@@ -734,6 +734,9 @@ public final class APIUtil {
             api.setMonetizationStatus(Boolean.parseBoolean(artifact.getAttribute
                     (APIConstants.Monetization.API_MONETIZATION_STATUS)));
             String monetizationInfo = artifact.getAttribute(APIConstants.Monetization.API_MONETIZATION_PROPERTIES);
+            //set selected clusters which API needs to be deployed
+            String deployments = artifact.getAttribute(APIConstants.API_OVERVIEW_DEPLOYMENTS);
+            api.setDeployments(extractDeploymentsForAPI(deployments));
             if (StringUtils.isNotBlank(monetizationInfo)) {
                 JSONParser parser = new JSONParser();
                 JSONObject jsonObj = (JSONObject) parser.parse(monetizationInfo);
@@ -973,6 +976,8 @@ public final class APIUtil {
             api.setCorsConfiguration(getCorsConfigurationFromArtifact(artifact));
             api.setAuthorizationHeader(artifact.getAttribute(APIConstants.API_OVERVIEW_AUTHORIZATION_HEADER));
             api.setApiSecurity(artifact.getAttribute(APIConstants.API_OVERVIEW_API_SECURITY));
+            String deployments = artifact.getAttribute(APIConstants.API_OVERVIEW_DEPLOYMENTS);
+            api.setDeployments(extractDeploymentsForAPI(deployments));
 
             //get endpoint config string from artifact, parse it as a json and set the environment list configured with
             //non empty URLs to API object
@@ -1332,6 +1337,16 @@ public final class APIUtil {
                 artifact.setAttribute(APIConstants.Monetization.API_MONETIZATION_PROPERTIES,
                         api.getMonetizationProperties().toJSONString());
             }
+
+            //check in github code to see this method was removed
+            String apiSecurity = artifact.getAttribute(APIConstants.API_OVERVIEW_API_SECURITY);
+            if (apiSecurity != null && !apiSecurity.contains(APIConstants.DEFAULT_API_SECURITY_OAUTH2) &&
+                    !apiSecurity.contains(APIConstants.API_SECURITY_API_KEY)) {
+                artifact.setAttribute(APIConstants.API_OVERVIEW_TIER, "");
+            }
+
+            //set deployments selected
+            artifact.setAttribute(APIConstants.API_OVERVIEW_DEPLOYMENTS, writeDeploymentsToArtifact(api));
 
         } catch (GovernanceException e) {
             String msg = "Failed to create API for : " + api.getId().getApiName();
@@ -6702,7 +6717,24 @@ public final class APIUtil {
                                 .getAPIManagerConfiguration().getApiGatewayEnvironments().keySet());
             }
         }
+
         return environmentStringSet;
+    }
+
+    public static Set<String> extractDeploymentsForAPI(String deployments) {
+        Set<String> deploynmentStringSet = null;
+
+        //handle not to publish to any of the gateways
+        if (APIConstants.API_GATEWAY_NONE.equals(deployments)) {
+            deploynmentStringSet = new HashSet<String>();
+        }
+        //handle to set published gateways nto api object
+        else if (!"".equals(deployments)) {
+            String[] publishDeploymentArray = deployments.split(",");
+            deploynmentStringSet = new HashSet<String>(Arrays.asList(publishDeploymentArray));
+            deploynmentStringSet.remove(APIConstants.API_GATEWAY_NONE);
+        }
+        return deploynmentStringSet;
     }
 
     /**
@@ -6753,6 +6785,29 @@ public final class APIUtil {
         return publishedEnvironments.toString();
     }
 
+    /**
+     * This method used to set deployments values to governance artifact of API .
+     *
+     * @param api API object with the attributes value
+     */
+    public static String writeDeploymentsToArtifact(API api) {
+        StringBuilder publishedDeployments = new StringBuilder();
+        Set<String> apiDeployments = api.getDeployments();
+        if (apiDeployments != null) {
+            for (String deploymentName : apiDeployments) {
+                publishedDeployments.append(deploymentName).append(',');
+            }
+
+            if (apiDeployments.isEmpty()) {
+                publishedDeployments.append("none,");
+            }
+
+            if (!publishedDeployments.toString().isEmpty()) {
+                publishedDeployments.deleteCharAt(publishedDeployments.length() - 1);
+            }
+        }
+        return publishedDeployments.toString();
+    }
     /**
      * This method used to get the currently published gateway environments of an API .
      *
@@ -10699,7 +10754,7 @@ public final class APIUtil {
         for (Object info : clusterInfo) {
 
             JSONObject clusterProperties = (JSONObject) ((JSONObject) info).get(ContainerBasedConstants.PROPERTIES);
-            String clusterName = ((JSONObject) info).get(ContainerBasedConstants.CLUSTER_NAME).toString();
+            String clusterId = ((JSONObject) info).get(ContainerBasedConstants.CLUSTER_ID).toString();
             Iterator<String> iterator = clusterProperties.keySet().iterator();
             Map<String, String> clusterProperty = new HashMap<String, String>();
             while (iterator.hasNext()) {
@@ -10708,7 +10763,7 @@ public final class APIUtil {
                 String value = clusterProperties.get(key).toString();
                 clusterProperty.put(key, value);
             }
-            clusters.put(clusterName, clusterProperty);
+            clusters.put(clusterId, clusterProperty);
         }
         return clusters;
     }
@@ -10722,8 +10777,8 @@ public final class APIUtil {
         for (int i = 0; i < ClusterInfo.size(); i++) {
 
             JSONObject clusterProperties = (JSONObject) ((JSONObject) ClusterInfo.get(i)).get(ContainerBasedConstants.PROPERTIES);
-            String name = ((JSONObject) ClusterInfo.get(i)).get(ContainerBasedConstants.CLUSTER_NAME).toString();
-            clusters.put(name, clusterProperties);
+            String clusterId = ((JSONObject) ClusterInfo.get(i)).get(ContainerBasedConstants.CLUSTER_ID).toString();
+            clusters.put(clusterId, clusterProperties);
         }
         return clusters;
     }

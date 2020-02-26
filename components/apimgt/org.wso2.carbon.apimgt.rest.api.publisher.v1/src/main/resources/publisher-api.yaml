@@ -6922,6 +6922,60 @@ paths:
             Requested scope name does not exist.
 
 ######################################################
+# The "Deployments" resource APIs
+######################################################
+
+  /deployments:
+    #----------------------------------------------------------
+    # Retrieving the deployments details from tenant-conf.json
+    #----------------------------------------------------------
+    get:
+      security:
+        - OAuth2Security:
+            - apim:api_view
+      produces:
+        - application/json
+      x-wso2-curl: "curl -X GET -H \"Authorization: Bearer ae4eae22-3f65-387b-a171-d37eaa366fa8\" -H \"Content-Type: application/json\" \"https://localhost:9443/api/am/publisher/v1/deployments\""
+      x-wso2-request: "GET https://localhost:9443/api/am/publisher/v1/deployments"
+      x-wso2-response: "HTTP/1.1 200 OK"
+      summary: Retrieve deployment environments details
+      operationId: deploymentsGet
+      description: |
+        This operation can be used to retrieve cloud clusters information defines in tenant-conf.json file.
+
+        With that you can deploy an API to selected cloud environments.
+      tags:
+        - Deployments
+      responses:
+        '200':
+          description: >
+            OK. Successful response with the list of deployment environments
+            information in the body.
+          schema:
+            $ref: '#/definitions/DeploymentList'
+          headers:
+            Content-Type:
+              description: |
+                The content type of the body.
+              type: string
+        '400':
+          description: |
+            Bad Request.
+            Invalid request or validation error.
+          schema:
+            $ref: '#/definitions/Error'
+        '404':
+          description: |
+            Not Found.
+          schema:
+            $ref: '#/definitions/Error'
+        '500':
+          description: |
+            Internal Server Error
+          schema:
+            $ref: '#/definitions/Error'
+
+######################################################
 # Parameters - required by some of the APIs above
 ######################################################
 parameters:
@@ -7479,6 +7533,15 @@ definitions:
         items:
           type: string
         example: ["Production and Sandbox"]
+        x-otherScopes:
+          - apim:api_publish
+      deployments:
+        description: |
+          List of selected deployment clusters
+        type: array
+        items:
+          type: string
+        example: ["kubernetes-minikube"]
         x-otherScopes:
           - apim:api_publish
       labels:
@@ -9941,6 +10004,22 @@ definitions:
           $ref: '#/definitions/APICategory'
 
   #-----------------------------------------------------
+  # The Deployment List resource
+  #-----------------------------------------------------
+  DeploymentList:
+    title: Deployment List
+    properties:
+      count:
+        type: integer
+        description: |
+          Number of deployment clusters returned.
+        example: 1
+      list:
+        type: array
+        items:
+          $ref: '#/definitions/Deployments'
+
+  #-----------------------------------------------------
   # The Deployment resource
   #-----------------------------------------------------
   Deployments:
@@ -9963,6 +10042,7 @@ definitions:
   DeploymentClusterInfo:
     title: DeploymentClusterInfo
     required:
+      - clusterId
       - clusterName
       - masterURL
       - namespace
@@ -9977,6 +10057,12 @@ definitions:
       namespace:
         type: string
         example: "def"
+      ingressURL:
+        type: string
+        example: "https://api.com"
+      clusterId:
+        type: string
+        example: "kubernetes-minikube"
 #-----------------------------------------------------
 # END-OF-FILE
 #-----------------------------------------------------
