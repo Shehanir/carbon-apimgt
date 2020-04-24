@@ -195,7 +195,7 @@ public class SettingsMappingUtil {
             Object tenantObject = jsonParser.parse(getTenantDomainConfContent);
             JSONObject tenant_conf = (JSONObject) tenantObject;
             //get kubernetes cluster info
-            JSONObject ContainerMgtInfo = (JSONObject) tenant_conf.get("ContainerMgtInfo");
+            JSONObject ContainerMgtInfo = (JSONObject) tenant_conf.get("GatewayDeployments");
             DeploymentsDTO k8sClustersInfoDTO = new DeploymentsDTO();
             k8sClustersInfoDTO.setName((String) ContainerMgtInfo.get("Type"));
             //get clusters' properties
