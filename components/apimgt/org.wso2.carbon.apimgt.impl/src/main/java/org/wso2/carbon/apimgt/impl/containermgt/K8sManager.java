@@ -18,41 +18,36 @@
 
 package org.wso2.carbon.apimgt.impl.containermgt;
 
-import io.fabric8.kubernetes.api.model.ConfigMap;
-import io.fabric8.kubernetes.api.model.ConfigMapBuilder;
-import io.fabric8.kubernetes.api.model.DoneableConfigMap;
-import io.fabric8.kubernetes.api.model.ObjectMeta;
+import io.fabric8.kubernetes.api.model.*;
 import io.fabric8.kubernetes.api.model.apiextensions.CustomResourceDefinition;
 import io.fabric8.kubernetes.api.model.apiextensions.CustomResourceDefinitionList;
 import io.fabric8.kubernetes.client.Config;
 import io.fabric8.kubernetes.client.ConfigBuilder;
-import io.fabric8.kubernetes.client.DefaultKubernetesClient;
-import io.fabric8.kubernetes.client.KubernetesClient;
 import io.fabric8.kubernetes.client.dsl.MixedOperation;
 import io.fabric8.kubernetes.client.dsl.NonNamespaceOperation;
+import io.fabric8.kubernetes.client.dsl.PodResource;
 import io.fabric8.kubernetes.client.dsl.Resource;
-import io.fabric8.kubernetes.client.internal.KubeConfigUtils;
 import io.fabric8.openshift.client.DefaultOpenShiftClient;
 import io.fabric8.openshift.client.OpenShiftClient;
+import org.json.simple.JSONObject;
 import org.json.simple.parser.ParseException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.wso2.carbon.apimgt.api.APIManagementException;
 import org.wso2.carbon.apimgt.api.model.API;
 import org.wso2.carbon.apimgt.api.model.APIIdentifier;
+import org.wso2.carbon.apimgt.api.model.DeploymentStatus;
 import org.wso2.carbon.apimgt.impl.containermgt.k8scrd.*;
+import org.wso2.carbon.apimgt.impl.containermgt.k8scrd.Status;
 import org.wso2.carbon.apimgt.impl.definitions.OASParserUtil;
 import org.wso2.carbon.apimgt.impl.internal.ServiceReferenceHolder;
 import org.wso2.carbon.registry.core.Registry;
 import org.wso2.carbon.registry.core.exceptions.RegistryException;
 import org.wso2.carbon.registry.core.service.RegistryService;
 
-import java.io.File;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static org.wso2.carbon.apimgt.impl.containermgt.ContainerBasedConstants.*;
 
@@ -107,6 +102,8 @@ public class K8sManager implements ContainerManager {
             log.warn("Master URL and/or Service-account Token hasn't been Provided."
                     + " The [API] " + apiIdentifier.getApiName() + " will not be Published in Kubernetes");
         }
+//        log.info("API identifier +++++++++++++++++++ ", apiIdentifier);
+//        getPodStatus(openShiftClient,apiIdentifier);
     }
 
     /**
@@ -286,9 +283,16 @@ public class K8sManager implements ContainerManager {
                 DoneableAPICustomResourceDefinition, Resource<APICustomResourceDefinition,
                 DoneableAPICustomResourceDefinition>> apiCrdClient = getCRDClient(client, apiCustomResourceDefinition);
 
+        // assigning values and creating API cr
         Definition definition = new Definition();
+        Interceptors interceptors = new Interceptors();
+        interceptors.setBallerina(new String[]{});
+        interceptors.setJava(new String[]{});
         definition.setType(SWAGGER);
         definition.setSwaggerConfigmapNames(configmapNames);
+        definition.setInterceptors(interceptors);
+        log.info(definition.getInterceptors().toString());
+
 
         APICustomResourceDefinitionSpec apiCustomResourceDefinitionSpec = new APICustomResourceDefinitionSpec();
         apiCustomResourceDefinitionSpec.setDefinition(definition);
@@ -343,7 +347,7 @@ public class K8sManager implements ContainerManager {
         String swagger = swaggerCreator.
                 getOASDefinitionForPrivateJetMode(api, OASParserUtil.getAPIDefinition(apiIdentifier, registry));
 
-        String configmapName = apiIdentifier.getApiName().toLowerCase() + apiIdentifier.getVersion();
+        String configmapName = apiIdentifier.getApiName().toLowerCase() + "-swagger";
 
         if (update) {
 
@@ -377,6 +381,49 @@ public class K8sManager implements ContainerManager {
                     + " The [API] " + apiIdentifier.getApiName() + " may not be able to invoke via BasicAuth tokens");
         }
         return swaggerConfigmapNames;
+    }
+
+    /**
+     * Gets the deployment status information of an API and sets details to DeploymentStatus Object
+     * @param APIIdentifier , APIIdentifier
+     * @param clusterName , name of the cluster that the API is deployed
+     */
+    public DeploymentStatus getPodStatus (APIIdentifier apiIdentifier, String clusterName){
+        DeploymentStatus deploymentStatus = new DeploymentStatus();
+        List<Map<String,String>> podsInfo = new ArrayList<Map<String,String>>();
+        int numberOfRunningPods =0;
+
+        log.info("calling getPodStatus class");
+        Map<String, String> lablesMap = new HashMap<String, String>(){{
+            put("app", apiIdentifier.getApiName().toLowerCase());
+        }};
+
+        PodList podList = openShiftClient.pods().inNamespace(openShiftClient.getNamespace()).withLabels(lablesMap).list();
+        for (Pod pod : podList.getItems()){
+            Map<String, String> podStatus = new HashMap<String, String>();
+           podStatus.put("podName", pod.getMetadata().getName());
+           podStatus.put("status", pod.getStatus().getPhase());
+           podStatus.put("creationTimestamp", pod.getMetadata().getCreationTimestamp());
+           if (pod.getStatus().getPhase().equals("Running")){
+               numberOfRunningPods++;
+           }
+           int numberOfContainersPerPod =0;
+           List<ContainerStatus> podStatuses = pod.getStatus().getContainerStatuses();
+            for (ContainerStatus containerStatus : podStatuses){
+                if (containerStatus.getReady()){
+                    numberOfContainersPerPod++;
+                }
+                String ready = numberOfContainersPerPod + "/" + podStatuses.size();
+                podStatus.put("ready", ready);
+            }
+            podsInfo.add(podStatus);
+       }
+
+        deploymentStatus.setPodsRunning(numberOfRunningPods);
+        deploymentStatus.setPodStatus(podsInfo);
+        deploymentStatus.setClusterName(clusterName);
+
+        return deploymentStatus;
     }
 
     /**

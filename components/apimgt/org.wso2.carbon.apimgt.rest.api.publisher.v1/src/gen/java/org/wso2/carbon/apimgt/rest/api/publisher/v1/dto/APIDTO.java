@@ -13,6 +13,7 @@ import org.wso2.carbon.apimgt.rest.api.publisher.v1.dto.APIMonetizationInfoDTO;
 import org.wso2.carbon.apimgt.rest.api.publisher.v1.dto.APIOperationsDTO;
 import org.wso2.carbon.apimgt.rest.api.publisher.v1.dto.APIScopeDTO;
 import org.wso2.carbon.apimgt.rest.api.publisher.v1.dto.APIThreatProtectionPoliciesDTO;
+import org.wso2.carbon.apimgt.rest.api.publisher.v1.dto.DeploymentEnvironmentsDTO;
 import org.wso2.carbon.apimgt.rest.api.publisher.v1.dto.MediationPolicyDTO;
 import org.wso2.carbon.apimgt.rest.api.publisher.v1.dto.WSDLInfoDTO;
 import javax.validation.constraints.*;
@@ -130,7 +131,7 @@ public enum VisibilityEnum {
     @Scope(name = "apim:api_publish", description="", value ="")
     private List<String> gatewayEnvironments = new ArrayList<>();
     @Scope(name = "apim:api_publish", description="", value ="")
-    private List<String> deployments = new ArrayList<>();
+    private List<DeploymentEnvironmentsDTO> deploymentEnvironments = new ArrayList<>();
     private List<String> labels = new ArrayList<>();
     private List<MediationPolicyDTO> mediationPolicies = new ArrayList<>();
 
@@ -744,21 +745,21 @@ public enum EndpointImplementationTypeEnum {
   }
 
   /**
-   * List of selected deployment clusters 
+   * List of selected deployment environments and clusters 
    **/
-  public APIDTO deployments(List<String> deployments) {
-    this.deployments = deployments;
+  public APIDTO deploymentEnvironments(List<DeploymentEnvironmentsDTO> deploymentEnvironments) {
+    this.deploymentEnvironments = deploymentEnvironments;
     return this;
   }
 
   
-  @ApiModelProperty(example = "[\"kubernetes-minikube\"]", value = "List of selected deployment clusters ")
-  @JsonProperty("deployments")
-  public List<String> getDeployments() {
-    return deployments;
+  @ApiModelProperty(value = "List of selected deployment environments and clusters ")
+  @JsonProperty("deploymentEnvironments")
+  public List<DeploymentEnvironmentsDTO> getDeploymentEnvironments() {
+    return deploymentEnvironments;
   }
-  public void setDeployments(List<String> deployments) {
-    this.deployments = deployments;
+  public void setDeploymentEnvironments(List<DeploymentEnvironmentsDTO> deploymentEnvironments) {
+    this.deploymentEnvironments = deploymentEnvironments;
   }
 
   /**
@@ -1129,7 +1130,7 @@ public enum EndpointImplementationTypeEnum {
         Objects.equals(visibleTenants, API.visibleTenants) &&
         Objects.equals(endpointSecurity, API.endpointSecurity) &&
         Objects.equals(gatewayEnvironments, API.gatewayEnvironments) &&
-        Objects.equals(deployments, API.deployments) &&
+        Objects.equals(deploymentEnvironments, API.deploymentEnvironments) &&
         Objects.equals(labels, API.labels) &&
         Objects.equals(mediationPolicies, API.mediationPolicies) &&
         Objects.equals(subscriptionAvailability, API.subscriptionAvailability) &&
@@ -1153,7 +1154,7 @@ public enum EndpointImplementationTypeEnum {
 
   @Override
   public int hashCode() {
-    return Objects.hash(id, name, description, context, version, provider, lifeCycleStatus, wsdlInfo, wsdlUrl, responseCachingEnabled, cacheTimeout, destinationStatsEnabled, hasThumbnail, isDefaultVersion, enableSchemaValidation, type, transport, tags, policies, apiThrottlingPolicy, authorizationHeader, securityScheme, maxTps, visibility, visibleRoles, visibleTenants, endpointSecurity, gatewayEnvironments, deployments, labels, mediationPolicies, subscriptionAvailability, subscriptionAvailableTenants, additionalProperties, monetization, accessControl, accessControlRoles, businessInformation, corsConfiguration, workflowStatus, createdTime, lastUpdatedTime, endpointConfig, endpointImplementationType, scopes, operations, threatProtectionPolicies, categories);
+    return Objects.hash(id, name, description, context, version, provider, lifeCycleStatus, wsdlInfo, wsdlUrl, responseCachingEnabled, cacheTimeout, destinationStatsEnabled, hasThumbnail, isDefaultVersion, enableSchemaValidation, type, transport, tags, policies, apiThrottlingPolicy, authorizationHeader, securityScheme, maxTps, visibility, visibleRoles, visibleTenants, endpointSecurity, gatewayEnvironments, deploymentEnvironments, labels, mediationPolicies, subscriptionAvailability, subscriptionAvailableTenants, additionalProperties, monetization, accessControl, accessControlRoles, businessInformation, corsConfiguration, workflowStatus, createdTime, lastUpdatedTime, endpointConfig, endpointImplementationType, scopes, operations, threatProtectionPolicies, categories);
   }
 
   @Override
@@ -1189,7 +1190,7 @@ public enum EndpointImplementationTypeEnum {
     sb.append("    visibleTenants: ").append(toIndentedString(visibleTenants)).append("\n");
     sb.append("    endpointSecurity: ").append(toIndentedString(endpointSecurity)).append("\n");
     sb.append("    gatewayEnvironments: ").append(toIndentedString(gatewayEnvironments)).append("\n");
-    sb.append("    deployments: ").append(toIndentedString(deployments)).append("\n");
+    sb.append("    deploymentEnvironments: ").append(toIndentedString(deploymentEnvironments)).append("\n");
     sb.append("    labels: ").append(toIndentedString(labels)).append("\n");
     sb.append("    mediationPolicies: ").append(toIndentedString(mediationPolicies)).append("\n");
     sb.append("    subscriptionAvailability: ").append(toIndentedString(subscriptionAvailability)).append("\n");

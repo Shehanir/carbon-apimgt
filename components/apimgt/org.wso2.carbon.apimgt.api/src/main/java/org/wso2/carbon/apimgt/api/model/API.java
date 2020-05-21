@@ -151,8 +151,10 @@ public class API implements Serializable {
     /**
      * Property to hold selected deployment environments of the  particular API.
      */
-    private Set<String> deployments;
+    //change this to Set
+    private Set<DeploymentEnvironments> deploymentEnvironments;
     // Used for endpoint environments configured with non empty URLs
+
     private Set<String> environmentList;
 
     // API security at the gateway level.
@@ -1004,12 +1006,12 @@ public class API implements Serializable {
         return apiCategories;
     }
 
-    public Set<String> getDeployments() {
-        return deployments;
+    public Set<DeploymentEnvironments> getDeploymentEnvironments() {
+        return deploymentEnvironments;
     }
 
-    public void setDeployments(Set<String> deployments) {
-        this.deployments = deployments;
+    public void setDeploymentEnvironments(Set<DeploymentEnvironments> deploymentEnvironments) {
+        this.deploymentEnvironments = deploymentEnvironments;
     }
 
     @Override

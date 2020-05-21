@@ -60,9 +60,9 @@ export default function Environments() {
     const { settings } = useAppContext();
     const [gatewayEnvironments, setGatewayEnvironments] = useState([...api.gatewayEnvironments]);
     const [selectedMgLabel, setSelectedMgLabel] = useState([...api.labels]);
-    const { allDeployments } = useAppContext();
+    const { allDeployments, deploymentStatus } = useAppContext();
     const [isUpdating, setUpdating] = useState(false);
-    const [selectedDeployments, setSelectedDeployments] = useState([...api.deployments]);
+    const [selectedDeployments, setSelectedDeployments] = useState([...api.deploymentEnvironments]);
 
     /**
      *
@@ -73,11 +73,12 @@ export default function Environments() {
         console.log(settings);
         console.log(allDeployments);
         console.log('swlectefjhdsf', selectedDeployments);
+        console.log('deployment status', deploymentStatus);
         setUpdating(true);
         updateAPI({
             gatewayEnvironments,
             labels: selectedMgLabel,
-            deployments: selectedDeployments,
+            deploymentEnvironments: selectedDeployments,
         })
             .then(() => Alert.info('API Update Successfully'))
             .catch((error) => {
@@ -124,6 +125,10 @@ export default function Environments() {
                         {settings.environment.map((row) => (
                             <TableRow key={row.name}>
                                 <TableCell padding='checkbox'>
+                                    {console.log('gatewayEnvironments ', gatewayEnvironments)}
+                                    {console.log('swlectefjhdsf', selectedDeployments)}
+                                    {console.log(gatewayEnvironments.includes(row.name))}
+                                    {/* {console.log('kubernetes', selectedDeployments.map((clusters) => clusters.filter((e) => e.type === 'Kubernetes')))} */}
                                     <Checkbox
                                         disabled={isRestricted(['apim:api_create', 'apim:api_publish'], api)}
                                         checked={gatewayEnvironments.includes(row.name)}

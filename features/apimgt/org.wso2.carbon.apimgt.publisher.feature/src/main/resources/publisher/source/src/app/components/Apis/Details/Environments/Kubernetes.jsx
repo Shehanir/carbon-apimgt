@@ -68,7 +68,31 @@ export default function CloudClusters(props) {
     const { getDeployments, selectedDeployments, setSelectedDeployments } = props;
 
     console.log('get deployments', getDeployments);
+    // console.log('kubernetes envs', selectedDeployments.map((clusters) => clusters.filter((e) => e.type === 'Kubernetes')));
+    console.log('mini envs', selectedDeployments.filter((clusters) => clusters.type == 'minikube'));
+    console.log('k8s envs', selectedDeployments.filter((item) => item.type == 'Kubernetes'));
+    console.log('k8s envs with cluster', selectedDeployments.filter((item) => item.type == 'Kubernetes').filter((e) => e.clusterName == 'minikube'));
+    const test1 = selectedDeployments.filter((item) => item.type == 'Kubernetes').filter((e) => e.clusterName.includes('docker-desktop'));
+    console.log('test1 array ', test1);
+    console.log('test1 array length', test1.length);
+    console.log('test1 array length 1', test1.length > 0);
+    // console.log(selectedDeployments.filter((item) => item.type == getDeployments.name).filter((e) => e.clusterName == 'docker-desktop')
+    // console.log('get selectedDeployments', selectedDeployments);
+    // console.log('get setSelectedDeployments', setSelectedDeployments);
 
+    // const [checked, setChecked] = React.useState(true);
+
+    const state = {
+        type: null,
+        clusterName: [],
+    };
+    // console.log('state initial ', state);
+
+    state.type = getDeployments.name;
+    // console.log('state after setting type ', state);
+    // type: getDeployments.name,
+    // state[type] = getDeployments.name;
+    // const previousState = this.state[clusterName] || {};
     return (
         <>
             <Typography variant='h4' gutterBottom align='left' className={classes.mainTitle}>
@@ -93,7 +117,7 @@ export default function CloudClusters(props) {
 
                             <TableRow key={row.clusterId}>
                                 <TableCell padding='checkbox'>
-                                    <Checkbox
+                                    {/* <Checkbox
                                         disabled={isRestricted(['apim:api_create', 'apim:api_publish'], api)}
                                         checked={selectedDeployments.includes(row.clusterId)}
                                         onChange={
@@ -102,12 +126,55 @@ export default function CloudClusters(props) {
                                                 console.log(event.target);
                                                 console.log('selected edp 1', selectedDeployments);
                                                 const { checked, name } = event.target;
+                                                console.log("checked ", checked);
+                                                // console.log("name ", name);
                                                 if (checked) {
                                                     setSelectedDeployments([...selectedDeployments, name]);
                                                     console.log('select dep if', selectedDeployments);
                                                 } else {
+                                                    // console.log(row);
                                                     setSelectedDeployments(
-                                                        selectedDeployments.filter((env) => env !== name),
+                                                        selectedDeployments.filter((env) => env.clusterId !== name),
+                                                    );
+                                                    // console.log('selected dep else', selectedDeployments);
+                                                }
+                                            }
+                                        }
+                                        name={row.clusterId}
+                                        color='primary'
+                                    /> */}
+                                    {console.log('seleceteed deployments', selectedDeployments)}
+                                    {console.log(row.clusterId)}
+                                    {/* {console.log('logic ', selectedDeployments.filter((item) => item.type == getDeployments.name).clusterName.includes(row.clusterId))} */}
+                                    {/* {console.log('test', selectedDeployments.map((clusters) => clusters.filter((e) => e.clusterName == 'minikube')))} */}
+                                    <Checkbox
+                                        disabled={isRestricted(['apim:api_create', 'apim:api_publish'], api)}
+                                        // checked={selectedDeployments[0].clusterName == row.clusterId}
+                                        // checked={selectedDeployments.map((clusters) => clusters.map((e) => e.clusterName.includes(row.clusterId)))}
+                                        // checked={selectedDeployments.map((clusters) => clusters.map((e) => e.clusterName.includes(row.clusterId)))}
+                                        // checked={selectedDeployments.filter((clusters) => clusters.type == 'Kubernetes').length > 0}
+                                        checked={selectedDeployments.filter((item) => item.type == getDeployments.name).includes(row.clusterId)}
+                                        onChange={
+                                            (event) => {
+                                                const { checked, name } = event.target;
+                                                console.log('event target ', event.target);
+                                                console.log('checked ', checked);
+                                                console.log('name ', name);
+                                                if (checked) {
+                                                    // if (selectedDeployments.filter((item) => item.type == getDeployments.name).length > 0) {
+                                                    //     const currentItem = selectedDeployments.filter((item) => item.type == getDeployments.name).clusterName.push(row.clusterId);
+                                                    //     setSelectedDeployments(...selectedDeployments, currentItem);
+                                                    // }
+                                                    selectedDeployments.filter((item) => item.type == getDeployments.name).clusterName.push(name);
+                                                    // state.clusterName.push(name);
+                                                    // setSelectedDeployments(...selectedDeployments, state);
+                                                    setSelectedDeployments({ ...selectedDeployments.filter((item) => item.type == getDeployments.name), clusterName: { ...selectedDeployments.filter((item) => item.type == getDeployments.name).clusterName, name } });
+                                                } else {
+                                                    setSelectedDeployments(
+                                                        // selectedDeployments.clusterName.filter((env) => env.clusterName !== name),
+                                                        // selectedDeployments.clusterName.filter((env) => env.clusterName !== name),
+                                                        // selectedDeployments.map((clusters) => clusters.filter((e) => e.clusterName !== name)),
+                                                        selectedDeployments.filter((item) => item.type == 'Kubernetes').filter((e) => e.clusterName !== name),
                                                     );
                                                     console.log('selected dep else', selectedDeployments);
                                                 }
