@@ -68,15 +68,23 @@ export default function CloudClusters(props) {
     const { getDeployments, selectedDeployments, setSelectedDeployments } = props;
 
     console.log('get deployments', getDeployments);
-    // console.log('kubernetes envs', selectedDeployments.map((clusters) => clusters.filter((e) => e.type === 'Kubernetes')));
+    // console.log('kubernetes envs', selectedDeployments.map((clusters)
+    // => clusters.filter((e) => e.type === 'Kubernetes')));
+    // eslint-disable-next-line eqeqeq
     console.log('mini envs', selectedDeployments.filter((clusters) => clusters.type == 'minikube'));
+    // eslint-disable-next-line eqeqeq
     console.log('k8s envs', selectedDeployments.filter((item) => item.type == 'Kubernetes'));
-    console.log('k8s envs with cluster', selectedDeployments.filter((item) => item.type == 'Kubernetes').filter((e) => e.clusterName == 'minikube'));
-    const test1 = selectedDeployments.filter((item) => item.type == 'Kubernetes').filter((e) => e.clusterName.includes('docker-desktop'));
+    console.log('k8s envs with cluster',
+        // eslint-disable-next-line eqeqeq
+        selectedDeployments.filter((item) => item.type == 'Kubernetes').filter((e) => e.clusterName == 'minikube'));
+    // eslint-disable-next-line eqeqeq
+    const test1 = selectedDeployments.filter((item) => item.type == 'Kubernetes')
+        .filter((e) => e.clusterName.includes('docker-desktop'));
     console.log('test1 array ', test1);
     console.log('test1 array length', test1.length);
     console.log('test1 array length 1', test1.length > 0);
-    // console.log(selectedDeployments.filter((item) => item.type == getDeployments.name).filter((e) => e.clusterName == 'docker-desktop')
+    // console.log(selectedDeployments.filter((item) =>
+    // item.type == getDeployments.name).filter((e) => e.clusterName == 'docker-desktop')
     // console.log('get selectedDeployments', selectedDeployments);
     // console.log('get setSelectedDeployments', setSelectedDeployments);
 
@@ -145,15 +153,22 @@ export default function CloudClusters(props) {
                                     /> */}
                                     {console.log('seleceteed deployments', selectedDeployments)}
                                     {console.log(row.clusterId)}
-                                    {/* {console.log('logic ', selectedDeployments.filter((item) => item.type == getDeployments.name).clusterName.includes(row.clusterId))} */}
-                                    {/* {console.log('test', selectedDeployments.map((clusters) => clusters.filter((e) => e.clusterName == 'minikube')))} */}
+                                    {/* {console.log('logic ', selectedDeployments.filter((item) =>
+                                    item.type == getDeployments.name).clusterName.includes(row.clusterId))} */}
+                                    {/* {console.log('test', selectedDeployments.map((clusters) =>
+                                    clusters.filter((e) => e.clusterName == 'minikube')))} */}
                                     <Checkbox
                                         disabled={isRestricted(['apim:api_create', 'apim:api_publish'], api)}
                                         // checked={selectedDeployments[0].clusterName == row.clusterId}
-                                        // checked={selectedDeployments.map((clusters) => clusters.map((e) => e.clusterName.includes(row.clusterId)))}
-                                        // checked={selectedDeployments.map((clusters) => clusters.map((e) => e.clusterName.includes(row.clusterId)))}
-                                        // checked={selectedDeployments.filter((clusters) => clusters.type == 'Kubernetes').length > 0}
-                                        checked={selectedDeployments.filter((item) => item.type == getDeployments.name).includes(row.clusterId)}
+                                        // checked={selectedDeployments.map((clusters)
+                                        //  => clusters.map((e) => e.clusterName.includes(row.clusterId)))}
+                                        // checked={selectedDeployments.map((clusters) =>
+                                        // clusters.map((e) => e.clusterName.includes(row.clusterId)))}
+                                        // checked={selectedDeployments.filter((clusters)
+                                        // => clusters.type == 'Kubernetes').length > 0}
+                                        // eslint-disable-next-line eqeqeq
+                                        checked={selectedDeployments.filter((item) => item.type == getDeployments.name)
+                                            .includes(row.clusterId)}
                                         onChange={
                                             (event) => {
                                                 const { checked, name } = event.target;
@@ -161,20 +176,42 @@ export default function CloudClusters(props) {
                                                 console.log('checked ', checked);
                                                 console.log('name ', name);
                                                 if (checked) {
-                                                    // if (selectedDeployments.filter((item) => item.type == getDeployments.name).length > 0) {
-                                                    //     const currentItem = selectedDeployments.filter((item) => item.type == getDeployments.name).clusterName.push(row.clusterId);
+                                                    // if (selectedDeployments.filter((item) =>
+                                                    // item.type == getDeployments.name).length > 0) {
+                                                    //     const currentItem = selectedDeployments
+                                                    // .filter((item) => item.type == getDeployments.name)
+                                                    // .clusterName.push(row.clusterId);
                                                     //     setSelectedDeployments(...selectedDeployments, currentItem);
                                                     // }
-                                                    selectedDeployments.filter((item) => item.type == getDeployments.name).clusterName.push(name);
+                                                    selectedDeployments
+                                                        // eslint-disable-next-line eqeqeq
+                                                        .filter((item) => item.type == getDeployments.name)
+                                                        .clusterName.push(name);
                                                     // state.clusterName.push(name);
                                                     // setSelectedDeployments(...selectedDeployments, state);
-                                                    setSelectedDeployments({ ...selectedDeployments.filter((item) => item.type == getDeployments.name), clusterName: { ...selectedDeployments.filter((item) => item.type == getDeployments.name).clusterName, name } });
+                                                    setSelectedDeployments({
+                                                        ...selectedDeployments
+                                                            // eslint-disable-next-line eqeqeq
+                                                            .filter((item) => item.type == getDeployments.name),
+                                                        clusterName: {
+                                                            ...selectedDeployments
+                                                                // eslint-disable-next-line eqeqeq
+                                                                .filter((item) => item.type == getDeployments.name)
+                                                                .clusterName,
+                                                            name,
+                                                        },
+                                                    });
                                                 } else {
                                                     setSelectedDeployments(
-                                                        // selectedDeployments.clusterName.filter((env) => env.clusterName !== name),
-                                                        // selectedDeployments.clusterName.filter((env) => env.clusterName !== name),
-                                                        // selectedDeployments.map((clusters) => clusters.filter((e) => e.clusterName !== name)),
-                                                        selectedDeployments.filter((item) => item.type == 'Kubernetes').filter((e) => e.clusterName !== name),
+                                                        // selectedDeployments.clusterName
+                                                        // .filter((env) => env.clusterName !== name),
+                                                        // selectedDeployments.clusterName.
+                                                        // filter((env) => env.clusterName !== name),
+                                                        // selectedDeployments.map((clusters) => clusters
+                                                        // .filter((e) => e.clusterName !== name)),
+                                                        // eslint-disable-next-line eqeqeq
+                                                        selectedDeployments.filter((item) => item.type == 'Kubernetes')
+                                                            .filter((e) => e.clusterName !== name),
                                                     );
                                                     console.log('selected dep else', selectedDeployments);
                                                 }
